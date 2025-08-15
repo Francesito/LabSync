@@ -329,10 +329,10 @@
 }
 
 .cart-container {
-  position: fixed;     
-  top: 2.5%;             
-  right: 1rem;           
-  height: 95%;          
+  position: sticky;
+  top: 2.5%;        
+  height: 95vh;    
+  max-height: 95vh;  
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -340,7 +340,6 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  z-index: 999;           /* Para que siempre esté encima */
 }
 
 
