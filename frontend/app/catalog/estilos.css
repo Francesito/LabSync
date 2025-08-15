@@ -329,17 +329,20 @@
 }
 
 .cart-container {
+  position: fixed;     
+  top: 2.5%;             
+  right: 1rem;           
+  height: 95%;          
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   width: 380px;
-  position: sticky;
-  top: 0;
-  height: 100vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  z-index: 999;           /* Para que siempre esté encima */
 }
+
 
 .cart-header {
   background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
