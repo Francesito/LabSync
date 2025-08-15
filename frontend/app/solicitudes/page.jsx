@@ -35,7 +35,7 @@ const EstadoBadge = ({ estado }) => {
 
 const SkeletonRow = ({ colCount }) => (
   <tr className="animate-pulse">
-    {Array.from({ length: colCount }).map((_, i) => (
+     {Array.from({ length: colCount }).map((_, i) => (
       <td key={i} className="px-6 py-4">
         <div className="h-4 bg-gray-200 rounded w-24" />
       </td>
@@ -81,7 +81,10 @@ function getUnidad(tipo) {
 }
 
 function toLocalDateStr(date) {
-  return date.toLocaleDateString('en-CA');
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60000)
+    .toISOString()
+    .split('T')[0];
 }
 
 /** Tabla genérica configurable por columnas */
@@ -138,7 +141,7 @@ function TablaSolicitudes({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
-           [...Array(5)].map((_, i) => <SkeletonRow key={i} colCount={colCount} />)
+          [...Array(5)].map((_, i) => <SkeletonRow key={i} colCount={colCount} />)
             ) : data.length === 0 ? (
               <tr>
                 <td className="px-6 py-10 text-center text-gray-500" colSpan={colCount}>
@@ -146,7 +149,7 @@ function TablaSolicitudes({
                 </td>
               </tr>
             ) : (
-            data.map((s) => {
+           data.map((s) => {
                 const createDateStr = (s.fecha_solicitud || '').split('T')[0];
                 const recoDateStr   = (s.fecha_recoleccion || '').split('T')[0];
                 const showMsg = usuario?.rol !== 'almacen' && recoDateStr && recoDateStr !== todayStr;
@@ -176,7 +179,7 @@ function TablaSolicitudes({
                   )}
 
                   {columnas.fecha && (
-                    <Td>
+                   <Td>
                       {createDateStr
                         ? new Date(`${createDateStr}T00:00:00`).toLocaleDateString('es-MX')
                         : ''}
@@ -283,7 +286,7 @@ export default function SolicitudesPage() {
   const [almDocentes, setAlmDocentes] = useState([]); // almacén: tabla 2
   const [procesando, setProcesando] = useState(null);
   const [filterDate, setFilterDate] = useState('');
- const [minFilterDate, setMinFilterDate] = useState('');
+const [minFilterDate, setMinFilterDate] = useState('');
   const [maxFilterDate, setMaxFilterDate] = useState('');
   const [notice, setNotice] = useState('');
 
@@ -799,7 +802,7 @@ by[key].items.push({
                 Limpiar
               </button>
             )}
-         {notice && (
+       {notice && (
               <div className="ml-auto">
                 <div className="px-4 py-2 text-sm bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
                   {notice}
