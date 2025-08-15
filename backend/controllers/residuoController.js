@@ -1,0 +1,27 @@
+const { getResiduos, createResiduo } = require('../models/residuo');
+
+const obtenerResiduos = async (req, res) => {
+  try {
+    const residuos = await getResiduos();
+    res.json(residuos);
+  } catch (error) {
+    console.error('[Error] obtenerResiduos:', error);
+    res.status(500).json({ error: 'Error al obtener residuos: ' + error.message });
+  }
+};
+
+const registrarResiduo = async (req, res) => {
+  const { fecha, laboratorio, reactivo, tipo, cantidad, unidad } = req.body;
+  if (!fecha || !laboratorio || !reactivo || !tipo || !cantidad || !unidad) {
+    return res.status(400).json({ error: 'Faltan datos obligatorios' });
+  }
+  try {
+    const nuevo = await createResiduo({ fecha, laboratorio, reactivo, tipo, cantidad, unidad });
+    res.status(201).json(nuevo);
+  } catch (error) {
+    console.error('[Error] registrarResiduo:', error);
+    res.status(500).json({ error: 'Error al registrar residuo: ' + error.message });
+  }
+};
+
+module.exports = { obtenerResiduos, registrarResiduo };
