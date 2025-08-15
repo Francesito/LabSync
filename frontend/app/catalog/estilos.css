@@ -1549,9 +1549,9 @@ flex-direction: row;
 
 /* Wrapper que ancla el carrito y reserva su espacio */
 .cart-sticky {
-  position: sticky;
-  position: -webkit-sticky; /* Safari */
+   position: fixed;
   top: 1rem;
+  right: 1rem;
 
   /* Que NO se centre en el contenedor flex */
   align-self: flex-start;
@@ -1565,6 +1565,7 @@ flex-direction: row;
 
   /* Evita que algún overflow padre rompa sticky */
   overflow: visible !important;
+  z-index: 1000;
 }
 
 /* Asegura que el contenedor de columnas no rompa sticky ni centre vertical */
