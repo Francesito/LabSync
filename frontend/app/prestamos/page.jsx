@@ -100,7 +100,7 @@ const loadPrestamos = async () => {
     
     try {
       const det = await obtenerDetalleSolicitud(solicitud_id);
-      det.items = det.items.map(i => ({ ...i, devolver: 0 }));
+    det.items = det.items.map(i => ({ ...i, devolver: 0, entregado: false }));
       setDetalle(det);
     } catch (err) {
       console.error('Error al obtener detalle:', err);
@@ -118,9 +118,13 @@ const loadPrestamos = async () => {
 const handleSave = async () => {
   setSaving(true);
   try {
+  const esAlumno = !!detalle.nombre_alumno;
    const devoluciones = detalle.items
-      .filter(item => item.devolver > 0)
-      .map(item => ({ item_id: item.item_id, cantidad_devuelta: item.devolver }));
+     .filter(item => esAlumno ? item.devolver > 0 : item.entregado)
+      .map(item => ({
+        item_id: item.item_id,
+        cantidad_devuelta: esAlumno ? item.devolver : item.cantidad
+      }));
 
    if (devoluciones.length === 0) {
       setSaving(false);
@@ -137,10 +141,10 @@ const handleSave = async () => {
 
     // si aún existe, recarga detalle; y si ya no hay ítems, cierra también
     const nuevoDetalle = await obtenerDetalleSolicitud(selectedSolicitud);
-    nuevoDetalle.items = nuevoDetalle.items.map(i => ({ ...i, devolver: 0 }));
-    if (nuevoDetalle.items.length === 0) {
-      return closeModal();
-    }
+      nuevoDetalle.items = nuevoDetalle.items.map(i => ({ ...i, devolver: 0, entregado: false }));
+      if (nuevoDetalle.items.length === 0) {
+        return closeModal();
+      }
     setDetalle(nuevoDetalle);
 
   } catch (err) {
@@ -376,7 +380,7 @@ const handleSave = async () => {
                           <thead className="bg-slate-50">
                             <tr>
                               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                Devolver
+                             {detalle.nombre_alumno ? 'Cantidad devuelta' : 'Entregado'}
                               </th>
                               <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                                 Material
@@ -393,21 +397,34 @@ const handleSave = async () => {
                             {detalle.items.map((item) => (
                               <tr key={item.item_id} className="hover:bg-slate-50">
                                 <td className="px-4 py-3">
-                                  <div className="flex items-center space-x-2">
-                                    <input
-                                      type="number"
-                                      min="0"
-                                      max={item.cantidad}
-                                      value={item.devolver}
-                                      onChange={e => {
-                                        const val = parseInt(e.target.value || '0', 10);
-                                        item.devolver = Math.min(Math.max(val, 0), item.cantidad);
-                                        setDetalle({ ...detalle });
-                                      }}
-                                      className="w-16 border border-slate-300 rounded-md px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
-                                    />
-                                    <span className="text-xs text-slate-500">/{item.cantidad}</span>
-                                  </div>
+                                  {detalle.nombre_alumno ? (
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        max={item.cantidad}
+                                        value={item.devolver}
+                                        onChange={e => {
+                                          const val = parseInt(e.target.value || '0', 10);
+                                          item.devolver = Math.min(Math.max(val, 0), item.cantidad);
+                                          setDetalle({ ...detalle });
+                                        }}
+                                        className="w-16 border border-slate-300 rounded-md px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+                                      />
+                                      <span className="text-xs text-slate-500">/{item.cantidad}</span>
+                                    </div>
+                                  ) : (
+                                    <div className="flex justify-center">
+                                      <input
+                                        type="checkbox"
+                                        checked={item.entregado}
+                                        onChange={e => {
+                                          item.entregado = e.target.checked;
+                                          setDetalle({ ...detalle });
+                                        }}
+                                      />
+                                    </div>
+                                  )}
                                 </td>
                                 <td className="px-4 py-3">
                                   <div className="flex items-center space-x-2">
