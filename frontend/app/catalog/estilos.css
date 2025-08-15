@@ -1009,15 +1009,16 @@
   }
 
   .d-flex.gap-4 {
-    flex-direction: column;
+   flex-direction: row;
     gap: 1rem;
   }
 
   .cart-container {
-    width: 100%;
-    position: relative;
-    max-height: none;
-    margin-top: 1rem;
+    width: 320px;
+    position: sticky;
+    top: 1.5rem;
+    max-height: calc(100vh - 3rem);
+    margin-top: 0;
     order: 2;
   }
 
