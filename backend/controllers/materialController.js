@@ -52,6 +52,7 @@ const SELECT_SOLICITUDES_CON_NOMBRE = `
     s.id            AS solicitud_id,
     s.usuario_id,
     s.fecha_solicitud,
+    s.fecha_recoleccion,
     s.estado,
     s.nombre_alumno,
     s.profesor,
