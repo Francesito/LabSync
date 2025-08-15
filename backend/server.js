@@ -14,6 +14,7 @@ const { obtenerGrupos } = require('./controllers/authController');
 
 // Importar nueva ruta de administrador
 const adminRoutes = require('./routes/adminRoutes');
+const residuoRoutes = require('./routes/residuoRoutes');
 
 const pool = require('./config/db');
 const { eliminarSolicitudesViejas, cancelarSolicitudesVencidas } = require('./controllers/solicitudController');
@@ -76,6 +77,7 @@ app.use('/api/materials', materialRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/solicitudes', solicitudRoutes);
 app.use('/api/adeudos', adeudoRoutes);
+app.use('/api/residuos', residuoRoutes);
 
 // Nueva ruta de administrador (con gestión de permisos completa)
 app.use('/api/admin', adminRoutes);
@@ -145,6 +147,27 @@ const initializePermisosTable = async () => {
     console.log(`📦 Con acceso a stock: ${stats[0].con_stock}`);
   } catch (error) {
     console.error('❌ Error inicializando tabla PermisosAlmacen:', error);
+  }
+};
+
+// ==================== INICIALIZACIÓN DE TABLA RESIDUOS ====================
+const initializeResiduoTable = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS Residuo (
+        id INT NOT NULL AUTO_INCREMENT,
+        fecha DATE NOT NULL,
+        laboratorio VARCHAR(100) NOT NULL,
+        reactivo VARCHAR(100) NOT NULL,
+        tipo ENUM('quimico','biologico','radiactivo','comun') NOT NULL,
+        cantidad DECIMAL(10,2) NOT NULL,
+        unidad ENUM('ml','g','u') NOT NULL,
+        PRIMARY KEY (id)
+      );
+    `);
+    console.log('✅ Tabla Residuo inicializada correctamente');
+  } catch (error) {
+    console.error('❌ Error inicializando tabla Residuo:', error);
   }
 };
 
@@ -233,6 +256,7 @@ app.listen(PORT, '0.0.0.0', async () => {
         // Solo inicializar si la conexión es exitosa
         await initializeRoles();
         await initializePermisosTable();
+        await initializeResiduoTable();
         break;
       } catch (error) {
         console.error(`❌ Error de conexión intento ${i + 1}:`, error.message);
