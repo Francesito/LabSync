@@ -580,7 +580,7 @@ const deliverSolicitud = async (req, res) => {
   try {
     // 1) Verificar existencia y estado
     const [rows] = await pool.query(
- 'SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion, CURDATE() AS hoy FROM Solicitud WHERE id = ?',
+ 'SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion FROM Solicitud WHERE id = ?',
       [id]
     );
     const sol = rows[0];
@@ -593,11 +593,12 @@ const deliverSolicitud = async (req, res) => {
         .json({ error: 'Solo solicitudes aprobadas pueden entregarse' });
     }
 
-  if (
-      !sol.fecha_recoleccion ||
-      sol.fecha_recoleccion.toISOString().slice(0, 10) !==
-        sol.hoy.toISOString().slice(0, 10)
-    ) {
+ const fmt = (d) =>
+      new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
+    const todayStr = fmt(new Date());
+    if (!sol.fecha_recoleccion || fmt(sol.fecha_recoleccion) !== todayStr) {
       return res
         .status(400)
         .json({ error: 'La solicitud solo puede entregarse en su fecha de recolección' });
@@ -1124,7 +1125,7 @@ LEFT JOIN MaterialLaboratorio mlab
        LEFT JOIN Adeudo a ON a.solicitud_id = s.id
        LEFT JOIN Grupo g  ON s.grupo_id = g.id
        WHERE s.id = ?
-   GROUP BY s.id, s.folio, s.nombre_alumno, s.profesor, g.nombre, s.fecha_recoleccion, s.fecha_devolucion`,
+  GROUP BY s.id, s.folio, s.nombre_alumno, s.profesor, g.nombre, s.fecha_recoleccion, s.fecha_devolucion`,
       [id]
     );
     if (!solRows.length) {
