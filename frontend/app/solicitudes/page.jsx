@@ -19,6 +19,7 @@ const EstadoBadge = ({ estado }) => {
     'entregada':            { bg: 'bg-green-100', text: 'text-green-800', icon: '✓'  },
     'rechazada':            { bg: 'bg-red-100',   text: 'text-red-800',   icon: '✗'  },
     'cancelado':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
+     'cancelada':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
      'eliminación automática por falta de recolección': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' },
     'eliminacion automatica por falta de recoleccion': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' }, // fallback sin tildes
     'pendiente':            { bg: 'bg-yellow-100',text: 'text-yellow-800',icon: '⏳' } // fallback
@@ -152,7 +153,7 @@ function TablaSolicitudes({
           data.map((s) => {
                 const createDateStr = (s.fecha_solicitud || '').split('T')[0];
                 const recoDateStr   = (s.fecha_recoleccion || '').split('T')[0];
-               const dateStr = usuario?.rol === 'almacen' ? recoDateStr : createDateStr;
+             const dateStr = usuario?.rol === 'almacen' ? recoDateStr : createDateStr;
                 const isOverdue =
                   recoDateStr && recoDateStr < todayStr && s.estado === 'entrega pendiente';
                 const showMsg =
@@ -161,7 +162,7 @@ function TablaSolicitudes({
                   recoDateStr > todayStr &&
                   recoDateStr !== todayStr;
                 return (
-               <tr key={s.id} className={`hover:bg-gray-50 ${isOverdue ? 'border-2 border-red-500' : ''}`}>
+                <tr key={s.id} className={`hover:bg-gray-50 ${isOverdue ? 'border-2 border-red-500' : ''}`}>
                   {columnas.folio && <Td bold>{s.folio}</Td>}
 
                   {columnas.solicitante && (
@@ -190,9 +191,10 @@ function TablaSolicitudes({
                       {dateStr
                         ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
                         : ''}
-                      {isOverdue && (
+                     {isOverdue && (
                         <div className="text-xs text-red-600">
-                          Ha pasado la fecha. Se eliminará la solicitud dentro de 1 día por falta de recolección
+                          Ha pasado la fecha.<br />
+                          Se eliminará la solicitud dentro de 1 día por falta de recolección
                         </div>
                       )}
                       {showMsg && (
@@ -209,7 +211,7 @@ function TablaSolicitudes({
 
                   {columnas.estado && (
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <EstadoBadge estado={s.estado} />
+                     <EstadoBadge estado={isOverdue ? 'cancelada' : s.estado} />
                     </td>
                   )}
 
