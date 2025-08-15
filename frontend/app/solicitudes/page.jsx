@@ -146,8 +146,9 @@ function TablaSolicitudes({
                 </td>
               </tr>
             ) : (
-              data.map((s) => {
-                const recoDateStr = (s.fecha_recoleccion || '').split('T')[0];
+            data.map((s) => {
+                const createDateStr = (s.fecha_solicitud || '').split('T')[0];
+                const recoDateStr   = (s.fecha_recoleccion || '').split('T')[0];
                 const showMsg = usuario?.rol !== 'almacen' && recoDateStr && recoDateStr !== todayStr;
                 return (
                 <tr key={s.id} className="hover:bg-gray-50">
@@ -176,8 +177,8 @@ function TablaSolicitudes({
 
                   {columnas.fecha && (
                     <Td>
-                      {recoDateStr
-                        ? new Date(`${recoDateStr}T00:00:00`).toLocaleDateString('es-MX')
+                      {createDateStr
+                        ? new Date(`${createDateStr}T00:00:00`).toLocaleDateString('es-MX')
                         : ''}
                       {showMsg && (
                         <div className="text-xs text-orange-600">
@@ -224,7 +225,7 @@ function TablaSolicitudes({
 
                         {/* Almacén: Entregar cuando UI = entrega pendiente */}
                         {usuario?.rol === 'almacen' &&
-                         s.estado === 'entrega pendiente' &&
+                        s.estado === 'entrega pendiente' &&
                           (s.fecha_recoleccion || '').split('T')[0] === todayStr && (
                             <Btn
                               color="blue"
@@ -342,7 +343,7 @@ export default function SolicitudesPage() {
             `${process.env.NEXT_PUBLIC_API_URL}/api/materials/usuario/solicitudes`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
-         alumnoArr = agrupar(data, 'alumno', grupos);
+        alumnoArr = agrupar(data, 'alumno', grupos);
           setAlumnoData(alumnoArr);
         }
 
@@ -367,7 +368,7 @@ export default function SolicitudesPage() {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           const grouped = agrupar(data, 'almacen', grupos);
-        almAlumnosArr = grouped.filter(s => !s.isDocenteRequest);
+      almAlumnosArr = grouped.filter(s => !s.isDocenteRequest);
           almDocentesArr = grouped.filter(s => s.isDocenteRequest);
           setAlmAlumnos(almAlumnosArr);
           setAlmDocentes(almDocentesArr);
@@ -386,7 +387,17 @@ export default function SolicitudesPage() {
         const hoyCount = pendientes.filter(s => (s.fecha_recoleccion || '').split('T')[0] === todayStr).length;
         const mañanaCount = pendientes.filter(s => (s.fecha_recoleccion || '').split('T')[0] === mañanaStr).length;
         if (usuario.rol === 'almacen' && pendientes.length > 0) {
-          setNotice(`Tienes ${pendientes.length} solicitudes: ${hoyCount} para entregar hoy y ${mañanaCount} para entregar mañana`);
+          let msg = '';
+          if (hoyCount > 0 && mañanaCount > 0) {
+            msg = `Tienes ${pendientes.length} solicitudes: ${hoyCount} para entregar hoy y ${mañanaCount} para entregar mañana`;
+          } else if (hoyCount > 0) {
+            msg = `Tienes ${hoyCount} solicitudes para entregar hoy`;
+          } else if (mañanaCount > 0) {
+            msg = `Tienes ${mañanaCount} solicitudes para entregar mañana`;
+          } else {
+            msg = `Tienes ${pendientes.length} solicitudes pendientes`;
+          }
+          setNotice(msg);
         }
         
         setError('');
@@ -520,8 +531,12 @@ by[key].items.push({
 
       const drop = (arrSetter) => arrSetter(prev => prev.filter(s => s.id !== id));
 
-      if (accion === 'cancelar') {
+      if (accion === 'cancelar' || accion === 'rechazar') {
         drop(setAlumnoData);
+         drop(setDocAprobar);
+        drop(setDocMias);
+        drop(setAlmAlumnos);
+        drop(setAlmDocentes);
       } else {
         apply(setAlumnoData);
         apply(setDocAprobar);
@@ -745,7 +760,7 @@ by[key].items.push({
             showSolicitante={false}
             showEncargado={false}
             showGrupo={false}
-            columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+             columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
             usuario={usuario}
             onAccion={actualizarEstado}
             onPDF={descargarPDF}
