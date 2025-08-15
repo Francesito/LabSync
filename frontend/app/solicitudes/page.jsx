@@ -264,7 +264,7 @@ export default function SolicitudesPage() {
   const [minFilterDate, setMinFilterDate] = useState('');
   const [maxFilterDate, setMaxFilterDate] = useState('');
 
-  useEffect(() => {
+ useEffect(() => {
     const today = new Date();
     const day = today.getDay();
     const friday = new Date(today);
