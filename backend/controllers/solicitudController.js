@@ -417,7 +417,7 @@ const entregarMateriales = async (req, res) => {
 
     // Verificar que la solicitud existe y está aprobada
     const [solicitud] = await connection.query(
-      'SELECT estado FROM Solicitud WHERE id = ?',
+    'SELECT estado, fecha_recoleccion, CURDATE() AS hoy FROM Solicitud WHERE id = ?',
       [id]
     );
 
@@ -431,6 +431,18 @@ const entregarMateriales = async (req, res) => {
       return res.status(400).json({ error: 'La solicitud debe estar aprobada para entregar materiales' });
     }
 
+    const reco = solicitud[0].fecha_recoleccion;
+    const hoy = solicitud[0].hoy;
+    if (
+      !reco ||
+      reco.toISOString().slice(0, 10) !== hoy.toISOString().slice(0, 10)
+    ) {
+      await connection.rollback();
+      return res
+        .status(400)
+        .json({ error: 'La solicitud solo puede entregarse en su fecha de recolección' });
+    }
+    
     // Verificar permisos de modificar stock solo para usuarios de almacén
     let tienePermisoStock = rol_id === 4; // Los administradores siempre tienen permiso
     if (rol_id === 3) {
@@ -1793,7 +1805,7 @@ const rechazarSolicitud = async (req, res) => {
 const cancelarSolicitudesVencidas = async () => {
   try {
     const [result] = await pool.query(
-     "UPDATE Solicitud SET estado = 'sin recoleccion' WHERE estado IN ('pendiente','aprobada') AND fecha_recoleccion < CURDATE()"
+    "UPDATE Solicitud SET estado = 'sin recoleccion' WHERE estado IN ('pendiente','aprobada') AND fecha_recoleccion < CURDATE()"
     );
     if (result.affectedRows > 0) {
      console.log(`⏰ Marcadas ${result.affectedRows} solicitudes por falta de recolección`);
