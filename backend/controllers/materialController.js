@@ -578,7 +578,7 @@ const deliverSolicitud = async (req, res) => {
   try {
     // 1) Verificar existencia y estado
     const [rows] = await pool.query(
-     'SELECT usuario_id, estado, fecha_devolucion FROM Solicitud WHERE id = ?',
+   'SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion, CURDATE() AS hoy FROM Solicitud WHERE id = ?',
       [id]
     );
     const sol = rows[0];
@@ -591,6 +591,16 @@ const deliverSolicitud = async (req, res) => {
         .json({ error: 'Solo solicitudes aprobadas pueden entregarse' });
     }
 
+   if (
+      !sol.fecha_recoleccion ||
+      sol.fecha_recoleccion.toISOString().slice(0, 10) !==
+        sol.hoy.toISOString().slice(0, 10)
+    ) {
+      return res
+        .status(400)
+        .json({ error: 'La solicitud solo puede entregarse en su fecha de recolección' });
+    }
+    
     // 2) Marcar la solicitud como entregada
     await pool.query(
       'UPDATE Solicitud SET estado = ? WHERE id = ?',
