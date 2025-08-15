@@ -417,7 +417,7 @@ const entregarMateriales = async (req, res) => {
 
     // Verificar que la solicitud existe y está aprobada
     const [solicitud] = await connection.query(
-    'SELECT estado, fecha_recoleccion FROM Solicitud WHERE id = ?',
+   'SELECT estado, fecha_recoleccion FROM Solicitud WHERE id = ?',
       [id]
     );
 
@@ -431,10 +431,12 @@ const entregarMateriales = async (req, res) => {
       return res.status(400).json({ error: 'La solicitud debe estar aprobada para entregar materiales' });
     }
 
-    const reco = solicitud[0].fecha_recoleccion;
-    const hoy = new Date();
-    const fmt = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(d);
-    if (!reco || fmt(reco) !== fmt(hoy)) {
+   const reco = solicitud[0].fecha_recoleccion;
+    const fmt = (d) =>
+      new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
+    if (!reco || fmt(reco) !== fmt(new Date())) {
       await connection.rollback();
       return res
         .status(400)
@@ -603,7 +605,7 @@ const recibirDevolucion = async (req, res) => {
         );
       }
     }
-  const [pendientes] = await connection.query(
+ const [pendientes] = await connection.query(
       'SELECT COUNT(*) AS cnt FROM SolicitudItem WHERE solicitud_id = ? AND cantidad > cantidad_devuelta',
       [id]
     );
@@ -1796,7 +1798,7 @@ const aprobarSolicitud = async (req, res) => {
 const rechazarSolicitud = async (req, res) => {
   const { id } = req.params;
   try {
-     await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
+    await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
     await pool.query('DELETE FROM Adeudo WHERE solicitud_id = ?', [id]);
     await pool.query('DELETE FROM Solicitud WHERE id = ?', [id]);
     res.json({ mensaje: 'Solicitud rechazada y eliminada' });
