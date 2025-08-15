@@ -1549,9 +1549,8 @@ flex-direction: row;
 
 /* Wrapper que ancla el carrito y reserva su espacio */
 .cart-sticky {
-   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  position: sticky;
+  top: 1rem;  
 
   /* Que NO se centre en el contenedor flex */
   align-self: flex-start;
