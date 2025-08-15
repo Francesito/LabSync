@@ -147,3 +147,23 @@ export async function generarReporte(tipoReporte) {
 
   return response.data;
 }
+
+// --- Residuos ---
+export async function obtenerResiduos() {
+  const token = localStorage.getItem('token');
+  const { data } = await API.get('/residuos', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
+  return data;
+}
+
+export async function registrarResiduo(payload) {
+  const token = localStorage.getItem('token');
+  const { data } = await API.post('/residuos', payload, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    }
+  });
+  return data;
+}
