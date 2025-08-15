@@ -417,7 +417,7 @@ const entregarMateriales = async (req, res) => {
 
     // Verificar que la solicitud existe y está aprobada
     const [solicitud] = await connection.query(
-    'SELECT estado, fecha_recoleccion, CURDATE() AS hoy FROM Solicitud WHERE id = ?',
+    'SELECT estado, fecha_recoleccion FROM Solicitud WHERE id = ?',
       [id]
     );
 
@@ -432,11 +432,9 @@ const entregarMateriales = async (req, res) => {
     }
 
     const reco = solicitud[0].fecha_recoleccion;
-    const hoy = solicitud[0].hoy;
-    if (
-      !reco ||
-      reco.toISOString().slice(0, 10) !== hoy.toISOString().slice(0, 10)
-    ) {
+    const hoy = new Date();
+    const fmt = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(d);
+    if (!reco || fmt(reco) !== fmt(hoy)) {
       await connection.rollback();
       return res
         .status(400)
@@ -604,6 +602,16 @@ const recibirDevolucion = async (req, res) => {
           [cantidad_devuelta, material_id]
         );
       }
+    }
+  const [pendientes] = await connection.query(
+      'SELECT COUNT(*) AS cnt FROM SolicitudItem WHERE solicitud_id = ? AND cantidad > cantidad_devuelta',
+      [id]
+    );
+
+    if (pendientes[0].cnt === 0) {
+      await connection.query('DELETE FROM Adeudo WHERE solicitud_id = ?', [id]);
+      await connection.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
+      await connection.query('DELETE FROM Solicitud WHERE id = ?', [id]);
     }
 
     await connection.commit();
@@ -1788,8 +1796,10 @@ const aprobarSolicitud = async (req, res) => {
 const rechazarSolicitud = async (req, res) => {
   const { id } = req.params;
   try {
-    await pool.query('UPDATE Solicitud SET estado = ? WHERE id = ?', ['rechazada', id]);
-    res.json({ mensaje: 'Solicitud rechazada' });
+     await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
+    await pool.query('DELETE FROM Adeudo WHERE solicitud_id = ?', [id]);
+    await pool.query('DELETE FROM Solicitud WHERE id = ?', [id]);
+    res.json({ mensaje: 'Solicitud rechazada y eliminada' });
   } catch (error) {
     console.error('Error al rechazar solicitud:', error);
     res.status(500).json({ error: 'Error al rechazar solicitud' });
@@ -1821,7 +1831,7 @@ const eliminarSolicitudesViejas = async () => {
     const [result] = await pool.query(`
     DELETE FROM Solicitud
       WHERE fecha_solicitud < DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-     OR (estado = 'sin recoleccion' AND fecha_recoleccion < DATE_SUB(CURDATE(), INTERVAL 1 DAY))
+    OR (estado = 'sin recoleccion' AND fecha_recoleccion < DATE_SUB(CURDATE(), INTERVAL 1 DAY))
     `);
     console.log(`🗑️ Limpieza automática: ${result.affectedRows} solicitudes eliminadas`);
   } catch (error) {
