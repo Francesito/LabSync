@@ -11,6 +11,7 @@ const obtenerMisSolicitudes = async (req, res) => {
       SELECT 
         s.id AS solicitud_id,
         s.fecha_solicitud,
+        s.fecha_recoleccion,
         s.estado,
         s.motivo,
         s.folio,
@@ -116,6 +117,7 @@ const obtenerTodasSolicitudes = async (req, res) => {
         s.nombre_alumno,
         s.profesor,
         s.fecha_solicitud,
+        s.fecha_recoleccion,
         s.estado,
         s.motivo,
         s.folio,
@@ -158,6 +160,7 @@ const obtenerSolicitudesPendientesAprobacion = async (req, res) => {
         s.nombre_alumno,
         s.profesor,
         s.fecha_solicitud,
+        s.fecha_recoleccion,  
         s.motivo,
         s.folio,
         u.nombre AS nombre_usuario,
@@ -201,6 +204,7 @@ const obtenerSolicitudesAprobadasPendientes = async (req, res) => {
         s.nombre_alumno,
         s.profesor,
         s.fecha_solicitud,
+        s.fecha_recoleccion,
         s.motivo,
         s.folio,
         s.estado,                               -- ✅ incluye estado (el front lo usa)
@@ -250,6 +254,7 @@ const obtenerSolicitudes = async (req, res) => {
         s.nombre_alumno,
         s.profesor,
         s.fecha_solicitud,
+        s.fecha_recoleccion,
         s.estado,
         g.nombre AS grupo_nombre,
         si.id AS item_id,
@@ -305,6 +310,7 @@ const obtenerSolicitudesPendientesDevolucion = async (req, res) => {
         s.nombre_alumno,
         s.profesor,
         s.fecha_solicitud,
+        s.fecha_recoleccion,
         s.motivo,
         s.folio,
         u.nombre AS nombre_usuario,
@@ -360,6 +366,7 @@ const obtenerDetalleSolicitud = async (req, res) => {
         s.nombre_alumno,
         s.profesor,
         s.fecha_solicitud,
+        s.fecha_recoleccion,
         s.estado,
         s.motivo,
         s.folio,
@@ -798,6 +805,7 @@ const obtenerSolicitudPorId = async (req, res) => {
         s.nombre_alumno,
         s.profesor,
         s.fecha_solicitud,
+        s.fecha_recoleccion,
         s.estado,
         s.motivo,
         s.folio,
@@ -1470,6 +1478,7 @@ const buscarSolicitudes = async (req, res) => {
         s.nombre_alumno,
         s.profesor,
         s.fecha_solicitud,
+        s.fecha_recoleccion,
         s.estado,
         s.motivo,
         s.folio,
@@ -1632,6 +1641,7 @@ const obtenerSolicitudesPorRangoFechas = async (req, res) => {
        s.nombre_alumno,
        s.profesor,
        s.fecha_solicitud,
+       s.fecha_recoleccion,
        s.estado,
        s.motivo,
        s.folio,
@@ -1783,7 +1793,7 @@ const rechazarSolicitud = async (req, res) => {
 const cancelarSolicitudesVencidas = async () => {
   try {
     const [result] = await pool.query(
-      "UPDATE Solicitud SET estado = 'sin recoleccion' WHERE estado IN ('pendiente','aprobada') AND fecha_recoleccion < CURDATE()"
+     "UPDATE Solicitud SET estado = 'sin recoleccion' WHERE estado IN ('pendiente','aprobada') AND fecha_recoleccion < CURDATE()"
     );
     if (result.affectedRows > 0) {
      console.log(`⏰ Marcadas ${result.affectedRows} solicitudes por falta de recolección`);
@@ -1799,7 +1809,7 @@ const eliminarSolicitudesViejas = async () => {
     const [result] = await pool.query(`
     DELETE FROM Solicitud
       WHERE fecha_solicitud < DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-      OR (estado = 'sin recoleccion' AND fecha_recoleccion < DATE_SUB(CURDATE(), INTERVAL 1 DAY))
+     OR (estado = 'sin recoleccion' AND fecha_recoleccion < DATE_SUB(CURDATE(), INTERVAL 1 DAY))
     `);
     console.log(`🗑️ Limpieza automática: ${result.affectedRows} solicitudes eliminadas`);
   } catch (error) {
