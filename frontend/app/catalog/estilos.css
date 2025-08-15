@@ -339,6 +339,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  align-self: flex-start;
 }
 
 .cart-header {
@@ -1009,12 +1010,12 @@
   }
 
   .d-flex.gap-4 {
-   flex-direction: row;
+  flex-direction: row;
     gap: 1rem;
   }
 
   .cart-container {
-    width: 320px;
+   width: 320px;
     position: sticky;
     top: 1.5rem;
     max-height: calc(100vh - 3rem);
