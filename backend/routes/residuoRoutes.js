@@ -1,16 +1,8 @@
-const pool = require('../config/db');
+const express = require('express');
+const router = express.Router();
+const { obtenerResiduos, registrarResiduo } = require('../controllers/residuoController');
 
-const getResiduos = async () => {
-  const [rows] = await pool.query('SELECT * FROM Residuo ORDER BY fecha DESC, id DESC');
-  return rows.map(r => ({ ...r, cantidad: parseFloat(r.cantidad) }));
-};
+router.get('/', obtenerResiduos);
+router.post('/', registrarResiduo);
 
-const createResiduo = async ({ fecha, laboratorio, reactivo, tipo, cantidad, unidad }) => {
-  const [result] = await pool.query(
-    'INSERT INTO Residuo (fecha, laboratorio, reactivo, tipo, cantidad, unidad) VALUES (?, ?, ?, ?, ?, ?)',
-    [fecha, laboratorio, reactivo, tipo, cantidad, unidad]
-  );
-  return { id: result.insertId, fecha, laboratorio, reactivo, tipo, cantidad: parseFloat(cantidad), unidad };
-};
-
-module.exports = { getResiduos, createResiduo };
+module.exports = router;
