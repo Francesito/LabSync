@@ -334,12 +334,11 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   width: 380px;
   position: sticky;
-  top: 1.5rem;
-  max-height: calc(100vh - 3rem);
+  top: 0;
+  height: 100vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-self: flex-start;
 }
 
 .cart-header {
@@ -1010,15 +1009,15 @@
   }
 
   .d-flex.gap-4 {
-  flex-direction: row;
+flex-direction: row;
     gap: 1rem;
   }
 
   .cart-container {
    width: 320px;
     position: sticky;
-    top: 1.5rem;
-    max-height: calc(100vh - 3rem);
+     top: 0;
+    height: 100vh;
     margin-top: 0;
     order: 2;
   }
@@ -1413,7 +1412,7 @@
   }
 
   .cart-container {
-    max-height: 80vh;
+   height: 100vh;
   }
 
   .modal-body {
