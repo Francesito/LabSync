@@ -562,8 +562,10 @@ const rejectSolicitud = async (req, res) => {
   const { id } = req.params;
   logRequest(`rejectSolicitud - ID=${id}`);
   try {
-    await pool.query('UPDATE Solicitud SET estado = ? WHERE id = ?', ['rechazada', id]);
-    res.status(200).json({ message: 'Solicitud rechazada' });
+    await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
+    await pool.query('DELETE FROM Adeudo WHERE solicitud_id = ?', [id]);
+    await pool.query('DELETE FROM Solicitud WHERE id = ?', [id]);
+    res.status(200).json({ message: 'Solicitud rechazada y eliminada' });
   } catch (error) {
     console.error('[Error] rejectSolicitud:', error);
     res.status(500).json({ error: 'Error al rechazar solicitud: ' + error.message });
@@ -578,7 +580,7 @@ const deliverSolicitud = async (req, res) => {
   try {
     // 1) Verificar existencia y estado
     const [rows] = await pool.query(
-   'SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion, CURDATE() AS hoy FROM Solicitud WHERE id = ?',
+ 'SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion, CURDATE() AS hoy FROM Solicitud WHERE id = ?',
       [id]
     );
     const sol = rows[0];
@@ -591,7 +593,7 @@ const deliverSolicitud = async (req, res) => {
         .json({ error: 'Solo solicitudes aprobadas pueden entregarse' });
     }
 
-   if (
+  if (
       !sol.fecha_recoleccion ||
       sol.fecha_recoleccion.toISOString().slice(0, 10) !==
         sol.hoy.toISOString().slice(0, 10)
@@ -1122,7 +1124,7 @@ LEFT JOIN MaterialLaboratorio mlab
        LEFT JOIN Adeudo a ON a.solicitud_id = s.id
        LEFT JOIN Grupo g  ON s.grupo_id = g.id
        WHERE s.id = ?
-      GROUP BY s.id, s.folio, s.nombre_alumno, s.profesor, g.nombre, s.fecha_recoleccion, s.fecha_devolucion`,
+   GROUP BY s.id, s.folio, s.nombre_alumno, s.profesor, g.nombre, s.fecha_recoleccion, s.fecha_devolucion`,
       [id]
     );
     if (!solRows.length) {
