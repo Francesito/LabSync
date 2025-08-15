@@ -33,16 +33,13 @@ const EstadoBadge = ({ estado }) => {
   );
 };
 
-const SkeletonRow = () => (
+const SkeletonRow = ({ colCount }) => (
   <tr className="animate-pulse">
-    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-32" /></td>
-    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-28" /></td>
-    <td className="px-6 py-4"><div className="h-6 bg-gray-100 rounded w-full" /></td>
-    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-24" /></td>
-    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-    <td className="px-6 py-4"><div className="h-6 bg-gray-200 rounded-full w-20" /></td>
-    <td className="px-6 py-4"><div className="h-8 bg-gray-200 rounded w-24" /></td>
+    {Array.from({ length: colCount }).map((_, i) => (
+      <td key={i} className="px-6 py-4">
+        <div className="h-4 bg-gray-200 rounded w-24" />
+      </td>
+    ))}
   </tr>
 );
 
@@ -111,6 +108,7 @@ function TablaSolicitudes({
     estado: columnasFijas.estado ?? true,
     acciones: columnasFijas.acciones ?? true,
   };
+  const colCount = Object.values(columnas).filter(Boolean).length;
   const today = new Date();
   const todayStr = toLocalDateStr(today);
   const tomorrow = new Date(today);
@@ -140,15 +138,18 @@ function TablaSolicitudes({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
-              [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
+           [...Array(5)].map((_, i) => <SkeletonRow key={i} colCount={colCount} />)
             ) : data.length === 0 ? (
               <tr>
-                <td className="px-6 py-10 text-center text-gray-500" colSpan={8}>
+                <td className="px-6 py-10 text-center text-gray-500" colSpan={colCount}>
                   No hay solicitudes para mostrar.
                 </td>
               </tr>
             ) : (
-              data.map((s) => (
+              data.map((s) => {
+                const recoDateStr = (s.fecha_recoleccion || '').split('T')[0];
+                const showMsg = usuario?.rol !== 'almacen' && recoDateStr && recoDateStr !== todayStr;
+                return (
                 <tr key={s.id} className="hover:bg-gray-50">
                   {columnas.folio && <Td bold>{s.folio}</Td>}
 
@@ -174,13 +175,13 @@ function TablaSolicitudes({
                   )}
 
                   {columnas.fecha && (
-                  <Td>
-                      {s.fecha_recoleccion
-                        ? new Date(`${(s.fecha_recoleccion || '').split('T')[0]}T00:00:00`).toLocaleDateString('es-MX')
+                    <Td>
+                      {recoDateStr
+                        ? new Date(`${recoDateStr}T00:00:00`).toLocaleDateString('es-MX')
                         : ''}
-                      {(s.fecha_recoleccion || '').split('T')[0] !== todayStr && (
+                      {showMsg && (
                         <div className="text-xs text-orange-600">
-                          {(s.fecha_recoleccion || '').split('T')[0] === tomorrowStr
+                          {recoDateStr === tomorrowStr
                             ? 'Entrega para mañana'
                             : 'Entrega para otro día'}
                         </div>
@@ -257,7 +258,8 @@ function TablaSolicitudes({
                     </td>
                   )}
                 </tr>
-              ))
+               );
+            })
             )}
           </tbody>
         </table>
@@ -280,13 +282,13 @@ export default function SolicitudesPage() {
   const [almDocentes, setAlmDocentes] = useState([]); // almacén: tabla 2
   const [procesando, setProcesando] = useState(null);
   const [filterDate, setFilterDate] = useState('');
-   const [minFilterDate, setMinFilterDate] = useState('');
+ const [minFilterDate, setMinFilterDate] = useState('');
   const [maxFilterDate, setMaxFilterDate] = useState('');
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
     if (!notice) return;
-    const t = setTimeout(() => setNotice(''), 3000);
+    const t = setTimeout(() => setNotice(''), 10000);
     return () => clearTimeout(t);
   }, [notice]);
 
@@ -340,7 +342,7 @@ export default function SolicitudesPage() {
             `${process.env.NEXT_PUBLIC_API_URL}/api/materials/usuario/solicitudes`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
-          alumnoArr = agrupar(data, 'alumno', grupos);
+         alumnoArr = agrupar(data, 'alumno', grupos);
           setAlumnoData(alumnoArr);
         }
 
@@ -352,7 +354,7 @@ export default function SolicitudesPage() {
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/docente/mias`,
               { headers: { Authorization: `Bearer ${token}` } })
           ]);
-         docAprobarArr = agrupar(aprobarRes.data, 'docente', grupos);
+        docAprobarArr = agrupar(aprobarRes.data, 'docente', grupos);
           docMiasArr = agrupar(miasRes.data, 'docente', grupos);
           setDocAprobar(docAprobarArr);
           setDocMias(docMiasArr);
@@ -365,7 +367,7 @@ export default function SolicitudesPage() {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           const grouped = agrupar(data, 'almacen', grupos);
-         almAlumnosArr = grouped.filter(s => !s.isDocenteRequest);
+        almAlumnosArr = grouped.filter(s => !s.isDocenteRequest);
           almDocentesArr = grouped.filter(s => s.isDocenteRequest);
           setAlmAlumnos(almAlumnosArr);
           setAlmDocentes(almDocentesArr);
@@ -383,7 +385,7 @@ export default function SolicitudesPage() {
         const pendientes = all.filter(s => s.estado === 'entrega pendiente');
         const hoyCount = pendientes.filter(s => (s.fecha_recoleccion || '').split('T')[0] === todayStr).length;
         const mañanaCount = pendientes.filter(s => (s.fecha_recoleccion || '').split('T')[0] === mañanaStr).length;
-        if (pendientes.length > 0) {
+        if (usuario.rol === 'almacen' && pendientes.length > 0) {
           setNotice(`Tienes ${pendientes.length} solicitudes: ${hoyCount} para entregar hoy y ${mañanaCount} para entregar mañana`);
         }
         
@@ -712,7 +714,7 @@ by[key].items.push({
     showSolicitante
     showEncargado={false}
     showGrupo={false} 
-    columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+    columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
     usuario={usuario}
     onAccion={actualizarEstado}
     onPDF={descargarPDF}
@@ -760,7 +762,7 @@ by[key].items.push({
             <input
               type="date"
               value={filterDate}
-             min={minFilterDate}
+              min={minFilterDate}
               max={maxFilterDate}
               onChange={e => {
                 const v = e.target.value;
@@ -782,9 +784,9 @@ by[key].items.push({
                 Limpiar
               </button>
             )}
-           {notice && (
+         {notice && (
               <div className="ml-auto">
-                <div className="px-3 py-1 text-xs bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
+                <div className="px-4 py-2 text-sm bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
                   {notice}
                 </div>
               </div>
