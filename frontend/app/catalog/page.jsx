@@ -756,7 +756,7 @@ export default function Catalog() {
 
   return (
     <div className="catalog-container">
-      <div className="d-flex gap-4">
+    <div className="d-flex gap-4 align-items-start">
         <div className="flex-grow-1">
           <div className="main-card">
             <div className="header-section">
