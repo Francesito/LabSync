@@ -329,13 +329,10 @@
 }
 
 .cart-container {
-  /* Se mantiene en el flujo del layout (no flota) */
-  position: sticky;
-  top: 1rem;                   /* margen arriba al fijarse */
-  height: calc(100vh - 2rem);  /* ~95% de la pantalla */
-  max-height: calc(100vh - 2rem);
+  /* El card llena el alto del wrapper sticky */
+  height: 100%;
+  max-height: 100%;
 
-  /* Mantén su aspecto */
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -344,9 +341,9 @@
   display: flex;
   flex-direction: column;
 
-  /* Importante para que NO se centre ni estire raro en el flex padre */
-  align-self: flex-start;       /* evita centrado vertical en el contenedor flex */
-  flex: 0 0 380px;              /* reserva el ancho en el layout */
+  /* Mantiene el ancho reservado en el layout */
+  align-self: flex-start;
+  flex: 0 0 380px;
 }
 
 
