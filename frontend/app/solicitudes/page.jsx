@@ -149,12 +149,19 @@ function TablaSolicitudes({
                 </td>
               </tr>
             ) : (
-           data.map((s) => {
+          data.map((s) => {
                 const createDateStr = (s.fecha_solicitud || '').split('T')[0];
                 const recoDateStr   = (s.fecha_recoleccion || '').split('T')[0];
-                const showMsg = usuario?.rol !== 'almacen' && recoDateStr && recoDateStr !== todayStr;
+               const dateStr = usuario?.rol === 'almacen' ? recoDateStr : createDateStr;
+                const isOverdue =
+                  recoDateStr && recoDateStr < todayStr && s.estado === 'entrega pendiente';
+                const showMsg =
+                  usuario?.rol !== 'almacen' &&
+                  recoDateStr &&
+                  recoDateStr > todayStr &&
+                  recoDateStr !== todayStr;
                 return (
-                <tr key={s.id} className="hover:bg-gray-50">
+               <tr key={s.id} className={`hover:bg-gray-50 ${isOverdue ? 'border-2 border-red-500' : ''}`}>
                   {columnas.folio && <Td bold>{s.folio}</Td>}
 
                   {columnas.solicitante && (
@@ -180,9 +187,14 @@ function TablaSolicitudes({
 
                   {columnas.fecha && (
                    <Td>
-                      {createDateStr
-                        ? new Date(`${createDateStr}T00:00:00`).toLocaleDateString('es-MX')
+                      {dateStr
+                        ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
                         : ''}
+                      {isOverdue && (
+                        <div className="text-xs text-red-600">
+                          Ha pasado la fecha. Se eliminará la solicitud dentro de 1 día por falta de recolección
+                        </div>
+                      )}
                       {showMsg && (
                         <div className="text-xs text-orange-600">
                           {recoDateStr === tomorrowStr
