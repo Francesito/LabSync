@@ -79,7 +79,7 @@ export default function Catalog() {
     return d;
     };
 
-    const computeWeekEnd = (date) => {
+   const computeWeekEnd = (date) => {
     const d = new Date(date);
     const day = d.getDay();
     const diff = (5 - day + 7) % 7;
@@ -88,7 +88,7 @@ export default function Catalog() {
   };
   
   useEffect(() => {
-    const minDate = computeMinPickupDate();
+   const minDate = computeMinPickupDate();
     setMinPickupDate(getFormattedDate(minDate));
     const weekEnd = computeWeekEnd(minDate);
     setMaxPickupDate(getFormattedDate(weekEnd));
