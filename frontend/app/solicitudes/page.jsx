@@ -107,7 +107,11 @@ function TablaSolicitudes({
     estado: columnasFijas.estado ?? true,
     acciones: columnasFijas.acciones ?? true,
   };
-const todayStr = new Date().toLocaleDateString('en-CA');
+ const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
@@ -166,7 +170,16 @@ const todayStr = new Date().toLocaleDateString('en-CA');
                   )}
 
                   {columnas.fecha && (
-                    <Td>{new Date((s.fecha_recoleccion || s.fecha_solicitud)).toLocaleDateString('es-MX')}</Td>
+                   <Td>
+                      {s.fecha_recoleccion ? new Date(s.fecha_recoleccion).toLocaleDateString('es-MX') : ''}
+                      {(s.fecha_recoleccion || '').split('T')[0] !== todayStr && (
+                        <div className="text-xs text-orange-600">
+                          {(s.fecha_recoleccion || '').split('T')[0] === tomorrowStr
+                            ? 'Entrega para mañana'
+                            : 'Entrega para otro día'}
+                        </div>
+                      )}
+                    </Td>
                   )}
 
                   {columnas.grupo && <Td>{s.grupo || ''}</Td>}
@@ -261,10 +274,11 @@ export default function SolicitudesPage() {
   const [almDocentes, setAlmDocentes] = useState([]); // almacén: tabla 2
   const [procesando, setProcesando] = useState(null);
   const [filterDate, setFilterDate] = useState('');
-  const [minFilterDate, setMinFilterDate] = useState('');
+   const [minFilterDate, setMinFilterDate] = useState('');
   const [maxFilterDate, setMaxFilterDate] = useState('');
+  const [warnings, setWarnings] = useState([]);
 
- useEffect(() => {
+  useEffect(() => {
     const today = new Date();
     const day = today.getDay();
     const friday = new Date(today);
@@ -301,13 +315,20 @@ export default function SolicitudesPage() {
           setGrupos(map);
         } catch (_) {}
 
+        let alumnoArr = [];
+        let docAprobarArr = [];
+        let docMiasArr = [];
+        let almAlumnosArr = [];
+        let almDocentesArr = [];
+        
         // Alumno
         if (usuario.rol === 'alumno') {
           const { data } = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL}/api/materials/usuario/solicitudes`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
-          setAlumnoData(agrupar(data, 'alumno', grupos));
+          alumnoArr = agrupar(data, 'alumno', grupos);
+          setAlumnoData(alumnoArr);
         }
 
         // Docente
@@ -318,8 +339,10 @@ export default function SolicitudesPage() {
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/docente/mias`,
               { headers: { Authorization: `Bearer ${token}` } })
           ]);
-          setDocAprobar(agrupar(aprobarRes.data, 'docente', grupos));
-          setDocMias(agrupar(miasRes.data, 'docente', grupos));
+          docAprobarArr = agrupar(aprobarRes.data, 'docente', grupos);
+          docMiasArr = agrupar(miasRes.data, 'docente', grupos);
+          setDocAprobar(docAprobarArr);
+          setDocMias(docMiasArr);
         }
 
         // Almacén (sin filtrar en cliente; solo mapeo de estado especial)
@@ -329,10 +352,22 @@ export default function SolicitudesPage() {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           const grouped = agrupar(data, 'almacen', grupos);
-          setAlmAlumnos(grouped.filter(s => !s.isDocenteRequest));
-          setAlmDocentes(grouped.filter(s => s.isDocenteRequest));
+           almAlumnosArr = grouped.filter(s => !s.isDocenteRequest);
+          almDocentesArr = grouped.filter(s => s.isDocenteRequest);
+          setAlmAlumnos(almAlumnosArr);
+          setAlmDocentes(almDocentesArr);
         }
 
+         const mañana = new Date();
+        mañana.setDate(mañana.getDate() + 1);
+        const mañanaStr = mañana.toISOString().split('T')[0];
+        const collectWarn = arr => arr.filter(s => (s.fecha_recoleccion || '').split('T')[0] === mañanaStr);
+        let warn = [];
+        if (usuario.rol === 'alumno') warn = collectWarn(alumnoArr);
+        if (usuario.rol === 'docente') warn = [...collectWarn(docAprobarArr), ...collectWarn(docMiasArr)];
+        if (usuario.rol === 'almacen') warn = [...collectWarn(almAlumnosArr), ...collectWarn(almDocentesArr)];
+        setWarnings(warn);
+        
         setError('');
       } catch (err) {
         console.error(err);
@@ -641,6 +676,16 @@ by[key].items.push({
         </div>
       )}
 
+    {warnings.length > 0 && (
+        <div className="mb-6 space-y-2">
+          {warnings.map(w => (
+            <div key={w.id} className="p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded">
+              Solicitud {w.folio}: Entrega para mañana
+            </div>
+          ))}
+        </div>
+      )}
+  
       {/* ALUMNO */}
   {usuario?.rol === 'alumno' && (
   <TablaSolicitudes
