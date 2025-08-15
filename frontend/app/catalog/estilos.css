@@ -1549,21 +1549,18 @@ flex-direction: row;
 
 /* Wrapper que ancla el carrito y reserva su espacio */
 .cart-sticky {
-  position: sticky;
-  top: 1rem;  
-
-  /* Que NO se centre en el contenedor flex */
   align-self: flex-start;
-
-  /* Reserva de ancho (no cede su lugar) */
   flex: 0 0 380px;
+  height: calc(100vh - 2rem);
+  }
 
-  /* Ocupa casi todo el alto de la pantalla */
+  /* Carrito fijo que sigue al usuario */
+  .cart-sticky .cart-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
   height: calc(100vh - 2rem);
   max-height: calc(100vh - 2rem);
-
-  /* Evita que algún overflow padre rompa sticky */
-  overflow: visible !important;
   z-index: 1000;
 }
 
