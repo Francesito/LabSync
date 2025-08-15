@@ -171,7 +171,9 @@ function TablaSolicitudes({
 
                   {columnas.fecha && (
                    <Td>
-                      {s.fecha_recoleccion ? new Date(s.fecha_recoleccion).toLocaleDateString('es-MX') : ''}
+                      {s.fecha_recoleccion
+                        ? new Date(`${(s.fecha_recoleccion || '').split('T')[0]}T00:00:00`).toLocaleDateString('es-MX')
+                        : ''}
                       {(s.fecha_recoleccion || '').split('T')[0] !== todayStr && (
                         <div className="text-xs text-orange-600">
                           {(s.fecha_recoleccion || '').split('T')[0] === tomorrowStr
@@ -279,6 +281,12 @@ export default function SolicitudesPage() {
   const [warnings, setWarnings] = useState([]);
 
   useEffect(() => {
+    if (warnings.length === 0) return;
+    const t = setTimeout(() => setWarnings([]), 3000);
+    return () => clearTimeout(t);
+  }, [warnings]);
+
+  useEffect(() => {
     const today = new Date();
     const day = today.getDay();
     const friday = new Date(today);
@@ -286,7 +294,7 @@ export default function SolicitudesPage() {
     friday.setDate(today.getDate() + diff);
     setMinFilterDate(today.toISOString().split('T')[0]);
     setMaxFilterDate(friday.toISOString().split('T')[0]);
-  }, []);
+  }, [])
 
   useEffect(() => {
     if (usuario === null) return;
@@ -676,10 +684,13 @@ by[key].items.push({
         </div>
       )}
 
-    {warnings.length > 0 && (
-        <div className="mb-6 space-y-2">
+{usuario?.rol !== 'almacen' && warnings.length > 0 && (
+        <div className="mb-4 flex justify-end gap-2">
           {warnings.map(w => (
-            <div key={w.id} className="p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded">
+            <div
+              key={w.id}
+              className="px-3 py-1 text-xs bg-yellow-100 border border-yellow-200 text-yellow-800 rounded"
+            >
               Solicitud {w.folio}: Entrega para mañana
             </div>
           ))}
@@ -760,6 +771,18 @@ by[key].items.push({
               >
                 Limpiar
               </button>
+            )}
+             {warnings.length > 0 && (
+              <div className="ml-auto flex gap-2">
+                {warnings.map(w => (
+                  <div
+                    key={w.id}
+                    className="px-3 py-1 text-xs bg-yellow-100 border border-yellow-200 text-yellow-800 rounded"
+                  >
+                    Solicitud {w.folio}: Entrega para mañana
+                  </div>
+                ))}
+              </div>
             )}
           </div>
           <TablaSolicitudes
