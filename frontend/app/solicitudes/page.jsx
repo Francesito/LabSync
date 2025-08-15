@@ -83,6 +83,10 @@ function getUnidad(tipo) {
   return { liquido: 'ml', solido: 'g' }[tipo] || 'u';
 }
 
+function toLocalDateStr(date) {
+  return date.toLocaleDateString('en-CA');
+}
+
 /** Tabla genérica configurable por columnas */
 function TablaSolicitudes({
   titulo,
@@ -107,11 +111,11 @@ function TablaSolicitudes({
     estado: columnasFijas.estado ?? true,
     acciones: columnasFijas.acciones ?? true,
   };
- const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const today = new Date();
+  const todayStr = toLocalDateStr(today);
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const tomorrowStr = toLocalDateStr(tomorrow);
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
@@ -170,7 +174,7 @@ function TablaSolicitudes({
                   )}
 
                   {columnas.fecha && (
-                   <Td>
+                  <Td>
                       {s.fecha_recoleccion
                         ? new Date(`${(s.fecha_recoleccion || '').split('T')[0]}T00:00:00`).toLocaleDateString('es-MX')
                         : ''}
@@ -219,7 +223,7 @@ function TablaSolicitudes({
 
                         {/* Almacén: Entregar cuando UI = entrega pendiente */}
                         {usuario?.rol === 'almacen' &&
-                          s.estado === 'entrega pendiente' &&
+                         s.estado === 'entrega pendiente' &&
                           (s.fecha_recoleccion || '').split('T')[0] === todayStr && (
                             <Btn
                               color="blue"
@@ -278,23 +282,24 @@ export default function SolicitudesPage() {
   const [filterDate, setFilterDate] = useState('');
    const [minFilterDate, setMinFilterDate] = useState('');
   const [maxFilterDate, setMaxFilterDate] = useState('');
-  const [warnings, setWarnings] = useState([]);
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
-    if (warnings.length === 0) return;
-    const t = setTimeout(() => setWarnings([]), 3000);
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(''), 3000);
     return () => clearTimeout(t);
-  }, [warnings]);
+  }, [notice]);
 
   useEffect(() => {
     const today = new Date();
-    const day = today.getDay();
+    let day = today.getDay();
+    if (day === 0) { today.setDate(today.getDate() + 1); day = 1; }
+    else if (day === 6) { today.setDate(today.getDate() + 2); day = 1; }
     const friday = new Date(today);
-    const diff = (5 - day + 7) % 7;
-    friday.setDate(today.getDate() + diff);
-    setMinFilterDate(today.toISOString().split('T')[0]);
-    setMaxFilterDate(friday.toISOString().split('T')[0]);
-  }, [])
+    friday.setDate(today.getDate() + (5 - day));
+    setMinFilterDate(toLocalDateStr(today));
+    setMaxFilterDate(toLocalDateStr(friday));
+  }, []);
 
   useEffect(() => {
     if (usuario === null) return;
@@ -347,7 +352,7 @@ export default function SolicitudesPage() {
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/docente/mias`,
               { headers: { Authorization: `Bearer ${token}` } })
           ]);
-          docAprobarArr = agrupar(aprobarRes.data, 'docente', grupos);
+         docAprobarArr = agrupar(aprobarRes.data, 'docente', grupos);
           docMiasArr = agrupar(miasRes.data, 'docente', grupos);
           setDocAprobar(docAprobarArr);
           setDocMias(docMiasArr);
@@ -360,21 +365,27 @@ export default function SolicitudesPage() {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           const grouped = agrupar(data, 'almacen', grupos);
-           almAlumnosArr = grouped.filter(s => !s.isDocenteRequest);
+         almAlumnosArr = grouped.filter(s => !s.isDocenteRequest);
           almDocentesArr = grouped.filter(s => s.isDocenteRequest);
           setAlmAlumnos(almAlumnosArr);
           setAlmDocentes(almDocentesArr);
         }
 
-         const mañana = new Date();
+        const todayStr = toLocalDateStr(new Date());
+        const mañana = new Date();
         mañana.setDate(mañana.getDate() + 1);
-        const mañanaStr = mañana.toISOString().split('T')[0];
-        const collectWarn = arr => arr.filter(s => (s.fecha_recoleccion || '').split('T')[0] === mañanaStr);
-        let warn = [];
-        if (usuario.rol === 'alumno') warn = collectWarn(alumnoArr);
-        if (usuario.rol === 'docente') warn = [...collectWarn(docAprobarArr), ...collectWarn(docMiasArr)];
-        if (usuario.rol === 'almacen') warn = [...collectWarn(almAlumnosArr), ...collectWarn(almDocentesArr)];
-        setWarnings(warn);
+        const mañanaStr = toLocalDateStr(mañana);
+
+        let all = [];
+        if (usuario.rol === 'alumno') all = alumnoArr;
+        if (usuario.rol === 'docente') all = [...docAprobarArr, ...docMiasArr];
+        if (usuario.rol === 'almacen') all = [...almAlumnosArr, ...almDocentesArr];
+        const pendientes = all.filter(s => s.estado === 'entrega pendiente');
+        const hoyCount = pendientes.filter(s => (s.fecha_recoleccion || '').split('T')[0] === todayStr).length;
+        const mañanaCount = pendientes.filter(s => (s.fecha_recoleccion || '').split('T')[0] === mañanaStr).length;
+        if (pendientes.length > 0) {
+          setNotice(`Tienes ${pendientes.length} solicitudes: ${hoyCount} para entregar hoy y ${mañanaCount} para entregar mañana`);
+        }
         
         setError('');
       } catch (err) {
@@ -684,16 +695,11 @@ by[key].items.push({
         </div>
       )}
 
-{usuario?.rol !== 'almacen' && warnings.length > 0 && (
-        <div className="mb-4 flex justify-end gap-2">
-          {warnings.map(w => (
-            <div
-              key={w.id}
-              className="px-3 py-1 text-xs bg-yellow-100 border border-yellow-200 text-yellow-800 rounded"
-            >
-              Solicitud {w.folio}: Entrega para mañana
-            </div>
-          ))}
+{usuario?.rol !== 'almacen' && notice && (
+        <div className="mb-4 flex justify-end">
+          <div className="px-3 py-1 text-xs bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
+            {notice}
+          </div>
         </div>
       )}
   
@@ -754,11 +760,15 @@ by[key].items.push({
             <input
               type="date"
               value={filterDate}
-              min={minFilterDate}
+             min={minFilterDate}
               max={maxFilterDate}
               onChange={e => {
                 const v = e.target.value;
-                if (!v || (v >= minFilterDate && v <= maxFilterDate)) {
+                if (!v) { setFilterDate(''); return; }
+                const d = new Date(v);
+                const day = d.getDay();
+                if (day === 0 || day === 6) return; // evitar fines de semana
+                if (v >= minFilterDate && v <= maxFilterDate) {
                   setFilterDate(v);
                 }
               }}
@@ -772,16 +782,11 @@ by[key].items.push({
                 Limpiar
               </button>
             )}
-             {warnings.length > 0 && (
-              <div className="ml-auto flex gap-2">
-                {warnings.map(w => (
-                  <div
-                    key={w.id}
-                    className="px-3 py-1 text-xs bg-yellow-100 border border-yellow-200 text-yellow-800 rounded"
-                  >
-                    Solicitud {w.folio}: Entrega para mañana
-                  </div>
-                ))}
+           {notice && (
+              <div className="ml-auto">
+                <div className="px-3 py-1 text-xs bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
+                  {notice}
+                </div>
               </div>
             )}
           </div>
