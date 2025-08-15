@@ -2,7 +2,6 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 
-// Middleware principal para verificar token (MEJORADO)
 const verificarToken = async (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
   
@@ -24,16 +23,11 @@ const verificarToken = async (req, res, next) => {
     }
 
     const usuario = usuarios[0];
-
-    // ✅ NUEVO: Verificar que el usuario esté activo (no bloqueado)
     if (!usuario.activo) {
       return res.status(403).json({ error: 'Usuario bloqueado. Contacta al administrador.' });
     }
-
-    // ✅ Mantener compatibilidad con tu sistema existente
     req.usuario = usuario;
     
-    // ✅ NUEVO: También agregar como req.user para compatibilidad con adminRoutes
     req.user = usuario;
     
     next();
@@ -53,7 +47,6 @@ const verificarRol = (rolesPermitidos) => {
   };
 };
 
-// ✅ NUEVAS FUNCIONES para compatibilidad con adminRoutes
 const authenticateToken = verificarToken; // Alias para compatibilidad
 
 const requireAdmin = (req, res, next) => {
@@ -77,7 +70,6 @@ const requireDocente = (req, res, next) => {
   next();
 };
 
-// ✅ FUNCIÓN MEJORADA: Verificar permisos específicos de almacén (CHAT Y STOCK)
 const verificarPermisosAlmacen = (permisoRequerido) => {
   return async (req, res, next) => {
     // Solo aplica a usuarios de almacén (rol 3)
@@ -113,7 +105,6 @@ const verificarPermisosAlmacen = (permisoRequerido) => {
   };
 };
 
-// ✅ NUEVA FUNCIÓN: Verificar múltiples roles y permisos específicos
 const verificarMultiplesRoles = (...rolesPermitidos) => {
   return (req, res, next) => {
     if (!req.usuario || !rolesPermitidos.includes(req.usuario.rol_id)) {
@@ -123,7 +114,6 @@ const verificarMultiplesRoles = (...rolesPermitidos) => {
   };
 };
 
-// ✅ NUEVA FUNCIÓN: Verificar acceso específico para modificar stock
 const verificarAccesoStock = [
   (req, res, next) => {
     // Solo almacén y administradores pueden modificar stock
@@ -132,7 +122,7 @@ const verificarAccesoStock = [
     }
     next();
   },
-  verificarPermisosAlmacen('stock') // Verificar permisos específicos para almacén
+  verificarPermisosAlmacen('stock') 
 ];
 
 module.exports = {
