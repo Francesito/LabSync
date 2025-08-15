@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { obtenerResiduos, registrarResiduo } from '../../lib/api';
 
 const LABS = [
   'Laboratorio de Química Básica',
@@ -14,58 +15,61 @@ const LABS = [
 ];
 
 const RESIDUE_TYPES = [
-  'Químico',
-  'Biológico',
-  'Radiactivo',
-  'Común'
+   { label: 'Químico', value: 'quimico' },
+  { label: 'Biológico', value: 'biologico' },
+  { label: 'Radiactivo', value: 'radiactivo' },
+  { label: 'Común', value: 'comun' }
 ];
+
+const getTipoLabel = (value) => RESIDUE_TYPES.find(t => t.value === value)?.label || value;
 
 export default function ResiduosPage() {
   const [form, setForm] = useState({
     fecha: new Date().toISOString().split('T')[0],
     laboratorio: '',
-    tipoResiduo: '',
+  reactivo: '',
+    tipo: '',
     cantidad: '',
+    unidad: '',
   });
 
   const [entries, setEntries] = useState([]);
 
-  // Optional: load from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('residuosEntries');
-    if (saved) {
-      setEntries(JSON.parse(saved));
-    }
+   obtenerResiduos().then(setEntries).catch(() => setEntries([]));
   }, []);
-
-  // Persist to localStorage whenever entries change
-  useEffect(() => {
-    localStorage.setItem('residuosEntries', JSON.stringify(entries));
-  }, [entries]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
-    const { fecha, laboratorio, tipoResiduo, cantidad } = form;
-    if (!fecha || !laboratorio || !tipoResiduo || !cantidad) return;
-    const newEntry = {
-      id: Date.now(),
-      fecha,
-      laboratorio,
-      tipoResiduo,
-      cantidad: parseFloat(cantidad),
-    };
-    setEntries(prev => [newEntry, ...prev]);
-    setForm({
-      fecha: new Date().toISOString().split('T')[0],
-      laboratorio: '',
-      tipoResiduo: '',
-      cantidad: '',
-    });
+ const { fecha, laboratorio, reactivo, tipo, cantidad, unidad } = form;
+    if (!fecha || !laboratorio || !reactivo || !tipo || !cantidad || !unidad) return;
+
+    try {
+      const saved = await registrarResiduo({
+        fecha,
+        laboratorio,
+        reactivo,
+        tipo,
+        cantidad: parseFloat(cantidad),
+        unidad,
+      });
+      setEntries(prev => [saved, ...prev]);
+      setForm({
+        fecha: new Date().toISOString().split('T')[0],
+        laboratorio: '',
+        reactivo: '',
+        tipo: '',
+        cantidad: '',
+        unidad: '',
+      });
+    } catch (err) {
+      console.error('Error al registrar residuo:', err);
+    }
   };
 
   return (
@@ -109,19 +113,32 @@ export default function ResiduosPage() {
             </select>
           </div>
 
+           {/* Reactivo */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Reactivo *</label>
+            <input
+              type="text"
+              name="reactivo"
+              value={form.reactivo}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 rounded"
+              required
+            />
+          </div>
+          
           {/* Tipo de residuo */}
           <div>
             <label className="block text-sm font-medium mb-1">Tipo de Residuo *</label>
             <select
-              name="tipoResiduo"
-              value={form.tipoResiduo}
+              name="tipo"
+              value={form.tipo}
               onChange={handleChange}
               className="w-full border px-3 py-2 rounded"
               required
             >
               <option value="">-- Seleccionar --</option>
               {RESIDUE_TYPES.map(type => (
-                <option key={type} value={type}>{type}</option>
+                <option key={type.value} value={type.value}>{type.label}</option>
               ))}
             </select>
           </div>
@@ -129,7 +146,7 @@ export default function ResiduosPage() {
           {/* Cantidad */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Cantidad Generada (g o mL) *
+              Cantidad Generada *
             </label>
             <input
               type="number"
@@ -142,8 +159,25 @@ export default function ResiduosPage() {
               required
             />
           </div>
-        </div>
-
+          
+        {/* Unidad */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Unidad *</label>
+            <select
+              name="unidad"
+              value={form.unidad}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 rounded"
+              required
+            >
+              <option value="">-- Seleccionar --</option>
+              <option value="g">g</option>
+              <option value="ml">mL</option>
+              <option value="u">u</option>
+            </select>
+          </div>  
+           </div>
+        
         <button
           type="submit"
           className="mt-6 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
@@ -161,19 +195,23 @@ export default function ResiduosPage() {
             <table className="w-full bg-white rounded-lg shadow">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-4 py-2 text-left">Fecha</th>
+                 <th className="px-4 py-2 text-left">Fecha</th>
                   <th className="px-4 py-2 text-left">Laboratorio</th>
+                  <th className="px-4 py-2 text-left">Reactivo</th>
                   <th className="px-4 py-2 text-left">Tipo</th>
                   <th className="px-4 py-2 text-right">Cantidad</th>
+                  <th className="px-4 py-2 text-left">Unidad</th>
                 </tr>
               </thead>
               <tbody>
                 {entries.map(entry => (
                   <tr key={entry.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-2">{entry.fecha}</td>
+                   <td className="px-4 py-2">{entry.fecha}</td>
                     <td className="px-4 py-2">{entry.laboratorio}</td>
-                    <td className="px-4 py-2">{entry.tipoResiduo}</td>
+                    <td className="px-4 py-2">{entry.reactivo}</td>
+                    <td className="px-4 py-2">{getTipoLabel(entry.tipo)}</td>
                     <td className="px-4 py-2 text-right">{entry.cantidad.toFixed(2)}</td>
+                    <td className="px-4 py-2">{entry.unidad}</td>
                   </tr>
                 ))}
               </tbody>
