@@ -949,17 +949,17 @@ const getHistorialMovimientos = async (req, res) => {
   }
 };
 
-/** Obtener historial de solicitudes (solo admin/almacenista) */
+/** Obtener historial de solicitudes (solo administradores) */
 const getHistorialSolicitudes = async (req, res) => {
   logRequest('getHistorialSolicitudes');
   try {
     const { rol_id } = req.usuario || {}; // Usar req.usuario en lugar de decodificar JWT aquí
     
-    // Verificar permisos
-    if (rol_id !== 3 && rol_id !== 4) {
-      return res.status(403).json({ error: 'Solo administradores o almacenistas pueden ver el historial' });
+    // Verificar permisos - SOLO ADMINISTRADORES (rol_id 4)
+    if (rol_id !== 4) {
+      return res.status(403).json({ error: 'Solo administradores pueden ver el historial' });
     }
-
+    
     const { fecha } = req.query;
     
     // Query principal para obtener solicitudes con todos los estados
@@ -1007,12 +1007,13 @@ const getHistorialSolicitudes = async (req, res) => {
       GROUP BY s.id, s.folio, u.nombre, s.nombre_alumno, doc.nombre, s.profesor, 
                s.fecha_solicitud, s.fecha_recoleccion, s.fecha_devolucion, s.estado, g.nombre
       ORDER BY s.fecha_solicitud DESC, s.id DESC`;
-
+      
     console.log('Query ejecutada:', query);
     console.log('Parámetros:', params);
+    console.log('Usuario rol_id:', rol_id);
     
     const [historial] = await pool.query(query, params);
-
+    
     // Query para estadísticas mensuales
     const [estadisticas] = await pool.query(`
       SELECT 
@@ -1023,10 +1024,10 @@ const getHistorialSolicitudes = async (req, res) => {
       ORDER BY mes DESC
       LIMIT 12
     `);
-
+    
     console.log(`Historial encontrado: ${historial.length} solicitudes`);
     console.log(`Estadísticas: ${estadisticas.length} meses`);
-
+    
     res.json({ 
       historial: historial || [], 
       estadisticas: estadisticas || [] 
