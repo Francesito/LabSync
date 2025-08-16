@@ -35,6 +35,7 @@ export default function ResiduosPage() {
   });
 
   const [entries, setEntries] = useState([]);
+  const [selected, setSelected] = useState([]);
 
   useEffect(() => {
   obtenerResiduos().then(setEntries).catch(() => setEntries([]));
@@ -45,7 +46,7 @@ export default function ResiduosPage() {
     setForm(f => ({ ...f, [name]: value }));
   };
 
- const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {  
     e.preventDefault();
  const { fecha, laboratorio, reactivo, tipo, cantidad, unidad } = form;
     if (!fecha || !laboratorio || !reactivo || !tipo || !cantidad || !unidad) return;
@@ -61,7 +62,7 @@ export default function ResiduosPage() {
       });
       setEntries(prev => [saved, ...prev]);
       setForm({
-        fecha: new Date().toISOString().split('T')[0],
+        fecha: formatDate(new Date()),
         laboratorio: '',
         reactivo: '',
         tipo: '',
@@ -73,17 +74,88 @@ export default function ResiduosPage() {
     }
   };
 
-  return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        Bitácora de Residuos Peligrosos
-      </h1>
+  const toggleSelect = (id) => {
+    setSelected(sel => sel.includes(id) ? sel.filter(i => i !== id) : [...sel, id]);
+  };
 
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  const handleDelete = async () => {
+    if (selected.length === 0) return;
+    try {
+      await eliminarResiduos(selected);
+      setEntries(prev => prev.filter(e => !selected.includes(e.id)));
+      setSelected([]);
+    } catch (err) {
+      console.error('Error al eliminar residuos:', err);
+    }
+  };
+
+  return (
+<div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold mb-6 text-center">Bitácora de Residuos Peligrosos</h1>
+
+      <div className="flex flex-col md:flex-row gap-6">
+        <section className="flex-1">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold">Historial de Registros</h2>
+            <button
+              onClick={handleDelete}
+              disabled={selected.length === 0}
+              className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Eliminar seleccionados
+            </button>
+          </div>
+          {entries.length === 0 ? (
+            <p className="text-gray-600">No hay residuos registrados aún.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full bg-white rounded-lg shadow">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2">
+                      <input
+                        type="checkbox"
+                        checked={selected.length === entries.length && entries.length > 0}
+                        onChange={e => setSelected(e.target.checked ? entries.map(en => en.id) : [])}
+                      />
+                    </th>
+                    <th className="px-4 py-2 text-left">Fecha</th>
+                    <th className="px-4 py-2 text-left">Laboratorio</th>
+                    <th className="px-4 py-2 text-left">Reactivo</th>
+                    <th className="px-4 py-2 text-left">Tipo</th>
+                    <th className="px-4 py-2 text-right">Cantidad</th>
+                    <th className="px-4 py-2 text-left">Unidad</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries.map(entry => (
+                    <tr key={entry.id} className="border-b hover:bg-gray-50">
+                      <td className="px-4 py-2">
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(entry.id)}
+                          onChange={() => toggleSelect(entry.id)}
+                        />
+                      </td>
+                      <td className="px-4 py-2">{formatDate(entry.fecha)}</td>
+                      <td className="px-4 py-2">{entry.laboratorio}</td>
+                      <td className="px-4 py-2">{entry.reactivo}</td>
+                      <td className="px-4 py-2">{getTipoLabel(entry.tipo)}</td>
+                      <td className="px-4 py-2 text-right">{Number(entry.cantidad).toFixed(2)}</td>
+                      <td className="px-4 py-2">{entry.unidad}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <form
+          onSubmit={handleSubmit}
+          className="md:w-1/3 bg-white p-6 rounded-lg shadow"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Fecha */}
           <div>
             <label className="block text-sm font-medium mb-1">Fecha *</label>
@@ -114,7 +186,7 @@ export default function ResiduosPage() {
             </select>
           </div>
 
-           {/* Reactivo */}
+          {/* Reactivo */}
           <div>
             <label className="block text-sm font-medium mb-1">Reactivo *</label>
             <input
@@ -179,47 +251,32 @@ export default function ResiduosPage() {
           </div>  
            </div>
         
-        <button
-          type="submit"
-          className="mt-6 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-        >
-          Registrar Residuo
-        </button>
-      </form>
-
-      <section className="mt-10 max-w-4xl mx-auto">
-        <h2 className="text-2xl font-semibold mb-4">Historial de Registros</h2>
-        {entries.length === 0 ? (
-          <p className="text-gray-600">No hay residuos registrados aún.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full bg-white rounded-lg shadow">
-              <thead className="bg-gray-100">
-                <tr>
-                 <th className="px-4 py-2 text-left">Fecha</th>
-                  <th className="px-4 py-2 text-left">Laboratorio</th>
-                  <th className="px-4 py-2 text-left">Reactivo</th>
-                  <th className="px-4 py-2 text-left">Tipo</th>
-                  <th className="px-4 py-2 text-right">Cantidad</th>
-                  <th className="px-4 py-2 text-left">Unidad</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map(entry => (
-                  <tr key={entry.id} className="border-b hover:bg-gray-50">
-                   <td className="px-4 py-2">{entry.fecha}</td>
-                    <td className="px-4 py-2">{entry.laboratorio}</td>
-                    <td className="px-4 py-2">{entry.reactivo}</td>
-                    <td className="px-4 py-2">{getTipoLabel(entry.tipo)}</td>
-                    <td className="px-4 py-2 text-right">{entry.cantidad.toFixed(2)}</td>
-                    <td className="px-4 py-2">{entry.unidad}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Unidad */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Unidad *</label>
+            <select
+              name="unidad"
+              value={form.unidad}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 rounded"
+              required
+            >
+              <option value="">-- Seleccionar --</option>
+              <option value="g">g</option>
+              <option value="ml">mL</option>
+              <option value="u">u</option>
+            </select>
           </div>
-        )}
-      </section>
+     </div>
+
+          <button
+            type="submit"
+            className="mt-6 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          >
+            Registrar Residuo
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
