@@ -964,7 +964,7 @@ const getHistorialSolicitudes = async (req, res) => {
         s.fecha_devolucion,
         s.estado,
         g.nombre AS grupo,
-        GROUP_CONCAT(CONCAT(si.cantidad, ' ', COALESCE(ml.nombre, ms.nombre, me.nombre)) SEPARATOR ', ') AS materiales
+      GROUP_CONCAT(CONCAT(si.cantidad, ' ', COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre)) SEPARATOR ', ') AS materiales
       FROM Solicitud s
       JOIN Usuario u ON s.usuario_id = u.id
       LEFT JOIN Usuario doc ON s.docente_id = doc.id
@@ -973,13 +973,15 @@ const getHistorialSolicitudes = async (req, res) => {
       LEFT JOIN MaterialLiquido ml ON si.material_id = ml.id AND si.tipo = 'liquido'
       LEFT JOIN MaterialSolido ms ON si.material_id = ms.id AND si.tipo = 'solido'
       LEFT JOIN MaterialEquipo me ON si.material_id = me.id AND si.tipo = 'equipo'
+      LEFT JOIN MaterialLaboratorio mlab ON si.material_id = mlab.id AND si.tipo = 'laboratorio'
       WHERE s.estado IN ('aprobada','entregado','devuelto parcial','devuelto total')`;
     const params = [];
     if (fecha) {
       query += ' AND DATE(s.fecha_solicitud) = ?';
       params.push(fecha);
     }
-    query += ' GROUP BY s.id, s.folio, u.nombre, doc.nombre, s.fecha_recoleccion, s.fecha_devolucion, s.estado, g.nombre ORDER BY s.fecha_solicitud DESC';
+     query += ' GROUP BY s.id, s.folio, u.nombre, doc.nombre, s.fecha_recoleccion, s.fecha_devolucion, s.estado, g.nombre';
+    query += ' ORDER BY s.fecha_solicitud DESC';
     const [historial] = await pool.query(query, params);
 
     const [estadisticas] = await pool.query(`
