@@ -19,6 +19,7 @@ const notificacionRoutes = require('./routes/notificacionRoutes');
 
 const pool = require('./config/db');
 const { eliminarSolicitudesViejas, cancelarSolicitudesVencidas } = require('./controllers/solicitudController');
+const { crearNotificacion } = require('./models/notificacion');
 
 const app = express();
 
@@ -230,6 +231,92 @@ const startMessageCleanupJob = () => {
   }, 12 * 60 * 60 * 1000); // Cada 12 horas
 };
 
+// Recordatorios de devolución de material (diario)
+const startReturnReminderJob = () => {
+  setInterval(async () => {
+    try {
+      const [solicitudes] = await pool.query(
+        `SELECT id, usuario_id, docente_id, profesor
+         FROM Solicitud
+         WHERE fecha_devolucion = DATE_ADD(CURDATE(), INTERVAL 1 DAY)`
+      );
+
+      if (solicitudes.length === 0) return;
+
+      const [almacenistas] = await pool.query(
+        `SELECT u.id FROM Usuario u
+         JOIN PermisosAlmacen p ON u.id = p.usuario_id
+         WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
+      );
+
+      for (const s of solicitudes) {
+        const mensaje = `Recuerda devolver el material de la solicitud ${s.id} mañana`;
+        await crearNotificacion(s.usuario_id, 'recordatorio_devolucion', mensaje);
+        if (s.docente_id) {
+          await crearNotificacion(s.docente_id, 'recordatorio_devolucion', mensaje);
+        } else if (s.profesor) {
+          const [doc] = await pool.query(
+            'SELECT id FROM Usuario WHERE nombre = ? AND rol_id = 2 LIMIT 1',
+            [s.profesor]
+          );
+          if (doc.length) {
+            await crearNotificacion(doc[0].id, 'recordatorio_devolucion', mensaje);
+          }
+        }
+        for (const a of almacenistas) {
+          await crearNotificacion(a.id, 'recordatorio_devolucion', mensaje);
+        }
+      }
+    } catch (err) {
+      console.error('❌ Error enviando recordatorios de devolución:', err);
+    }
+  }, 24 * 60 * 60 * 1000); // Cada 24 horas
+};
+
+// Alertas de stock bajo (cada 6 horas)
+const startLowStockAlertJob = () => {
+  setInterval(async () => {
+    try {
+      const threshold = 10;
+      const tablas = [
+        { tabla: 'MaterialLiquido', campo: 'cantidad_disponible_ml' },
+        { tabla: 'MaterialSolido', campo: 'cantidad_disponible_g' },
+        { tabla: 'MaterialEquipo', campo: 'cantidad_disponible_u' },
+        { tabla: 'MaterialLaboratorio', campo: 'cantidad_disponible' }
+      ];
+
+      let materialesBajos = [];
+      for (const t of tablas) {
+        const [rows] = await pool.query(
+          `SELECT nombre, ${t.campo} AS stock FROM ${t.tabla} WHERE ${t.campo} < ?`,
+          [threshold]
+        );
+        materialesBajos = materialesBajos.concat(rows);
+      }
+
+      if (materialesBajos.length === 0) return;
+
+      const [almacenistas] = await pool.query(
+        `SELECT u.id FROM Usuario u
+         JOIN PermisosAlmacen p ON u.id = p.usuario_id
+         WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
+      );
+
+      for (const a of almacenistas) {
+        for (const m of materialesBajos) {
+          await crearNotificacion(
+            a.id,
+            'stock_bajo',
+            `Stock bajo de ${m.nombre}: ${m.stock}`
+          );
+        }
+      }
+    } catch (err) {
+      console.error('❌ Error verificando stock bajo:', err);
+    }
+  }, 6 * 60 * 60 * 1000); // Cada 6 horas
+};
+
 app.get('/api/grupos', obtenerGrupos);
 
 // ==================== MANEJO DE ERRORES 404 ====================
@@ -303,6 +390,8 @@ app.listen(PORT, '0.0.0.0', async () => {
   startSolicitudCleanupJob();
   startMessageCleanupJob();
   startSolicitudAutoCancelJob();
+  startReturnReminderJob();
+  startLowStockAlertJob();
   
   console.log('✅ Sistema LabSync inicializado');
   console.log('🔐 Funcionalidades de permisos:');
