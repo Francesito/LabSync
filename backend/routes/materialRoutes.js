@@ -257,6 +257,13 @@ router.get(
   solicitudController.obtenerSolicitudesAprobadasPendientes
 );
 
+// Historial de solicitudes (almacén y admin)
+router.get(
+  '/solicitudes/historial',
+  verificarToken,
+  verificarRol([3, 4]),
+  materialController.getHistorialSolicitudes
+);
 
 // Detalle de una solicitud entregada (almacenista - lectura)
 router.get(
@@ -350,14 +357,6 @@ router.get(
   verificarToken,
   verificarRol([2, 4]),
   materialController.getSolicitudesDocentePropias
-);
-
-// Historial de solicitudes (almacén y admin)
-router.get(
-  '/solicitudes/historial',
-  verificarToken,
-  verificarRol([3, 4]),
-  materialController.getHistorialSolicitudes
 );
 
 router.get('/:id', verificarToken, materialController.getMaterialById);
