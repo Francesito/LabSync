@@ -4,7 +4,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-export default function EstadisticasChart({ datos }) {
+export default function EstadisticasChart({ datos, className }) {
   const data = {
     labels: datos.labels || [],
     datasets: [
@@ -16,5 +16,9 @@ export default function EstadisticasChart({ datos }) {
     ],
   };
 
-  return <Bar data={data} options={{ responsive: true }} />;
+return (
+    <div className={className}>
+      <Bar data={data} options={{ responsive: true, maintainAspectRatio: false }} />
+    </div>
+  );
 }
