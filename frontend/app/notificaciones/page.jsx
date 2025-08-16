@@ -7,13 +7,14 @@ import { useAuth } from '../../lib/auth';
 export default function Notificaciones() {
   const { usuario } = useAuth();
   const [notificaciones, setNotificaciones] = useState([]);
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
   useEffect(() => {
     if (!usuario) return;
     const cargar = async () => {
       try {
         const { data } = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/notificaciones`,
+         `${baseUrl}/api/notificaciones`,
           {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           }
@@ -28,7 +29,7 @@ export default function Notificaciones() {
 
   const eliminar = async (id) => {
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/notificaciones/${id}`, {
+      await axios.delete(`${baseUrl}/api/notificaciones/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setNotificaciones(prev => prev.filter(n => n.id !== id));
