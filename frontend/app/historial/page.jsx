@@ -65,37 +65,41 @@ export default function Historial() {
           className="border p-2 rounded"
         />
       </div>
-      <div>
-        <EstadisticasChart datos={{ labels, valores }} />
-        {analisis && <p className="mt-2 text-sm text-gray-600">{analisis}</p>}
-      </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-2 border">Folio</th>
-              <th className="p-2 border">Solicitante</th>
-              <th className="p-2 border">Encargado</th>
-              <th className="p-2 border">Recolección</th>
-              <th className="p-2 border">Devolución</th>
-              <th className="p-2 border">Materiales</th>
-              <th className="p-2 border">Grupo</th>
-            </tr>
-          </thead>
-          <tbody>
-            {historial.map(h => (
-              <tr key={h.id} className="hover:bg-gray-50">
-                <td className="p-2 border">{h.folio}</td>
-                <td className="p-2 border">{h.solicitante}</td>
-                <td className="p-2 border">{h.encargado}</td>
-                <td className="p-2 border">{new Date(h.fecha_recoleccion).toLocaleDateString()}</td>
-                <td className="p-2 border">{h.fecha_devolucion ? new Date(h.fecha_devolucion).toLocaleDateString() : '-'}</td>
-                <td className="p-2 border">{h.materiales}</td>
-                <td className="p-2 border">{h.grupo || 'N/A'}</td>
+    <div className="flex flex-col md:flex-row gap-4 items-start">
+        <div className="flex-1 overflow-x-auto">
+          <table className="min-w-full border text-sm">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-2 border">Folio</th>
+                <th className="p-2 border">Solicitante</th>
+                <th className="p-2 border">Encargado</th>
+                <th className="p-2 border">Recolección</th>
+                <th className="p-2 border">Devolución</th>
+                <th className="p-2 border">Estado</th>
+                <th className="p-2 border">Materiales</th>
+                <th className="p-2 border">Grupo</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+          </thead>
+            <tbody>
+              {historial.map(h => (
+                <tr key={h.id} className="hover:bg-gray-50">
+                  <td className="p-2 border">{h.folio}</td>
+                  <td className="p-2 border">{h.solicitante}</td>
+                  <td className="p-2 border">{h.encargado}</td>
+                  <td className="p-2 border">{new Date(h.fecha_recoleccion).toLocaleDateString()}</td>
+                  <td className="p-2 border">{h.fecha_devolucion ? new Date(h.fecha_devolucion).toLocaleDateString() : '-'}</td>
+                  <td className="p-2 border capitalize">{h.estado}</td>
+                  <td className="p-2 border">{h.materiales}</td>
+                  <td className="p-2 border">{h.grupo || 'N/A'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="w-full md:w-1/3">
+          <EstadisticasChart datos={{ labels, valores }} className="h-40" />
+          {analisis && <p className="mt-2 text-sm text-gray-600">{analisis}</p>}
+        </div>
       </div>
     </div>
   );
