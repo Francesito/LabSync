@@ -161,7 +161,8 @@ export default function Historial() {
               value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
               placeholder="Nombre o grupo"
-              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={vista === 'movimientos'}
+              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
             />
           </div>
         <div className="flex gap-2">
@@ -209,13 +210,12 @@ export default function Historial() {
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Devolución</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Materiales</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grupo</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {historial.length === 0 ? (
                     <tr>
-                  <td colSpan="8" className="px-3 py-8 text-center text-gray-500">
+               <td colSpan="7" className="px-3 py-8 text-center text-gray-500">
                         No se encontraron solicitudes
                       </td>
                     </tr>
@@ -235,7 +235,6 @@ export default function Historial() {
                         <td className="px-3 py-4 text-sm text-gray-900 max-w-xs">
                           <div className="truncate" title={h.materiales}>{h.materiales || 'Sin materiales'}</div>
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{h.grupo || 'N/A'}</td>
                       </tr>
                    ))
                   )}
@@ -259,9 +258,9 @@ export default function Historial() {
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Movimiento</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Actual</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motivo</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -279,14 +278,12 @@ export default function Historial() {
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{m.tipo_movimiento}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                           <span className={m.cantidad > 0 ? 'text-green-600' : 'text-red-600'}>
-                            {m.cantidad > 0 ? '+' : ''}{m.cantidad}
+                         {m.cantidad > 0 ? '+' : ''}{m.cantidad} {m.unidad}
                           </span>
                         </td>
+                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{m.stock_actual} {m.unidad}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{m.usuario || 'Sistema'}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{formatearFecha(m.fecha_movimiento)}</td>
-                        <td className="px-3 py-4 text-sm text-gray-900 max-w-xs">
-                          <div className="truncate" title={m.motivo}>{m.motivo || '-'}</div>
-                        </td>
                       </tr>
                      ))
                   )}
