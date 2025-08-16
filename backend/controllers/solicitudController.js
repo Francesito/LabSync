@@ -1748,25 +1748,13 @@ const crearSolicitud = async (req, res) => {
       `Solicitud ${solicitudId} creada`
     );
 
-    // Notificación para el docente seleccionado (si existe)
+   // Notificación para el docente seleccionado (solo al docente elegido)
     if (docente_id) {
       await crearNotificacion(
         docente_id,
         'solicitud_nueva',
         `Nueva solicitud ${solicitudId} del alumno ${nombre}`
       );
-    } else if (profesor) {
-      const [docente] = await pool.query(
-        'SELECT id FROM Usuario WHERE nombre = ? AND rol_id = 2 LIMIT 1',
-        [profesor]
-      );
-      if (docente.length > 0) {
-        await crearNotificacion(
-          docente[0].id,
-          'solicitud_nueva',
-          `Nueva solicitud ${solicitudId} del alumno ${nombre}`
-        );
-      }
     }
 
     // Notificar a almacenistas con permiso de modificar stock
@@ -1783,7 +1771,7 @@ const crearSolicitud = async (req, res) => {
         `Nueva solicitud ${solicitudId} del usuario ${nombre}`
       );
     }
-    
+
     for (const mat of materiales) {
       const { material_id, cantidad, tipo } = mat;
       await pool.query(
@@ -1845,10 +1833,38 @@ const aprobarSolicitud = async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query('UPDATE Solicitud SET estado = ? WHERE id = ?', ['aprobada', id]);
-      const [rows] = await pool.query('SELECT usuario_id FROM Solicitud WHERE id = ?', [id]);
+    
+     const [rows] = await pool.query(
+      'SELECT usuario_id, nombre_alumno FROM Solicitud WHERE id = ?',
+      [id]
+    );
+    
     if (rows.length) {
-      await crearNotificacion(rows[0].usuario_id, 'aprobacion_docente', `Solicitud ${id} aprobada`);
+      const solicitud = rows[0];
+
+      // Notificar al alumno
+      await crearNotificacion(
+        solicitud.usuario_id,
+        'aprobacion_docente',
+        `Solicitud ${id} aprobada`
+      );
+
+      // Notificar a almacenistas con permiso de stock
+      const [almacenistas] = await pool.query(
+        `SELECT u.id
+         FROM Usuario u
+         JOIN PermisosAlmacen p ON u.id = p.usuario_id
+         WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
+      );
+      for (const a of almacenistas) {
+        await crearNotificacion(
+          a.id,
+          'solicitud_aprobada',
+          `Solicitud ${id} aprobada para ${solicitud.nombre_alumno}`
+        );
+      }
     }
+    
     res.json({ mensaje: 'Solicitud aprobada' });
   } catch (error) {
     console.error('Error al aprobar solicitud:', error);
