@@ -328,6 +328,14 @@ router.get(
   solicitudController.obtenerReporteDevolucionesPendientes
 );
 
+// Historial de solicitudes (solo admin)
+router.get(
+  '/historial',
+  verificarToken,
+  verificarRol([4]),
+  solicitudController.obtenerHistorialSolicitudes
+);
+
 // Reportes generales
 router.get(
   '/reportes/estado-general',
