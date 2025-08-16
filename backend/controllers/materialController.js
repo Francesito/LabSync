@@ -949,15 +949,15 @@ const getHistorialMovimientos = async (req, res) => {
   }
 };
 
-/** Obtener historial de solicitudes (solo administradores) */
+/** Obtener historial de solicitudes (almacén y administradores) */
 const getHistorialSolicitudes = async (req, res) => {
   logRequest('getHistorialSolicitudes');
   try {
     const { rol_id } = req.usuario || {}; // Usar req.usuario en lugar de decodificar JWT aquí
-    
-    // Verificar permisos - SOLO ADMINISTRADORES (rol_id 4)
-    if (rol_id !== 4) {
-      return res.status(403).json({ error: 'Solo administradores pueden ver el historial' });
+
+     // Verificar permisos - almacén (3) o administradores (4)
+    if (![3, 4].includes(rol_id)) {
+      return res.status(403).json({ error: 'Solo administradores o almacenistas pueden ver el historial' });
     }
     
     const { fecha } = req.query;
@@ -1001,10 +1001,15 @@ const getHistorialSolicitudes = async (req, res) => {
       query += ' AND DATE(s.fecha_solicitud) = ?';
       params.push(fecha);
     }
+
+     // Almacenistas solo ven solicitudes aprobadas o entregadas
+    if (rol_id === 3) {
+      query += " AND s.estado IN ('aprobada', 'entregado')";
+    }
     
     // Agrupar y ordenar
-    query += ` 
-      GROUP BY s.id, s.folio, u.nombre, s.nombre_alumno, doc.nombre, s.profesor, 
+   query += `
+      GROUP BY s.id, s.folio, u.nombre, s.nombre_alumno, doc.nombre, s.profesor,
                s.fecha_solicitud, s.fecha_recoleccion, s.fecha_devolucion, s.estado, g.nombre
       ORDER BY s.fecha_solicitud DESC, s.id DESC`;
       
