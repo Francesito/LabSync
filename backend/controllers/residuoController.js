@@ -1,4 +1,4 @@
-const { getResiduos, createResiduo } = require('../models/residuo');
+const { getResiduos, createResiduo, deleteResiduos } = require('../models/residuo');
 
 const obtenerResiduos = async (req, res) => {
   try {
@@ -24,4 +24,18 @@ const registrarResiduo = async (req, res) => {
   }
 };
 
-module.exports = { obtenerResiduos, registrarResiduo };
+const eliminarResiduos = async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'No se proporcionaron IDs' });
+  }
+  try {
+    await deleteResiduos(ids);
+    res.json({ mensaje: 'Residuos eliminados correctamente' });
+  } catch (error) {
+    console.error('[Error] eliminarResiduos:', error);
+    res.status(500).json({ error: 'Error al eliminar residuos: ' + error.message });
+  }
+};
+
+module.exports = { obtenerResiduos, registrarResiduo, eliminarResiduos };
