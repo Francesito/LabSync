@@ -22,10 +22,11 @@ const RESIDUE_TYPES = [
 ];
 
 const getTipoLabel = (value) => RESIDUE_TYPES.find(t => t.value === value)?.label || value;
+const formatDate = (d) => new Date(d).toISOString().split('T')[0];
 
 export default function ResiduosPage() {
   const [form, setForm] = useState({
-    fecha: new Date().toISOString().split('T')[0],
+     fecha: formatDate(new Date()),
     laboratorio: '',
   reactivo: '',
     tipo: '',
@@ -36,7 +37,7 @@ export default function ResiduosPage() {
   const [entries, setEntries] = useState([]);
 
   useEffect(() => {
-   obtenerResiduos().then(setEntries).catch(() => setEntries([]));
+  obtenerResiduos().then(setEntries).catch(() => setEntries([]));
   }, []);
 
   const handleChange = (e) => {
@@ -73,7 +74,7 @@ export default function ResiduosPage() {
   };
 
   return (
- <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:ml-64">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-center">
         Bitácora de Residuos Peligrosos
       </h1>
