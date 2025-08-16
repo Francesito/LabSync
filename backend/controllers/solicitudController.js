@@ -573,9 +573,23 @@ const entregarMateriales = async (req, res) => {
             [cantidad_entregada, material_id]
           );
         }
+
+         // Registrar movimiento de inventario
+        await connection.query(
+          `INSERT INTO MovimientosInventario (usuario_id, material_id, tipo, cantidad, tipo_movimiento, motivo, fecha_movimiento)
+           VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+          [
+            usuarioId,
+            material_id,
+            tipo,
+            -cantidad_entregada,
+            'salida',
+            'Entrega de solicitud'
+          ]
+        );
       }
     }
-
+    
     // Actualizar estado de la solicitud a entregado (independiente del permiso de stock)
     await connection.query(
       'UPDATE Solicitud SET estado = ? WHERE id = ?',
@@ -597,6 +611,7 @@ const entregarMateriales = async (req, res) => {
 const recibirDevolucion = async (req, res) => {
   const { id } = req.params;
   const { items_devueltos } = req.body; // [{ item_id, cantidad_devuelta }]
+  const { id: usuarioId } = req.usuario;
 
   const connection = await pool.getConnection();
   
@@ -645,12 +660,26 @@ const recibirDevolucion = async (req, res) => {
           'UPDATE MaterialEquipo SET cantidad_disponible_u = cantidad_disponible_u + ? WHERE id = ?',
           [cantidad_devuelta, material_id]
         );
-         } else if (tipo === 'laboratorio') {
+        } else if (tipo === 'laboratorio') {
         await connection.query(
           'UPDATE MaterialLaboratorio SET cantidad_disponible = cantidad_disponible + ? WHERE id = ?',
           [cantidad_devuelta, material_id]
         );
       }
+
+      // Registrar movimiento de inventario
+      await connection.query(
+        `INSERT INTO MovimientosInventario (usuario_id, material_id, tipo, cantidad, tipo_movimiento, motivo, fecha_movimiento)
+         VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+        [
+          usuarioId,
+          material_id,
+          tipo,
+          cantidad_devuelta,
+          'entrada',
+          'Devolución de solicitud'
+        ]
+      );
     }
  const [pendientes] = await connection.query(
       'SELECT COUNT(*) AS cnt FROM SolicitudItem WHERE solicitud_id = ? AND cantidad > cantidad_devuelta',
