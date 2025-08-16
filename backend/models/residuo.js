@@ -13,4 +13,8 @@ const createResiduo = async ({ fecha, laboratorio, reactivo, tipo, cantidad, uni
   return { id: result.insertId, fecha, laboratorio, reactivo, tipo, cantidad: parseFloat(cantidad), unidad };
 };
 
-module.exports = { getResiduos, createResiduo };
+const deleteResiduos = async (ids) => {
+  await pool.query('DELETE FROM Residuo WHERE id IN (?)', [ids]);
+};
+
+module.exports = { getResiduos, createResiduo, deleteResiduos };
