@@ -105,7 +105,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      visible: usuario.rol_id === 4,
+     visible: [3, 4].includes(usuario.rol_id),
       color: 'blue',
     },
     {
