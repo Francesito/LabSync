@@ -327,39 +327,30 @@ const crearSolicitudes = async (req, res) => {
       );
       
     }
-     // Notificación para quien crea la solicitud
-    await crearNotificacion(
-      usuario_id,
-      'creacion_solicitud',
-      `Solicitud ${solicitudId} creada`
-    );
+     // Mensaje y notificación para quien crea la solicitud
+    let mensajeCreador;
+    if (rol_id === 1) {
+      mensajeCreador = `Solicitud con Folio: ${folio} creada Exitosamente, aprobacion pendiente por el docente ${profesor}`;
+    } else {
+      const fechaStr = fecha_recoleccion
+        ? new Date(fecha_recoleccion).toLocaleDateString('es-MX', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          })
+        : 'sin fecha';
+      mensajeCreador = `Solicitud con Folio: ${folio} creada Exitosamente, recoleccion pendiente para el dia: ${fechaStr}, favor de hacer la recoleccion a tiempo, de lo contrario la solicitud sera eliminada.`;
+    }
+    await crearNotificacion(usuario_id, 'creacion_solicitud', mensajeCreador);
 
     // Notificación para el docente seleccionado (si es diferente al creador)
     if (docente_seleccionado_id && docente_seleccionado_id !== usuario_id) {
-      await crearNotificacion(
-        docente_seleccionado_id,
-        'solicitud_nueva',
-        `Nueva solicitud ${solicitudId} del alumno ${user[0].nombre}`
-      );
-    }
-
-    // Notificar a almacenistas con permiso para modificar stock
-    const [almacenistas] = await pool.query(
-      `SELECT u.id
-       FROM Usuario u
-       JOIN PermisosAlmacen p ON u.id = p.usuario_id
-       WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
-    );
-    for (const a of almacenistas) {
-      await crearNotificacion(
-        a.id,
-        'solicitud_nueva',
-        `Nueva solicitud ${solicitudId} del usuario ${user[0].nombre}`
-      );
+      const mensajeDocente = `Tienes una nueva solicitud con Folio: ${folio} del alumno ${user[0].nombre}`;
+      await crearNotificacion(docente_seleccionado_id, 'solicitud_nueva', mensajeDocente);
     }
 
     res.status(201).json({
-      message: 'Solicitud creada',
+      message: mensajeCreador,
       solicitudId,
       folio,
       docente_asignado: profesor,
@@ -579,17 +570,27 @@ const approveSolicitud = async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Solicitud no encontrada' });
     }
-    const [rows] = await pool.query(
-      'SELECT usuario_id, nombre_alumno FROM Solicitud WHERE id = ?',
+  const [rows] = await pool.query(
+      `SELECT s.usuario_id, s.nombre_alumno, s.folio, s.profesor, s.fecha_recoleccion,
+              u.nombre AS solicitante_nombre, u.rol_id AS solicitante_rol
+       FROM Solicitud s
+       JOIN Usuario u ON s.usuario_id = u.id
+       WHERE s.id = ?`,
       [id]
     );
     if (rows.length) {
       const solicitud = rows[0];
-      await crearNotificacion(
-        solicitud.usuario_id,
-        'aprobacion_docente',
-        `Solicitud ${id} aprobada`
-      );
+      if (solicitud.solicitante_rol === 1) {
+        const fechaStr = solicitud.fecha_recoleccion
+          ? new Date(solicitud.fecha_recoleccion).toLocaleDateString('es-MX', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            })
+          : 'sin fecha';
+        const mensajeAlumno = `Solicitud con Folio: ${solicitud.folio} Autorizada por el docente: ${solicitud.profesor}, por favor haz la recoleccion el dia ${fechaStr} de lo contrario la solicitud sera eliminada.`;
+        await crearNotificacion(solicitud.usuario_id, 'aprobacion_docente', mensajeAlumno);
+      }
 
       const [almacenistas] = await pool.query(
         `SELECT u.id
@@ -597,12 +598,19 @@ const approveSolicitud = async (req, res) => {
          JOIN PermisosAlmacen p ON u.id = p.usuario_id
          WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
       );
+      const fechaLarga = solicitud.fecha_recoleccion
+        ? new Date(solicitud.fecha_recoleccion).toLocaleDateString('es-ES', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long'
+          })
+        : 'sin fecha';
+      const fechaLargaCap = fechaLarga.charAt(0).toUpperCase() + fechaLarga.slice(1);
+      const solicitanteTipo = solicitud.solicitante_rol === 2 ? 'docente' : 'alumno';
+      const solicitanteNombre = solicitud.solicitante_rol === 2 ? solicitud.solicitante_nombre : solicitud.nombre_alumno;
+      const mensajeAlmacen = `Nueva solicitud aprobada con el Folio: ${solicitud.folio}, El ${solicitanteTipo} ${solicitanteNombre} espera la entrega para el dia ${fechaLargaCap}.`;
       for (const a of almacenistas) {
-        await crearNotificacion(
-          a.id,
-          'solicitud_aprobada',
-          `Solicitud ${id} aprobada para ${solicitud.nombre_alumno}`
-        );
+        await crearNotificacion(a.id, 'solicitud_aprobada', mensajeAlmacen);
       }
     }
     
@@ -619,21 +627,22 @@ const rejectSolicitud = async (req, res) => {
   const { id } = req.params;
   logRequest(`rejectSolicitud - ID=${id}`);
   try {
-    const [rows] = await pool.query(
-      'SELECT usuario_id, nombre_alumno FROM Solicitud WHERE id = ?',
+   const [rows] = await pool.query(
+      'SELECT usuario_id, nombre_alumno, folio FROM Solicitud WHERE id = ?',
       [id]
     );
     await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
     await pool.query('DELETE FROM Adeudo WHERE solicitud_id = ?', [id]);
     await pool.query('DELETE FROM Solicitud WHERE id = ?', [id]);
     
-    if (rows.length) {
+  if (rows.length) {
       const solicitud = rows[0];
       await crearNotificacion(
         solicitud.usuario_id,
         'solicitud_rechazada',
-        `Solicitud ${id} rechazada`
+        `Solicitud con Folio: ${solicitud.folio} rechazada`
       );
+    }
 
       const [almacenistas] = await pool.query(
         `SELECT u.id
