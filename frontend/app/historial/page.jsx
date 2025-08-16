@@ -86,7 +86,7 @@ export default function Historial() {
                     <td className="p-2 border capitalize">{m.tipo}</td>
                     <td className="p-2 border capitalize">{m.tipo_movimiento}</td>
                     <td className="p-2 border">{m.cantidad}</td>
-                    <td className="p-2 border">{m.usuario}</td>
+                    <td className="p-2 border">{m.usuario || 'Desconocido'}</td>
                     <td className="p-2 border">
                       {new Date(m.fecha_movimiento).toLocaleDateString()}
                     </td>
