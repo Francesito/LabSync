@@ -3,13 +3,12 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../lib/auth';
-import EstadisticasChart from '../../components/EstadisticasChart';
 
 export default function Historial() {
   const { usuario } = useAuth();
   const [fecha, setFecha] = useState('');
   const [historial, setHistorial] = useState([]);
-  const [stats, setStats] = useState([]);
+   const [movimientos, setMovimientos] = useState([]);
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
   useEffect(() => {
@@ -17,11 +16,17 @@ export default function Historial() {
     const cargar = async () => {
       try {
         const params = fecha ? `?fecha=${fecha}` : '';
-        const { data } = await axios.get(`${baseUrl}/api/materials/solicitudes/historial${params}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        setHistorial(data.historial || []);
-        setStats(data.estadisticas || []);
+       const token = localStorage.getItem('token');
+        const [solRes, movRes] = await Promise.all([
+          axios.get(`${baseUrl}/api/materials/solicitudes/historial${params}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${baseUrl}/api/materials/historial-movimientos`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+        setHistorial(solRes.data.historial || []);
+        setMovimientos(movRes.data || []);
       } catch (err) {
         console.error('Error al cargar historial:', err);
       }
@@ -33,29 +38,9 @@ export default function Historial() {
     return <p>Acceso denegado</p>;
   }
 
-  const labels = stats.map(s => {
-    const [year, month] = s.mes.split('-');
-    const d = new Date(year, month - 1);
-    return d.toLocaleDateString('es-MX', { month: 'long' });
-  });
-  const valores = stats.map(s => s.total);
-
-  let analisis = '';
-  if (valores.length >= 2) {
-    const prev = valores[valores.length - 2];
-    const curr = valores[valores.length - 1];
-    if (prev === 0) {
-      analisis = 'Sin datos del mes pasado';
-    } else {
-      const diff = ((curr - prev) / prev) * 100;
-      const abs = Math.abs(diff).toFixed(2);
-      analisis = `${abs}% ${diff >= 0 ? 'más' : 'menos'} peticiones que el mes pasado`;
-    }
-  }
-
-  return (
+ return (
     <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-bold">Historial de Solicitudes</h1>
+    <h1 className="text-2xl font-bold">Historial</h1>
       <div>
         <label className="block mb-1 font-medium">Filtrar por fecha</label>
         <input
@@ -67,6 +52,34 @@ export default function Historial() {
       </div>
     <div className="flex flex-col md:flex-row gap-4 items-start">
         <div className="flex-1 overflow-x-auto">
+          <h2 className="font-semibold mb-2">Movimientos de Inventario</h2>
+          <table className="min-w-full border text-sm">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="p-2 border">Material</th>
+                <th className="p-2 border">Tipo</th>
+                <th className="p-2 border">Movimiento</th>
+                <th className="p-2 border">Cantidad</th>
+                <th className="p-2 border">Usuario</th>
+                <th className="p-2 border">Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {movimientos.map(m => (
+                <tr key={m.id} className="hover:bg-gray-50">
+                  <td className="p-2 border">{m.nombre_material || 'Desconocido'}</td>
+                  <td className="p-2 border capitalize">{m.tipo}</td>
+                  <td className="p-2 border capitalize">{m.tipo_movimiento}</td>
+                  <td className="p-2 border">{m.cantidad}</td>
+                  <td className="p-2 border">{m.usuario}</td>
+                  <td className="p-2 border">{new Date(m.fecha_movimiento).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex-1 overflow-x-auto">
+          <h2 className="font-semibold mb-2">Solicitudes</h2>
           <table className="min-w-full border text-sm">
             <thead>
               <tr className="bg-gray-100 text-left">
@@ -78,8 +91,8 @@ export default function Historial() {
                 <th className="p-2 border">Estado</th>
                 <th className="p-2 border">Materiales</th>
                 <th className="p-2 border">Grupo</th>
-              </tr>
-          </thead>
+                </tr>
+              </thead>
             <tbody>
               {historial.map(h => (
                 <tr key={h.id} className="hover:bg-gray-50">
@@ -96,11 +109,7 @@ export default function Historial() {
             </tbody>
           </table>
         </div>
-        <div className="w-full md:w-1/3">
-          <EstadisticasChart datos={{ labels, valores }} className="h-40" />
-          {analisis && <p className="mt-2 text-sm text-gray-600">{analisis}</p>}
         </div>
       </div>
-    </div>
   );
 }
