@@ -1,7 +1,8 @@
 const {
   crearNotificacion,
   obtenerNotificacionesPorUsuario,
-  eliminarNotificacion
+  eliminarNotificacion,
+  eliminarNotificacionesUsuario
 } = require('../models/notificacion');
 
 const obtenerNotificaciones = async (req, res) => {
@@ -25,8 +26,19 @@ const eliminar = async (req, res) => {
   }
 };
 
+const eliminarTodas = async (req, res) => {
+  try {
+    await eliminarNotificacionesUsuario(req.usuario.id);
+    res.json({ mensaje: 'Notificaciones eliminadas' });
+  } catch (error) {
+    console.error('Error al eliminar todas las notificaciones:', error);
+    res.status(500).json({ error: 'Error al eliminar todas las notificaciones' });
+  }
+};
+
 module.exports = {
   crearNotificacion,
   obtenerNotificaciones,
-  eliminar
+  eliminar,
+  eliminarTodas
 };
