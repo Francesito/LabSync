@@ -657,7 +657,6 @@ const rejectSolicitud = async (req, res) => {
           `Solicitud ${id} rechazada para ${solicitud.nombre_alumno}`
         );
       }
-    }
     
     res.status(200).json({ message: 'Solicitud rechazada y eliminada' });
   } catch (error) {
