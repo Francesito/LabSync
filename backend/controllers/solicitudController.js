@@ -354,6 +354,7 @@ const obtenerHistorialSolicitudes = async (req, res) => {
         COALESCE(doc.nombre, u.nombre) AS encargado,
         s.fecha_recoleccion,
         s.fecha_devolucion,
+         s.estado,
         g.nombre AS grupo,
         GROUP_CONCAT(CONCAT(si.cantidad, ' ', COALESCE(ml.nombre, ms.nombre, me.nombre)) SEPARATOR ', ') AS materiales
       FROM Solicitud s
