@@ -41,9 +41,9 @@ export default function Historial() {
   };
 
   useEffect(() => {
-    // Verificar permisos
-    if (!usuario || ![3, 4].includes(usuario.rol_id)) {
-      setError('Acceso denegado. Solo administradores y almacenistas pueden ver el historial.');
+    // Verificar permisos - SOLO ADMINISTRADORES (rol_id 4)
+    if (!usuario || usuario.rol_id !== 4) {
+      setError('Acceso denegado. Solo administradores pueden ver el historial.');
       setLoading(false);
       return;
     }
@@ -131,12 +131,13 @@ export default function Historial() {
     );
   }
 
-  if (!usuario || ![3, 4].includes(usuario.rol_id)) {
+  // Verificación adicional por si acaso
+  if (!usuario || usuario.rol_id !== 4) {
     return (
       <div className="p-4">
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
           <div className="text-yellow-800 font-medium">Acceso Denegado</div>
-          <div className="text-yellow-700 mt-1">Solo administradores y almacenistas pueden ver el historial.</div>
+          <div className="text-yellow-700 mt-1">Solo administradores pueden ver el historial del sistema.</div>
         </div>
       </div>
     );
