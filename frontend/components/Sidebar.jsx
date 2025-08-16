@@ -3,9 +3,28 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../lib/auth';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 export default function Sidebar({ isOpen, setIsOpen }) {
   const router = useRouter();
   const { usuario, setUsuario } = useAuth();
+  const [notifCount, setNotifCount] = useState(0);
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+
+  useEffect(() => {
+    if (!usuario) return;
+    const cargar = async () => {
+      try {
+        const { data } = await axios.get(`${baseUrl}/api/notificaciones`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        setNotifCount(data.length);
+      } catch (err) {
+        console.error('Error al cargar notificaciones:', err);
+      }
+    };
+    cargar();
+  }, [usuario]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -223,14 +242,19 @@ export default function Sidebar({ isOpen, setIsOpen }) {
               href={href}
               className={`group flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-200 rounded-xl transition-all duration-300 hover:transform hover:scale-105 ${getItemColorClasses(color)}`}
             >
-              <span className={`text-gray-300 transition-colors duration-300 ${
-                color === 'blue' ? 'group-hover:text-blue-500' : 
+             <span className={`text-gray-300 transition-colors duration-300 relative ${
+                color === 'blue' ? 'group-hover:text-blue-500' :
                 color === 'emerald' ? 'group-hover:text-emerald-500' :
                 color === 'amber' ? 'group-hover:text-amber-500' :
                 color === 'purple' ? 'group-hover:text-purple-500' :
                 color === 'indigo' ? 'group-hover:text-indigo-500' :
                 color === 'rose' ? 'group-hover:text-rose-500' : 'group-hover:text-gray-500'}`}>
                 {icon}
+               {href === '/notificaciones' && notifCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">
+                    {notifCount}
+                  </span>
+                )}
               </span>
               <span className="font-medium">{label}</span>
             </Link>
