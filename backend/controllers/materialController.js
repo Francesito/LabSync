@@ -930,8 +930,19 @@ const getHistorialMovimientos = async (req, res) => {
         m.material_id,
         m.tipo,
         m.cantidad,
+          CASE m.tipo
+          WHEN 'liquido' THEN 'ml'
+          WHEN 'solido' THEN 'gr'
+          ELSE 'unidad(es)'
+        END AS unidad,
+        CASE m.tipo
+          WHEN 'liquido' THEN ml.cantidad_disponible_ml
+          WHEN 'solido' THEN ms.cantidad_disponible_g
+          WHEN 'equipo' THEN me.cantidad_disponible_u
+          WHEN 'laboratorio' THEN mlab.cantidad_disponible
+          ELSE NULL
+        END AS stock_actual,
         m.tipo_movimiento,
-        m.motivo,
         m.fecha_movimiento,
        COALESCE(u.nombre, 'Desconocido') AS usuario,
         COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) AS nombre_material
@@ -953,7 +964,7 @@ const getHistorialMovimientos = async (req, res) => {
     if (busqueda) {
       const like = `%${busqueda}%`;
       query +=
-        ' AND (COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) LIKE ? OR COALESCE(u.nombre, "") LIKE ?)';
+        " AND (COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) LIKE ? OR COALESCE(u.nombre, '') LIKE ?)";
       params.push(like, like);
     }
 
@@ -1006,7 +1017,14 @@ const getHistorialSolicitudes = async (req, res) => {
         s.estado,
         g.nombre AS grupo,
         GROUP_CONCAT(
-          CONCAT(si.cantidad, ' ', 
+          CONCAT(
+            si.cantidad, ' ',
+            CASE si.tipo
+              WHEN 'liquido' THEN 'ml'
+              WHEN 'solido' THEN 'gr'
+              ELSE 'Unidad'
+            END,
+            ' ',
             COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre, 'Material Desconocido')
           ) SEPARATOR ', '
         ) AS materiales
