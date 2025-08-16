@@ -917,12 +917,28 @@ const getHistorialMovimientos = async (req, res) => {
   logRequest('getHistorialMovimientos');
   try {
     const { rol_id } = req.usuario;
-    if (rol_id !== 4) return res.status(403).json({ error: 'Solo administradores pueden ver el historial' });
-
+   if (rol_id !== 3 && rol_id !== 4) {
+      return res.status(403).json({ error: 'Solo administradores o almacenistas pueden ver el historial' });
+    }
+    
     const [rows] = await pool.query(`
-      SELECT m.*, u.nombre AS usuario
+      SELECT 
+        m.id,
+        m.usuario_id,
+        m.material_id,
+        m.tipo,
+        m.cantidad,
+        m.tipo_movimiento,
+        m.motivo,
+        m.fecha_movimiento,
+        u.nombre AS usuario,
+        COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) AS nombre_material
       FROM MovimientosInventario m
       JOIN Usuario u ON m.usuario_id = u.id
+       LEFT JOIN MaterialLiquido ml ON m.tipo = 'liquido' AND m.material_id = ml.id
+      LEFT JOIN MaterialSolido ms ON m.tipo = 'solido' AND m.material_id = ms.id
+      LEFT JOIN MaterialEquipo me ON m.tipo = 'equipo' AND m.material_id = me.id
+      LEFT JOIN MaterialLaboratorio mlab ON m.tipo = 'laboratorio' AND m.material_id = mlab.id
       ORDER BY m.fecha_movimiento DESC
     `);
 
