@@ -1,8 +1,12 @@
 // File: frontend/lib/api.js
 import axios from 'axios';
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL
+  ? `${process.env.NEXT_PUBLIC_API_URL}/api`
+  : '/api';
+
 const API = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api`, 
+  baseURL,
 });
 
 // --- Solicitudes (alumno/docente) ---
