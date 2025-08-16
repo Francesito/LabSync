@@ -343,6 +343,51 @@ const obtenerSolicitudesPendientesDevolucion = async (req, res) => {
   }
 };
 
+const obtenerHistorialSolicitudes = async (req, res) => {
+  try {
+    const { fecha } = req.query;
+    let query = `
+      SELECT
+        s.id,
+        s.folio,
+        u.nombre AS solicitante,
+        COALESCE(doc.nombre, u.nombre) AS encargado,
+        s.fecha_recoleccion,
+        s.fecha_devolucion,
+        g.nombre AS grupo,
+        GROUP_CONCAT(CONCAT(si.cantidad, ' ', COALESCE(ml.nombre, ms.nombre, me.nombre)) SEPARATOR ', ') AS materiales
+      FROM Solicitud s
+      JOIN Usuario u ON s.usuario_id = u.id
+      LEFT JOIN Usuario doc ON s.docente_id = doc.id
+      LEFT JOIN Grupo g ON u.grupo_id = g.id
+      JOIN SolicitudItem si ON s.id = si.solicitud_id
+      LEFT JOIN MaterialLiquido ml ON si.material_id = ml.id AND si.tipo = 'liquido'
+      LEFT JOIN MaterialSolido ms ON si.material_id = ms.id AND si.tipo = 'solido'
+      LEFT JOIN MaterialEquipo me ON si.material_id = me.id AND si.tipo = 'equipo'
+      WHERE s.estado IN ('aprobada','entregado','devuelto parcial','devuelto total')`;
+    const params = [];
+    if (fecha) {
+      query += ' AND DATE(s.fecha_solicitud) = ?';
+      params.push(fecha);
+    }
+    query += ' GROUP BY s.id ORDER BY s.fecha_solicitud DESC';
+    const [historial] = await pool.query(query, params);
+
+    const [estadisticas] = await pool.query(`
+      SELECT DATE_FORMAT(fecha_solicitud, '%Y-%m') AS mes, COUNT(*) AS total
+      FROM Solicitud
+      WHERE estado IN ('aprobada','entregado','devuelto parcial','devuelto total')
+      GROUP BY mes
+      ORDER BY mes ASC
+    `);
+
+    res.json({ historial, estadisticas });
+  } catch (error) {
+    console.error('Error al obtener historial de solicitudes:', error);
+    res.status(500).json({ error: 'Error al obtener historial de solicitudes' });
+  }
+};
+
 const obtenerDetalleSolicitud = async (req, res) => {
   const { id } = req.params;
   
@@ -1980,6 +2025,7 @@ crearSolicitud,
   // Funciones para almacenistas
   obtenerSolicitudesAprobadasPendientes,
   obtenerSolicitudesPendientesDevolucion,
+   obtenerHistorialSolicitudes,
   obtenerDetalleSolicitud,
   entregarMateriales,
   recibirDevolucion,
