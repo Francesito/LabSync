@@ -3,20 +3,22 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../lib/auth';
+import EstadisticasChart from '../../components/EstadisticasChart';
 
 export default function Historial() {
   const { usuario } = useAuth();
   const [fecha, setFecha] = useState('');
   const [historial, setHistorial] = useState([]);
-   const [movimientos, setMovimientos] = useState([]);
+    const [movimientos, setMovimientos] = useState([]);
+  const [estadisticas, setEstadisticas] = useState({ labels: [], valores: [] });
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
   useEffect(() => {
-    if (!usuario || usuario.rol_id !== 4) return;
+    if (!usuario || ![3, 4].includes(usuario.rol_id)) return;
     const cargar = async () => {
       try {
         const params = fecha ? `?fecha=${fecha}` : '';
-       const token = localStorage.getItem('token');
+ const token = localStorage.getItem('token');
         const [solRes, movRes] = await Promise.all([
           axios.get(`${baseUrl}/api/materials/solicitudes/historial${params}`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -27,6 +29,11 @@ export default function Historial() {
         ]);
         setHistorial(solRes.data.historial || []);
         setMovimientos(movRes.data || []);
+        const stats = solRes.data.estadisticas || [];
+        setEstadisticas({
+          labels: stats.map(s => s.mes),
+          valores: stats.map(s => s.total)
+        ]);
       } catch (err) {
         console.error('Error al cargar historial:', err);
       }
@@ -50,10 +57,11 @@ export default function Historial() {
           className="border p-2 rounded"
         />
       </div>
-    <div className="flex flex-col md:flex-row gap-4 items-start">
-        <div className="flex-1 overflow-x-auto">
-          <h2 className="font-semibold mb-2">Movimientos de Inventario</h2>
-          <table className="min-w-full border text-sm">
+   <div className="flex flex-col md:flex-row gap-4 items-start">
+        <div className="flex-1 space-y-4">
+          <div className="overflow-x-auto">
+            <h2 className="font-semibold mb-2">Movimientos de Inventario</h2>
+            <table className="min-w-full border text-xs">
             <thead>
               <tr className="bg-gray-100 text-left">
                 <th className="p-2 border">Material</th>
@@ -76,11 +84,11 @@ export default function Historial() {
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
-        <div className="flex-1 overflow-x-auto">
-          <h2 className="font-semibold mb-2">Solicitudes</h2>
-          <table className="min-w-full border text-sm">
+            </table>
+          </div>
+          <div className="overflow-x-auto">
+            <h2 className="font-semibold mb-2">Solicitudes</h2>
+            <table className="min-w-full border text-xs">
             <thead>
               <tr className="bg-gray-100 text-left">
                 <th className="p-2 border">Folio</th>
@@ -92,7 +100,7 @@ export default function Historial() {
                 <th className="p-2 border">Materiales</th>
                 <th className="p-2 border">Grupo</th>
                 </tr>
-              </thead>
+            </thead>
             <tbody>
               {historial.map(h => (
                 <tr key={h.id} className="hover:bg-gray-50">
@@ -107,8 +115,10 @@ export default function Historial() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
+        <EstadisticasChart datos={estadisticas} className="w-full md:w-1/3 h-64" />
         </div>
       </div>
   );
