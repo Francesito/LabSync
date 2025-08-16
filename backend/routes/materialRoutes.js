@@ -352,6 +352,14 @@ router.get(
   materialController.getSolicitudesDocentePropias
 );
 
+// Historial de solicitudes (solo admin)
+router.get(
+  '/solicitudes/historial',
+  verificarToken,
+  verificarRol([4]),
+  materialController.getHistorialSolicitudes
+);
+
 router.get('/:id', verificarToken, materialController.getMaterialById);
 
 
