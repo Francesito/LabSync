@@ -23,8 +23,13 @@ const eliminarNotificacion = async (id, usuarioId) => {
   await pool.query(`DELETE FROM Notificacion WHERE id = ? AND usuario_id = ?`, [id, usuarioId]);
 };
 
+const eliminarNotificacionesUsuario = async (usuarioId) => {
+  await pool.query(`DELETE FROM Notificacion WHERE usuario_id = ?`, [usuarioId]);
+};
+
 module.exports = {
   crearNotificacion,
   obtenerNotificacionesPorUsuario,
-  eliminarNotificacion
+    eliminarNotificacion,
+  eliminarNotificacionesUsuario
 };
