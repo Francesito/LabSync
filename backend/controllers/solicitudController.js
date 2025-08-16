@@ -1840,7 +1840,7 @@ const aprobarSolicitud = async (req, res) => {
     );
     
     if (rows.length) {
-      const solicitud = rows[0];
+     const solicitud = rows[0];
 
       // Notificar al alumno
       await crearNotificacion(
@@ -1876,9 +1876,38 @@ const aprobarSolicitud = async (req, res) => {
 const rechazarSolicitud = async (req, res) => {
   const { id } = req.params;
   try {
+    const [rows] = await pool.query(
+      'SELECT usuario_id, nombre_alumno FROM Solicitud WHERE id = ?',
+      [id]
+    );
+    
     await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
     await pool.query('DELETE FROM Adeudo WHERE solicitud_id = ?', [id]);
     await pool.query('DELETE FROM Solicitud WHERE id = ?', [id]);
+
+     if (rows.length) {
+      const solicitud = rows[0];
+      await crearNotificacion(
+        solicitud.usuario_id,
+        'solicitud_rechazada',
+        `Solicitud ${id} rechazada`
+      );
+
+      const [almacenistas] = await pool.query(
+        `SELECT u.id
+         FROM Usuario u
+         JOIN PermisosAlmacen p ON u.id = p.usuario_id
+         WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
+      );
+      for (const a of almacenistas) {
+        await crearNotificacion(
+          a.id,
+          'solicitud_rechazada',
+          `Solicitud ${id} rechazada para ${solicitud.nombre_alumno}`
+        );
+      }
+    }
+    
     res.json({ mensaje: 'Solicitud rechazada y eliminada' });
   } catch (error) {
     console.error('Error al rechazar solicitud:', error);
