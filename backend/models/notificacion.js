@@ -1,10 +1,14 @@
 const pool = require('../config/db');
 
 const crearNotificacion = async (usuarioId, tipo, mensaje) => {
-  await pool.query(
-    `INSERT INTO Notificacion (usuario_id, tipo, mensaje) VALUES (?, ?, ?)`,
-    [usuarioId, tipo, mensaje]
-  );
+try {
+    await pool.query(
+      `INSERT INTO Notificacion (usuario_id, tipo, mensaje) VALUES (?, ?, ?)`,
+      [usuarioId, tipo, mensaje]
+    );
+  } catch (error) {
+    console.error('Error al crear notificación:', error);
+  }
 };
 
 const obtenerNotificacionesPorUsuario = async (usuarioId) => {
