@@ -931,11 +931,11 @@ const getHistorialMovimientos = async (req, res) => {
         m.tipo_movimiento,
         m.motivo,
         m.fecha_movimiento,
-        u.nombre AS usuario,
+         COALESCE(u.nombre, 'Desconocido') AS usuario,
         COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) AS nombre_material
       FROM MovimientosInventario m
-      JOIN Usuario u ON m.usuario_id = u.id
-       LEFT JOIN MaterialLiquido ml ON m.tipo = 'liquido' AND m.material_id = ml.id
+      LEFT JOIN Usuario u ON m.usuario_id = u.id
+      LEFT JOIN MaterialLiquido ml ON m.tipo = 'liquido' AND m.material_id = ml.id
       LEFT JOIN MaterialSolido ms ON m.tipo = 'solido' AND m.material_id = ms.id
       LEFT JOIN MaterialEquipo me ON m.tipo = 'equipo' AND m.material_id = me.id
       LEFT JOIN MaterialLaboratorio mlab ON m.tipo = 'laboratorio' AND m.material_id = mlab.id
@@ -968,7 +968,7 @@ const getHistorialSolicitudes = async (req, res) => {
       FROM Solicitud s
       JOIN Usuario u ON s.usuario_id = u.id
       LEFT JOIN Usuario doc ON s.docente_id = doc.id
-      LEFT JOIN Grupo g ON u.grupo_id = g.id
+      LEFT JOIN Grupo g ON s.grupo_id = g.id
       JOIN SolicitudItem si ON s.id = si.solicitud_id
       LEFT JOIN MaterialLiquido ml ON si.material_id = ml.id AND si.tipo = 'liquido'
       LEFT JOIN MaterialSolido ms ON si.material_id = ms.id AND si.tipo = 'solido'
@@ -979,7 +979,7 @@ const getHistorialSolicitudes = async (req, res) => {
       query += ' AND DATE(s.fecha_solicitud) = ?';
       params.push(fecha);
     }
-    query += ' GROUP BY s.id ORDER BY s.fecha_solicitud DESC';
+    query += ' GROUP BY s.id, s.folio, u.nombre, doc.nombre, s.fecha_recoleccion, s.fecha_devolucion, s.estado, g.nombre ORDER BY s.fecha_solicitud DESC';
     const [historial] = await pool.query(query, params);
 
     const [estadisticas] = await pool.query(`
