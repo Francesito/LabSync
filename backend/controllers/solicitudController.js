@@ -1687,7 +1687,14 @@ const obtenerSolicitudesPorRangoFechas = async (req, res) => {
 };
 
 const crearSolicitud = async (req, res) => {
-  const { materiales, motivo, fecha_solicitud, aprobar_automatico } = req.body;
+  const {
+    materiales,
+    motivo,
+    fecha_solicitud,
+    aprobar_automatico,
+    docente_id,
+    profesor
+  } = req.body;
   const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
@@ -1719,20 +1726,64 @@ const crearSolicitud = async (req, res) => {
     const estado = (rol_id === 2 || aprobar_automatico) ? 'aprobada' : 'pendiente';
 
     const [result] = await pool.query(
-      `INSERT INTO Solicitud 
-       (usuario_id, fecha_solicitud, motivo, estado, nombre_alumno, profesor) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [usuario_id, fecha_solicitud, motivo, estado, nombre, nombre]
+     `INSERT INTO Solicitud
+       (usuario_id, fecha_solicitud, motivo, estado, nombre_alumno, profesor, docente_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        usuario_id,
+        fecha_solicitud,
+        motivo,
+        estado,
+        nombre,
+        profesor || nombre,
+        docente_id || null
+      ]
     );
 
     const solicitudId = result.insertId;
-
-      await crearNotificacion(
+       // Notificación para el alumno que crea la solicitud
+    await crearNotificacion(
       usuario_id,
       'creacion_solicitud',
       `Solicitud ${solicitudId} creada`
     );
 
+    // Notificación para el docente seleccionado (si existe)
+    if (docente_id) {
+      await crearNotificacion(
+        docente_id,
+        'solicitud_nueva',
+        `Nueva solicitud ${solicitudId} del alumno ${nombre}`
+      );
+    } else if (profesor) {
+      const [docente] = await pool.query(
+        'SELECT id FROM Usuario WHERE nombre = ? AND rol_id = 2 LIMIT 1',
+        [profesor]
+      );
+      if (docente.length > 0) {
+        await crearNotificacion(
+          docente[0].id,
+          'solicitud_nueva',
+          `Nueva solicitud ${solicitudId} del alumno ${nombre}`
+        );
+      }
+    }
+
+    // Notificar a almacenistas con permiso de modificar stock
+    const [almacenistas] = await pool.query(
+      `SELECT u.id
+       FROM Usuario u
+       JOIN PermisosAlmacen p ON u.id = p.usuario_id
+       WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
+    );
+    for (const a of almacenistas) {
+      await crearNotificacion(
+        a.id,
+        'solicitud_nueva',
+        `Nueva solicitud ${solicitudId} del usuario ${nombre}`
+      );
+    }
+    
     for (const mat of materiales) {
       const { material_id, cantidad, tipo } = mat;
       await pool.query(
