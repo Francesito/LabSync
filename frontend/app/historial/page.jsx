@@ -17,7 +17,7 @@ export default function Historial() {
     const cargar = async () => {
       try {
         const params = fecha ? `?fecha=${fecha}` : '';
-        const { data } = await axios.get(`${baseUrl}/api/solicitudes/historial${params}`, {
+        const { data } = await axios.get(`${baseUrl}/api/materials/solicitudes/historial${params}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         setHistorial(data.historial || []);
