@@ -15,6 +15,7 @@ const { obtenerGrupos } = require('./controllers/authController');
 // Importar nueva ruta de administrador
 const adminRoutes = require('./routes/adminRoutes');
 const residuoRoutes = require('./routes/residuoRoutes');
+const notificacionRoutes = require('./routes/notificacionRoutes');
 
 const pool = require('./config/db');
 const { eliminarSolicitudesViejas, cancelarSolicitudesVencidas } = require('./controllers/solicitudController');
@@ -78,6 +79,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/solicitudes', solicitudRoutes);
 app.use('/api/adeudos', adeudoRoutes);
 app.use('/api/residuos', residuoRoutes);
+app.use('/api/notificaciones', notificacionRoutes);
 
 // Nueva ruta de administrador (con gestión de permisos completa)
 app.use('/api/admin', adminRoutes);
@@ -171,6 +173,27 @@ const initializeResiduoTable = async () => {
   }
 };
 
+// ==================== INICIALIZACIÓN DE TABLA NOTIFICACIONES ====================
+const initializeNotificacionTable = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS Notificacion (
+        id INT NOT NULL AUTO_INCREMENT,
+        usuario_id INT NOT NULL,
+        tipo VARCHAR(50) NOT NULL,
+        mensaje VARCHAR(255) NOT NULL,
+        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY usuario_id (usuario_id),
+        CONSTRAINT Notificacion_ibfk_1 FOREIGN KEY (usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE
+      );
+    `);
+    console.log('✅ Tabla Notificacion inicializada correctamente');
+  } catch (error) {
+    console.error('❌ Error inicializando tabla Notificacion:', error);
+  }
+};
+
 // ==================== CRONJOB: LIMPIAR SOLICITUDES VIEJAS ====================
 // Se ejecuta cada 24 horas para borrar solicitudes con más de 7 días
 const startSolicitudCleanupJob = () => {
@@ -257,6 +280,7 @@ app.listen(PORT, '0.0.0.0', async () => {
         await initializeRoles();
         await initializePermisosTable();
         await initializeResiduoTable();
+        await initializeNotificacionTable();
         break;
       } catch (error) {
         console.error(`❌ Error de conexión intento ${i + 1}:`, error.message);
