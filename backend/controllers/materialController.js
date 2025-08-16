@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const cloudinary = require('../config/cloudinary');
 const { getFolderByType } = require('../middleware/uploadMiddleware');
+const { crearNotificacion } = require('../models/notificacion');
 
 /**
  * ========================================
@@ -326,10 +327,40 @@ const crearSolicitudes = async (req, res) => {
       );
       
     }
+     // Notificación para quien crea la solicitud
+    await crearNotificacion(
+      usuario_id,
+      'creacion_solicitud',
+      `Solicitud ${solicitudId} creada`
+    );
 
-    res.status(201).json({ 
-      message: 'Solicitud creada', 
-      solicitudId, 
+    // Notificación para el docente seleccionado (si es diferente al creador)
+    if (docente_seleccionado_id && docente_seleccionado_id !== usuario_id) {
+      await crearNotificacion(
+        docente_seleccionado_id,
+        'solicitud_nueva',
+        `Nueva solicitud ${solicitudId} del alumno ${user[0].nombre}`
+      );
+    }
+
+    // Notificar a almacenistas con permiso para modificar stock
+    const [almacenistas] = await pool.query(
+      `SELECT u.id
+       FROM Usuario u
+       JOIN PermisosAlmacen p ON u.id = p.usuario_id
+       WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
+    );
+    for (const a of almacenistas) {
+      await crearNotificacion(
+        a.id,
+        'solicitud_nueva',
+        `Nueva solicitud ${solicitudId} del usuario ${user[0].nombre}`
+      );
+    }
+
+    res.status(201).json({
+      message: 'Solicitud creada',
+      solicitudId,
       folio,
       docente_asignado: profesor,
       grupo: grupo_nombre
@@ -548,7 +579,33 @@ const approveSolicitud = async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Solicitud no encontrada' });
     }
+    const [rows] = await pool.query(
+      'SELECT usuario_id, nombre_alumno FROM Solicitud WHERE id = ?',
+      [id]
+    );
+    if (rows.length) {
+      const solicitud = rows[0];
+      await crearNotificacion(
+        solicitud.usuario_id,
+        'aprobacion_docente',
+        `Solicitud ${id} aprobada`
+      );
 
+      const [almacenistas] = await pool.query(
+        `SELECT u.id
+         FROM Usuario u
+         JOIN PermisosAlmacen p ON u.id = p.usuario_id
+         WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
+      );
+      for (const a of almacenistas) {
+        await crearNotificacion(
+          a.id,
+          'solicitud_aprobada',
+          `Solicitud ${id} aprobada para ${solicitud.nombre_alumno}`
+        );
+      }
+    }
+    
     res.status(200).json({ message: 'Solicitud aprobada' });
   } catch (error) {
     console.error('[Error] approveSolicitud:', error);
@@ -562,9 +619,37 @@ const rejectSolicitud = async (req, res) => {
   const { id } = req.params;
   logRequest(`rejectSolicitud - ID=${id}`);
   try {
+    const [rows] = await pool.query(
+      'SELECT usuario_id, nombre_alumno FROM Solicitud WHERE id = ?',
+      [id]
+    );
     await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
     await pool.query('DELETE FROM Adeudo WHERE solicitud_id = ?', [id]);
     await pool.query('DELETE FROM Solicitud WHERE id = ?', [id]);
+    
+    if (rows.length) {
+      const solicitud = rows[0];
+      await crearNotificacion(
+        solicitud.usuario_id,
+        'solicitud_rechazada',
+        `Solicitud ${id} rechazada`
+      );
+
+      const [almacenistas] = await pool.query(
+        `SELECT u.id
+         FROM Usuario u
+         JOIN PermisosAlmacen p ON u.id = p.usuario_id
+         WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
+      );
+      for (const a of almacenistas) {
+        await crearNotificacion(
+          a.id,
+          'solicitud_rechazada',
+          `Solicitud ${id} rechazada para ${solicitud.nombre_alumno}`
+        );
+      }
+    }
+    
     res.status(200).json({ message: 'Solicitud rechazada y eliminada' });
   } catch (error) {
     console.error('[Error] rejectSolicitud:', error);
