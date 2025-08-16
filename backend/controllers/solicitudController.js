@@ -1,5 +1,6 @@
 //backend/controllers/solicitudController.js
 const pool = require('../config/db');
+const { crearNotificacion } = require('../models/notificacion');
 
 // Crear solicitud sin adeudo
 
@@ -1726,6 +1727,12 @@ const crearSolicitud = async (req, res) => {
 
     const solicitudId = result.insertId;
 
+      await crearNotificacion(
+      usuario_id,
+      'creacion_solicitud',
+      `Solicitud ${solicitudId} creada`
+    );
+
     for (const mat of materiales) {
       const { material_id, cantidad, tipo } = mat;
       await pool.query(
@@ -1787,6 +1794,10 @@ const aprobarSolicitud = async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query('UPDATE Solicitud SET estado = ? WHERE id = ?', ['aprobada', id]);
+      const [rows] = await pool.query('SELECT usuario_id FROM Solicitud WHERE id = ?', [id]);
+    if (rows.length) {
+      await crearNotificacion(rows[0].usuario_id, 'aprobacion_docente', `Solicitud ${id} aprobada`);
+    }
     res.json({ mensaje: 'Solicitud aprobada' });
   } catch (error) {
     console.error('Error al aprobar solicitud:', error);
