@@ -949,22 +949,40 @@ const getHistorialMovimientos = async (req, res) => {
   }
 };
 
-/** Obtener historial de solicitudes (solo admin) */
+/** Obtener historial de solicitudes (solo admin/almacenista) */
 const getHistorialSolicitudes = async (req, res) => {
   logRequest('getHistorialSolicitudes');
   try {
+    const { rol_id } = req.usuario || {}; // Usar req.usuario en lugar de decodificar JWT aquí
+    
+    // Verificar permisos
+    if (rol_id !== 3 && rol_id !== 4) {
+      return res.status(403).json({ error: 'Solo administradores o almacenistas pueden ver el historial' });
+    }
+
     const { fecha } = req.query;
+    
+    // Query principal para obtener solicitudes con todos los estados
     let query = `
       SELECT
         s.id,
         s.folio,
         u.nombre AS solicitante,
-        COALESCE(doc.nombre, u.nombre) AS encargado,
+        CASE 
+          WHEN s.nombre_alumno IS NULL THEN u.nombre 
+          ELSE s.nombre_alumno 
+        END AS nombre_display,
+        COALESCE(doc.nombre, s.profesor, 'Sin asignar') AS encargado,
+        s.fecha_solicitud,
         s.fecha_recoleccion,
         s.fecha_devolucion,
         s.estado,
         g.nombre AS grupo,
-      GROUP_CONCAT(CONCAT(si.cantidad, ' ', COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre)) SEPARATOR ', ') AS materiales
+        GROUP_CONCAT(
+          CONCAT(si.cantidad, ' ', 
+            COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre, 'Material Desconocido')
+          ) SEPARATOR ', '
+        ) AS materiales
       FROM Solicitud s
       JOIN Usuario u ON s.usuario_id = u.id
       LEFT JOIN Usuario doc ON s.docente_id = doc.id
@@ -974,25 +992,46 @@ const getHistorialSolicitudes = async (req, res) => {
       LEFT JOIN MaterialSolido ms ON si.material_id = ms.id AND si.tipo = 'solido'
       LEFT JOIN MaterialEquipo me ON si.material_id = me.id AND si.tipo = 'equipo'
       LEFT JOIN MaterialLaboratorio mlab ON si.material_id = mlab.id AND si.tipo = 'laboratorio'
-      WHERE s.estado IN ('aprobada','entregado','devuelto parcial','devuelto total')`;
+      WHERE 1=1`;
+    
     const params = [];
+    
+    // Filtrar por fecha si se proporciona
     if (fecha) {
       query += ' AND DATE(s.fecha_solicitud) = ?';
       params.push(fecha);
     }
-     query += ' GROUP BY s.id, s.folio, u.nombre, doc.nombre, s.fecha_recoleccion, s.fecha_devolucion, s.estado, g.nombre';
-    query += ' ORDER BY s.fecha_solicitud DESC';
+    
+    // Agrupar y ordenar
+    query += ` 
+      GROUP BY s.id, s.folio, u.nombre, s.nombre_alumno, doc.nombre, s.profesor, 
+               s.fecha_solicitud, s.fecha_recoleccion, s.fecha_devolucion, s.estado, g.nombre
+      ORDER BY s.fecha_solicitud DESC, s.id DESC`;
+
+    console.log('Query ejecutada:', query);
+    console.log('Parámetros:', params);
+    
     const [historial] = await pool.query(query, params);
 
+    // Query para estadísticas mensuales
     const [estadisticas] = await pool.query(`
-      SELECT DATE_FORMAT(fecha_solicitud, '%Y-%m') AS mes, COUNT(*) AS total
+      SELECT 
+        DATE_FORMAT(fecha_solicitud, '%Y-%m') AS mes, 
+        COUNT(*) AS total
       FROM Solicitud
-      WHERE estado IN ('aprobada','entregado','devuelto parcial','devuelto total')
-      GROUP BY mes
-      ORDER BY mes ASC
+      GROUP BY DATE_FORMAT(fecha_solicitud, '%Y-%m')
+      ORDER BY mes DESC
+      LIMIT 12
     `);
 
-    res.json({ historial, estadisticas });
+    console.log(`Historial encontrado: ${historial.length} solicitudes`);
+    console.log(`Estadísticas: ${estadisticas.length} meses`);
+
+    res.json({ 
+      historial: historial || [], 
+      estadisticas: estadisticas || [] 
+    });
+    
   } catch (error) {
     console.error('[Error] getHistorialSolicitudes:', error);
     res.status(500).json({ error: 'Error al obtener historial de solicitudes: ' + error.message });
