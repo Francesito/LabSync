@@ -917,12 +917,14 @@ const getHistorialMovimientos = async (req, res) => {
   logRequest('getHistorialMovimientos');
   try {
     const { rol_id } = req.usuario;
-   if (rol_id !== 3 && rol_id !== 4) {
+    if (rol_id !== 3 && rol_id !== 4) {
       return res.status(403).json({ error: 'Solo administradores o almacenistas pueden ver el historial' });
     }
-    
-    const [rows] = await pool.query(`
-      SELECT 
+
+    const { fecha, busqueda } = req.query;
+
+    let query = `
+      SELECT
         m.id,
         m.usuario_id,
         m.material_id,
@@ -931,7 +933,7 @@ const getHistorialMovimientos = async (req, res) => {
         m.tipo_movimiento,
         m.motivo,
         m.fecha_movimiento,
-         COALESCE(u.nombre, 'Desconocido') AS usuario,
+       COALESCE(u.nombre, 'Desconocido') AS usuario,
         COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) AS nombre_material
       FROM MovimientosInventario m
       LEFT JOIN Usuario u ON m.usuario_id = u.id
@@ -939,10 +941,35 @@ const getHistorialMovimientos = async (req, res) => {
       LEFT JOIN MaterialSolido ms ON m.tipo = 'solido' AND m.material_id = ms.id
       LEFT JOIN MaterialEquipo me ON m.tipo = 'equipo' AND m.material_id = me.id
       LEFT JOIN MaterialLaboratorio mlab ON m.tipo = 'laboratorio' AND m.material_id = mlab.id
-      ORDER BY m.fecha_movimiento DESC
+       WHERE 1=1`;
+
+    const params = [];
+
+    if (fecha) {
+      query += ' AND DATE(m.fecha_movimiento) = ?';
+      params.push(fecha);
+    }
+
+    if (busqueda) {
+      const like = `%${busqueda}%`;
+      query +=
+        ' AND (COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) LIKE ? OR COALESCE(u.nombre, "") LIKE ?)';
+      params.push(like, like);
+    }
+
+    query += ' ORDER BY m.fecha_movimiento DESC';
+
+    const [rows] = await pool.query(query, params);
+
+    const [estadisticas] = await pool.query(`
+      SELECT DATE_FORMAT(fecha_movimiento, '%Y-%m') AS mes, COUNT(*) AS total
+      FROM MovimientosInventario
+      GROUP BY DATE_FORMAT(fecha_movimiento, '%Y-%m')
+      ORDER BY mes DESC
+      LIMIT 12
     `);
 
-    res.json(rows);
+   res.json({ movimientos: rows, estadisticas });
   } catch (error) {
     console.error('[Error] getHistorialMovimientos:', error);
     res.status(500).json({ error: 'Error al obtener historial de movimientos: ' + error.message });
@@ -960,7 +987,7 @@ const getHistorialSolicitudes = async (req, res) => {
       return res.status(403).json({ error: 'Solo administradores o almacenistas pueden ver el historial' });
     }
     
-    const { fecha } = req.query;
+    const { fecha, busqueda } = req.query;
     
     // Query principal para obtener solicitudes con todos los estados
     let query = `
@@ -1002,6 +1029,12 @@ const getHistorialSolicitudes = async (req, res) => {
       params.push(fecha);
     }
 
+    if (busqueda) {
+      const like = `%${busqueda}%`;
+      query += ' AND (u.nombre LIKE ? OR s.nombre_alumno LIKE ? OR g.nombre LIKE ?)';
+      params.push(like, like, like);
+    }
+    
      // Almacenistas solo ven solicitudes aprobadas o entregadas
     if (rol_id === 3) {
       query += " AND s.estado IN ('aprobada', 'entregado')";
