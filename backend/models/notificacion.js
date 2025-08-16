@@ -1,0 +1,26 @@
+const pool = require('../config/db');
+
+const crearNotificacion = async (usuarioId, tipo, mensaje) => {
+  await pool.query(
+    `INSERT INTO Notificacion (usuario_id, tipo, mensaje) VALUES (?, ?, ?)`,
+    [usuarioId, tipo, mensaje]
+  );
+};
+
+const obtenerNotificacionesPorUsuario = async (usuarioId) => {
+  const [rows] = await pool.query(
+    `SELECT id, tipo, mensaje, fecha FROM Notificacion WHERE usuario_id = ? ORDER BY fecha DESC`,
+    [usuarioId]
+  );
+  return rows;
+};
+
+const eliminarNotificacion = async (id, usuarioId) => {
+  await pool.query(`DELETE FROM Notificacion WHERE id = ? AND usuario_id = ?`, [id, usuarioId]);
+};
+
+module.exports = {
+  crearNotificacion,
+  obtenerNotificacionesPorUsuario,
+  eliminarNotificacion
+};
