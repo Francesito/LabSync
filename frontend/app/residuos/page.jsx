@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { obtenerResiduos, registrarResiduo } from '../../lib/api';
+import { obtenerResiduos, registrarResiduo, eliminarResiduos } from '../../lib/api';
 
 const LABS = [
   'Laboratorio de Química Básica',
@@ -15,20 +15,26 @@ const LABS = [
 ];
 
 const RESIDUE_TYPES = [
-   { label: 'Químico', value: 'quimico' },
+  { label: 'Químico', value: 'quimico' },
   { label: 'Biológico', value: 'biologico' },
   { label: 'Radiactivo', value: 'radiactivo' },
   { label: 'Común', value: 'comun' }
 ];
 
-const getTipoLabel = (value) => RESIDUE_TYPES.find(t => t.value === value)?.label || value;
-const formatDate = (d) => new Date(d).toISOString().split('T')[0];
+const getTipoLabel = (value) =>
+  RESIDUE_TYPES.find((t) => t.value === value)?.label || value;
+
+const formatDate = (d) => {
+  const date = d instanceof Date ? d : new Date(d);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().split('T')[0];
+};
 
 export default function ResiduosPage() {
   const [form, setForm] = useState({
-     fecha: formatDate(new Date()),
+    fecha: formatDate(new Date()),
     laboratorio: '',
-  reactivo: '',
+    reactivo: '',
     tipo: '',
     cantidad: '',
     unidad: '',
@@ -38,29 +44,35 @@ export default function ResiduosPage() {
   const [selected, setSelected] = useState([]);
 
   useEffect(() => {
-  obtenerResiduos().then(setEntries).catch(() => setEntries([]));
+    obtenerResiduos()
+      .then((data) => setEntries(Array.isArray(data) ? data : []))
+      .catch(() => setEntries([]));
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    setForm((f) => ({ ...f, [name]: value }));
   };
 
- const handleSubmit = async (e) => {  
+  const handleSubmit = async (e) => {
     e.preventDefault();
- const { fecha, laboratorio, reactivo, tipo, cantidad, unidad } = form;
+    const { fecha, laboratorio, reactivo, tipo, cantidad, unidad } = form;
+
     if (!fecha || !laboratorio || !reactivo || !tipo || !cantidad || !unidad) return;
 
     try {
-      const saved = await registrarResiduo({
+      const payload = {
         fecha,
         laboratorio,
         reactivo,
         tipo,
         cantidad: parseFloat(cantidad),
         unidad,
-      });
-      setEntries(prev => [saved, ...prev]);
+      };
+
+      const saved = await registrarResiduo(payload);
+      // Asegura que 'saved' tenga un 'id' único
+      setEntries((prev) => [saved, ...prev]);
       setForm({
         fecha: formatDate(new Date()),
         laboratorio: '',
@@ -75,25 +87,32 @@ export default function ResiduosPage() {
   };
 
   const toggleSelect = (id) => {
-    setSelected(sel => sel.includes(id) ? sel.filter(i => i !== id) : [...sel, id]);
+    setSelected((sel) =>
+      sel.includes(id) ? sel.filter((i) => i !== id) : [...sel, id]
+    );
   };
 
   const handleDelete = async () => {
     if (selected.length === 0) return;
     try {
       await eliminarResiduos(selected);
-      setEntries(prev => prev.filter(e => !selected.includes(e.id)));
+      setEntries((prev) => prev.filter((e) => !selected.includes(e.id)));
       setSelected([]);
     } catch (err) {
       console.error('Error al eliminar residuos:', err);
     }
   };
 
+  const allChecked = selected.length === entries.length && entries.length > 0;
+
   return (
-<div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-center">Bitácora de Residuos Peligrosos</h1>
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold mb-6 text-center">
+        Bitácora de Residuos Peligrosos
+      </h1>
 
       <div className="flex flex-col md:flex-row gap-6">
+        {/* Historial */}
         <section className="flex-1">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold">Historial de Registros</h2>
@@ -105,6 +124,7 @@ export default function ResiduosPage() {
               Eliminar seleccionados
             </button>
           </div>
+
           {entries.length === 0 ? (
             <p className="text-gray-600">No hay residuos registrados aún.</p>
           ) : (
@@ -115,8 +135,12 @@ export default function ResiduosPage() {
                     <th className="px-4 py-2">
                       <input
                         type="checkbox"
-                        checked={selected.length === entries.length && entries.length > 0}
-                        onChange={e => setSelected(e.target.checked ? entries.map(en => en.id) : [])}
+                        checked={allChecked}
+                        onChange={(e) =>
+                          setSelected(
+                            e.target.checked ? entries.map((en) => en.id) : []
+                          )
+                        }
                       />
                     </th>
                     <th className="px-4 py-2 text-left">Fecha</th>
@@ -128,7 +152,7 @@ export default function ResiduosPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map(entry => (
+                  {entries.map((entry) => (
                     <tr key={entry.id} className="border-b hover:bg-gray-50">
                       <td className="px-4 py-2">
                         <input
@@ -141,7 +165,9 @@ export default function ResiduosPage() {
                       <td className="px-4 py-2">{entry.laboratorio}</td>
                       <td className="px-4 py-2">{entry.reactivo}</td>
                       <td className="px-4 py-2">{getTipoLabel(entry.tipo)}</td>
-                      <td className="px-4 py-2 text-right">{Number(entry.cantidad).toFixed(2)}</td>
+                      <td className="px-4 py-2 text-right">
+                        {Number(entry.cantidad).toFixed(2)}
+                      </td>
                       <td className="px-4 py-2">{entry.unidad}</td>
                     </tr>
                   ))}
@@ -151,123 +177,116 @@ export default function ResiduosPage() {
           )}
         </section>
 
+        {/* Formulario */}
         <form
           onSubmit={handleSubmit}
           className="md:w-1/3 bg-white p-6 rounded-lg shadow"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Fecha */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Fecha *</label>
-            <input
-              type="date"
-              name="fecha"
-              value={form.fecha}
-              onChange={handleChange}
-              className="w-full border px-3 py-2 rounded"
-              required
-            />
-          </div>
+            {/* Fecha */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Fecha *</label>
+              <input
+                type="date"
+                name="fecha"
+                value={form.fecha}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded"
+                required
+              />
+            </div>
 
-          {/* Laboratorio */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Laboratorio *</label>
-            <select
-              name="laboratorio"
-              value={form.laboratorio}
-              onChange={handleChange}
-              className="w-full border px-3 py-2 rounded"
-              required
-            >
-              <option value="">-- Seleccionar --</option>
-              {LABS.map(lab => (
-                <option key={lab} value={lab}>{lab}</option>
-              ))}
-            </select>
-          </div>
+            {/* Laboratorio */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Laboratorio *
+              </label>
+              <select
+                name="laboratorio"
+                value={form.laboratorio}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded"
+                required
+              >
+                <option value="">-- Seleccionar --</option>
+                {LABS.map((lab) => (
+                  <option key={lab} value={lab}>
+                    {lab}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Reactivo */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Reactivo *</label>
-            <input
-              type="text"
-              name="reactivo"
-              value={form.reactivo}
-              onChange={handleChange}
-              className="w-full border px-3 py-2 rounded"
-              required
-            />
-          </div>
-          
-          {/* Tipo de residuo */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Tipo de Residuo *</label>
-            <select
-              name="tipo"
-              value={form.tipo}
-              onChange={handleChange}
-              className="w-full border px-3 py-2 rounded"
-              required
-            >
-              <option value="">-- Seleccionar --</option>
-              {RESIDUE_TYPES.map(type => (
-                <option key={type.value} value={type.value}>{type.label}</option>
-              ))}
-            </select>
-          </div>
+            {/* Reactivo */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Reactivo *
+              </label>
+              <input
+                type="text"
+                name="reactivo"
+                value={form.reactivo}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded"
+                required
+              />
+            </div>
 
-          {/* Cantidad */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Cantidad Generada *
-            </label>
-            <input
-              type="number"
-              name="cantidad"
-              value={form.cantidad}
-              onChange={handleChange}
-              step="0.01"
-              className="w-full border px-3 py-2 rounded"
-              placeholder="0.00"
-              required
-            />
+            {/* Tipo de residuo */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Tipo de Residuo *
+              </label>
+              <select
+                name="tipo"
+                value={form.tipo}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded"
+                required
+              >
+                <option value="">-- Seleccionar --</option>
+                {RESIDUE_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Cantidad */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Cantidad Generada *
+              </label>
+              <input
+                type="number"
+                name="cantidad"
+                value={form.cantidad}
+                onChange={handleChange}
+                step="0.01"
+                className="w-full border px-3 py-2 rounded"
+                placeholder="0.00"
+                required
+              />
+            </div>
+
+            {/* Unidad */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Unidad *</label>
+              <select
+                name="unidad"
+                value={form.unidad}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded"
+                required
+              >
+                <option value="">-- Seleccionar --</option>
+                <option value="g">g</option>
+                <option value="ml">mL</option>
+                <option value="u">u</option>
+              </select>
+            </div>
           </div>
-          
-        {/* Unidad */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Unidad *</label>
-            <select
-              name="unidad"
-              value={form.unidad}
-              onChange={handleChange}
-              className="w-full border px-3 py-2 rounded"
-              required
-            >
-              <option value="">-- Seleccionar --</option>
-              <option value="g">g</option>
-              <option value="ml">mL</option>
-              <option value="u">u</option>
-            </select>
-          </div>  
-           </div>
-        
-      {/* Unidad */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Unidad *</label>
-            <select
-              name="unidad"
-              value={form.unidad}
-              onChange={handleChange}
-              className="w-full border px-3 py-2 rounded"
-              required
-            >
-              <option value="">-- Seleccionar --</option>
-              <option value="g">g</option>
-              <option value="ml">mL</option>
-              <option value="u">u</option>
-            </select>
-          </div>
-     </div>
 
           <button
             type="submit"
