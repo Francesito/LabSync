@@ -1,14 +1,15 @@
 //frontend/components/Sidebar.jsx
 'use client';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../lib/auth';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 export default function Sidebar({ isOpen, setIsOpen }) {
   const router = useRouter();
+   const pathname = usePathname();
   const { usuario, setUsuario } = useAuth();
-  const [notifCount, setNotifCount] = useState(0);
+ const [notifCount, setNotifCount] = useState(0);
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
   useEffect(() => {
@@ -25,6 +26,29 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     };
     cargar();
   }, [usuario]);
+
+  useEffect(() => {
+    if (pathname === '/notificaciones') {
+      setNotifCount(0);
+    }
+  }, [pathname]);
+
+  const clearAllNotifications = async () => {
+    try {
+      await axios.delete(`${baseUrl}/api/notificaciones`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setNotifCount(0);
+    } catch (err) {
+      console.error('Error al eliminar notificaciones:', err);
+    }
+  };
+
+  const handleNavClick = async (href) => {
+    if (pathname === '/notificaciones' && href !== '/notificaciones') {
+      await clearAllNotifications();
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -72,6 +96,17 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       ),
       visible: [1, 2].includes(usuario.rol_id), // alumno, docente
       color: 'amber',
+    },
+    {
+      href: '/historial',
+      label: 'Historial',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      visible: usuario.rol_id === 4,
+      color: 'blue',
     },
     {
       href: '/residuos',
@@ -240,6 +275,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             <Link
               key={href}
               href={href}
+               onClick={() => handleNavClick(href)}
               className={`group flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-200 rounded-xl transition-all duration-300 hover:transform hover:scale-105 ${getItemColorClasses(color)}`}
             >
              <span className={`text-gray-300 transition-colors duration-300 relative ${
