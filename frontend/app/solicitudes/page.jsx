@@ -686,7 +686,7 @@ export default function SolicitudesPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen font-sans">
       <div className="mb-8 flex items-center gap-4">
-        <Image src="/loboUniversitario.png" alt="Lobo universitario" width={225} height={225} className="w-12 h-12 object-contain" />
+        <Image src="/loboUniversitario.png" alt="Lobo universitario" width={300} height={300} className="w-[300px] h-[300px] object-contain" />
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Solicitudes de Préstamo</h1>
           <p className="text-gray-600">Gestiona y supervisa las solicitudes según tu rol</p>
