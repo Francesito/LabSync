@@ -6,13 +6,14 @@ import { useAuth } from '../../lib/auth';
 
 export default function Historial() {
   const { usuario } = useAuth();
-  const [fecha, setFecha] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [historial, setHistorial] = useState([]);
   const [movimientos, setMovimientos] = useState([]);
   const [vista, setVista] = useState('solicitudes');
-  const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [mostrarTodoSolicitudes, setMostrarTodoSolicitudes] = useState(false);
+  const [mostrarTodoMovimientos, setMostrarTodoMovimientos] = useState(false);
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
   const formatearFecha = (fecha) => {
@@ -40,11 +41,13 @@ export default function Historial() {
     return classes[estado] || 'bg-gray-100 text-gray-800';
   };
 
+  const solicitudesMostradas = mostrarTodoSolicitudes ? historial : historial.slice(0, 8);
+  const movimientosMostrados = mostrarTodoMovimientos ? movimientos : movimientos.slice(0, 8);
+  
   useEffect(() => {
- // Verificar permisos - almacén (3) o administradores (4)
+// Verificar permisos - almacén (3) o administradores (4)
     if (!usuario || ![3, 4].includes(usuario.rol_id)) {
       setError('Acceso denegado. Solo administradores o almacenistas pueden ver el historial.');
-      setLoading(false);
       return;
     }
 
@@ -59,15 +62,12 @@ export default function Historial() {
         }
 
         const headers = { Authorization: `Bearer ${token}` };
-       const params = new URLSearchParams();
-        if (fecha) params.append('fecha', fecha);
+      const params = new URLSearchParams();
         if (busqueda) params.append('busqueda', busqueda);
         const query = params.toString() ? `?${params.toString()}` : '';
 
-        console.log('Cargando datos del historial...');
-
         const solicitudesPromise = axios.get(
-         `${baseUrl}/api/materials/solicitudes/historial${query}`,
+       `${baseUrl}/api/materials/solicitudes/historial${query}`,
           { headers }
         );
 
@@ -86,9 +86,8 @@ export default function Historial() {
 
         setHistorial(historialData);
         setMovimientos(movimientosData);
-        
-        console.log(`Historial cargado: ${historialData.length} solicitudes`);
-        console.log(`Movimientos cargados: ${movimientosData.length || 0} registros`);
+        setMostrarTodoSolicitudes(false);
+        setMostrarTodoMovimientos(false);
       } catch (err) {
         console.error('Error al cargar datos del historial:', err);
         setError(err.response?.data?.error || err.message || 'Error al cargar datos');
@@ -97,18 +96,12 @@ export default function Historial() {
       }
     };
 
-    cargarDatos();
-     }, [usuario, fecha, busqueda, baseUrl]);
+   const handler = setTimeout(() => {
+      cargarDatos();
+    }, 300);
 
-  if (loading) {
-    return (
-      <div className="p-4">
-        <div className="flex justify-center items-center min-h-64">
-          <div className="text-lg">Cargando historial...</div>
-        </div>
-      </div>
-    );
-  }
+ return () => clearTimeout(handler);
+  }, [usuario, busqueda, baseUrl]);
 
   if (error) {
     return (
@@ -144,28 +137,19 @@ export default function Historial() {
 
       {/* Filtros */}
       <div className="bg-white p-4 rounded-lg shadow">
-      <div className="flex flex-wrap gap-4 items-end">
-          <div>
-            <label className="block mb-1 font-medium text-sm">Filtrar por fecha</label>
-            <input
-              type="date"
-              value={fecha}
-              onChange={e => setFecha(e.target.value)}
-              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+    <div className="flex flex-wrap gap-4 items-end">
           <div>
             <label className="block mb-1 font-medium text-sm">Buscar</label>
             <input
               type="text"
               value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
-              placeholder="Nombre o grupo"
+              placeholder="Nombre o folio"
               disabled={vista === 'movimientos'}
               className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
             />
           </div>
-        <div className="flex gap-2">
+         <div className="flex gap-2">
             <button
               onClick={() => setVista('solicitudes')}
               className={`px-4 py-2 rounded ${vista === 'solicitudes' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
@@ -179,9 +163,9 @@ export default function Historial() {
               Movimientos de Inventario
             </button>
           </div>
-          {(fecha || busqueda) && (
+          {busqueda && (
             <button
-            onClick={() => { setFecha(''); setBusqueda(''); }}
+            onClick={() => setBusqueda('')}
               className="px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
             >
               Limpiar filtro
@@ -213,14 +197,14 @@ export default function Historial() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {historial.length === 0 ? (
+                {solicitudesMostradas.length === 0 ? (
                     <tr>
                <td colSpan="7" className="px-3 py-8 text-center text-gray-500">
                         No se encontraron solicitudes
                       </td>
                     </tr>
                  ) : (
-                    historial.map(h => (
+                  solicitudesMostradas.map(h => (
                       <tr key={h.id} className="hover:bg-gray-50">
                         <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{h.folio}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{h.nombre_display || h.solicitante}</td>
@@ -241,6 +225,16 @@ export default function Historial() {
                 </tbody>
               </table>
             </div>
+             {(!mostrarTodoSolicitudes && historial.length > 8) && (
+              <div className="px-4 py-2 bg-gray-50 text-center">
+                <button
+                  onClick={() => setMostrarTodoSolicitudes(true)}
+                  className="text-blue-600 hover:underline"
+                >
+                  Mostrar más
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -264,14 +258,14 @@ export default function Historial() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {movimientos.length === 0 ? (
+                   {movimientosMostrados.length === 0 ? (
                     <tr>
                      <td colSpan="7" className="px-3 py-8 text-center text-gray-500">
                         No se encontraron movimientos
                       </td>
                     </tr>
                    ) : (
-                    movimientos.map(m => (
+                    movimientosMostrados.map(m => (
                       <tr key={m.id} className="hover:bg-gray-50">
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{m.nombre_material || 'Material Desconocido'}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{m.tipo}</td>
@@ -290,6 +284,16 @@ export default function Historial() {
                 </tbody>
               </table>
             </div>
+             {(!mostrarTodoMovimientos && movimientos.length > 8) && (
+              <div className="px-4 py-2 bg-gray-50 text-center">
+                <button
+                  onClick={() => setMostrarTodoMovimientos(true)}
+                  className="text-blue-600 hover:underline"
+                >
+                  Mostrar más
+                </button>
+              </div>
+            )}
           </div>
         )}
         </div>
