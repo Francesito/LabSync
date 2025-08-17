@@ -441,6 +441,56 @@ router.delete('/eliminar-usuario', async (req, res) => {
   }
 });
 
+// Eliminar múltiples usuarios por IDs
+router.delete('/eliminar-usuarios', async (req, res) => {
+  const { ids } = req.body;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'IDs de usuarios requeridos' });
+  }
+
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // Evitar eliminar administradores
+    const [admins] = await connection.query(
+      'SELECT id FROM Usuario WHERE id IN (?) AND rol_id = 4',
+      [ids]
+    );
+    if (admins.length > 0) {
+      await connection.rollback();
+      return res.status(400).json({ error: 'No se pueden eliminar usuarios administradores' });
+    }
+
+    // Solicitudes relacionadas
+    const [solicitudes] = await connection.query(
+      'SELECT id FROM Solicitud WHERE usuario_id IN (?) OR docente_id IN (?)',
+      [ids, ids]
+    );
+    if (solicitudes.length > 0) {
+      const solicitudIds = solicitudes.map(s => s.id);
+      await connection.query(
+        'DELETE FROM SolicitudItem WHERE solicitud_id IN (?)',
+        [solicitudIds]
+      );
+    }
+
+    await connection.query('DELETE FROM PermisosAlmacen WHERE usuario_id IN (?)', [ids]);
+    await connection.query('DELETE FROM Usuario WHERE id IN (?)', [ids]);
+
+    await connection.commit();
+    res.json({ mensaje: 'Usuarios eliminados exitosamente' });
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error('Error al eliminar usuarios:', error);
+    res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 
 // ==================== CONSULTAS Y REPORTES ====================
 
@@ -453,6 +503,8 @@ router.get('/usuarios', async (req, res) => {
         u.nombre,
         u.correo_institucional,
         u.activo,
+         u.grupo_id,
+        g.nombre AS grupo_nombre,
         r.nombre as rol,
         CASE 
           WHEN u.rol_id = 3 THEN COALESCE(p.acceso_chat, FALSE)
@@ -464,10 +516,32 @@ router.get('/usuarios', async (req, res) => {
           WHEN u.rol_id = 3 THEN COALESCE(p.modificar_stock, FALSE)
           WHEN u.rol_id = 4 THEN TRUE
           ELSE FALSE
-        END as modificar_stock
+      END as modificar_stock,
+        CASE
+          WHEN u.rol_id = 1 THEN (
+            SELECT COUNT(*) FROM Solicitud WHERE usuario_id = u.id
+          )
+          ELSE NULL
+        END AS solicitudes_count,
+        CASE
+          WHEN u.rol_id = 1 THEN (
+            SELECT COUNT(*)
+            FROM SolicitudItem si
+            JOIN Solicitud s ON si.solicitud_id = s.id
+            WHERE s.usuario_id = u.id
+          )
+          WHEN u.rol_id = 2 THEN (
+            SELECT COUNT(*)
+            FROM SolicitudItem si
+            JOIN Solicitud s ON si.solicitud_id = s.id
+            WHERE s.usuario_id = u.id AND s.nombre_alumno IS NULL
+          )
+          ELSE NULL
+        END AS entregas_count
       FROM Usuario u
       JOIN Rol r ON u.rol_id = r.id
       LEFT JOIN PermisosAlmacen p ON u.id = p.usuario_id AND u.rol_id = 3
+      LEFT JOIN Grupo g ON u.grupo_id = g.id
       ORDER BY u.nombre ASC
     `);
 
