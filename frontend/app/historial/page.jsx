@@ -216,8 +216,8 @@ export default function Historial() {
                             {h.estado}
                           </span>
                         </td>
-                        <td className="px-3 py-4 text-sm text-gray-900 max-w-xs">
-                          <div className="truncate" title={h.materiales}>{h.materiales || 'Sin materiales'}</div>
+                         <td className="px-3 py-4 text-sm text-gray-900 max-w-xs whitespace-pre-line break-words" title={h.materiales}>
+                          {h.materiales || 'Sin materiales'}
                         </td>
                       </tr>
                     ))
