@@ -592,7 +592,7 @@ export default function SolicitudesPage() {
   const filteredAlmAlumnos = filterByDate(almAlumnos);
   const filteredAlmDocentes = filterByDate(almDocentes);
 
-   const applySearch = (arr) => {
+    const applySearch = (arr) => {
     const term = search.toLowerCase();
     if (!term) return arr;
     return arr.filter(s =>
@@ -607,8 +607,18 @@ export default function SolicitudesPage() {
   const searchedAlmAlumnos = applySearch(filteredAlmAlumnos);
   const searchedAlmDocentes = applySearch(filteredAlmDocentes);
 
+  const pendientesDocAlumnos = docAprobar.filter(
+    s => ['aprobación pendiente', 'aprobacion pendiente'].includes((s.estado || '').toLowerCase())
+  ).length;
+  const pendientesDocMias = docMias.filter(s => s.estado === 'entrega pendiente').length;
+  const pendientesAlmAlumnos = almAlumnos.filter(s => s.estado === 'entrega pendiente').length;
+  const pendientesAlmDocentes = almDocentes.filter(s => s.estado === 'entrega pendiente').length;
+
   const pendientesEntrega = usuario?.rol === 'almacen'
-    ? [...almAlumnos, ...almDocentes].filter(s => s.estado === 'entrega pendiente').length
+    ? pendientesAlmAlumnos + pendientesAlmDocentes
+    : 0;
+  const pendientesAprobacion = usuario?.rol === 'docente'
+    ? pendientesDocAlumnos
     : 0;
 
   const abrirEntrega = (sol) => {
@@ -798,19 +808,38 @@ export default function SolicitudesPage() {
       {usuario?.rol === 'docente' && (
         <>
          <div className="mb-4 flex items-center gap-2">
-            <div className="flex">
-              <button
-                className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
-                onClick={() => setActiveTab('alumnos')}
-              >
-                Solicitudes de Alumnos
-              </button>
-              <button
-                className={`px-4 py-2 rounded-r border ${activeTab === 'mias' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
-                onClick={() => setActiveTab('mias')}
-              >
-                Mis Solicitudes como Docente
-              </button>
+            <div className="relative flex">
+              {pendientesAprobacion > 0 && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                  {pendientesAprobacion}
+                </span>
+              )}
+              <div className="relative">
+                {pendientesDocAlumnos > 0 && (
+                  <span className="absolute -top-2 right-0 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                    {pendientesDocAlumnos}
+                  </span>
+                )}
+                <button
+                  className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+                  onClick={() => setActiveTab('alumnos')}
+                >
+                  Solicitudes de Alumnos
+                </button>
+              </div>
+              <div className="relative -ml-px">
+                {pendientesDocMias > 0 && (
+                  <span className="absolute -top-2 right-0 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                    {pendientesDocMias}
+                  </span>
+                )}
+                <button
+                  className={`px-4 py-2 rounded-r border ${activeTab === 'mias' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+                  onClick={() => setActiveTab('mias')}
+                >
+                  Mis Solicitudes como Docente
+                </button>
+              </div>
             </div>
             <input
               type="text"
@@ -898,18 +927,32 @@ export default function SolicitudesPage() {
                   {pendientesEntrega}
                 </span>
               )}
-              <button
-                className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
-                onClick={() => setActiveTab('alumnos')}
-              >
-                Solicitudes de Alumnos
-              </button>
-              <button
-                className={`px-4 py-2 rounded-r border ${activeTab === 'docentes' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
-                onClick={() => setActiveTab('docentes')}
-              >
-                Solicitudes de Docentes
-              </button>
+              <div className="relative">
+                {pendientesAlmAlumnos > 0 && (
+                  <span className="absolute -top-2 right-0 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                    {pendientesAlmAlumnos}
+                  </span>
+                )}
+                <button
+                  className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+                  onClick={() => setActiveTab('alumnos')}
+                >
+                  Solicitudes de Alumnos
+                </button>
+              </div>
+              <div className="relative -ml-px">
+                {pendientesAlmDocentes > 0 && (
+                  <span className="absolute -top-2 right-0 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                    {pendientesAlmDocentes}
+                  </span>
+                )}
+                <button
+                  className={`px-4 py-2 rounded-r border ${activeTab === 'docentes' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+                  onClick={() => setActiveTab('docentes')}
+                >
+                  Solicitudes de Docentes
+                </button>
+              </div>
             </div>
             <input
               type="text"
