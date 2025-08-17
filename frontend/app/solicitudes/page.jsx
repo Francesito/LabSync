@@ -19,8 +19,8 @@ const EstadoBadge = ({ estado }) => {
     'entregada':            { bg: 'bg-green-100', text: 'text-green-800', icon: '✓'  },
     'rechazada':            { bg: 'bg-red-100',   text: 'text-red-800',   icon: '✗'  },
     'cancelado':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
-     'cancelada':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
-     'eliminación automática por falta de recolección': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' },
+    'cancelada':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
+    'eliminación automática por falta de recolección': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' },
     'eliminacion automatica por falta de recoleccion': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' }, // fallback sin tildes
     'pendiente':            { bg: 'bg-yellow-100',text: 'text-yellow-800',icon: '⏳' } // fallback
   };
@@ -36,7 +36,7 @@ const EstadoBadge = ({ estado }) => {
 
 const SkeletonRow = ({ colCount }) => (
   <tr className="animate-pulse">
-     {Array.from({ length: colCount }).map((_, i) => (
+    {Array.from({ length: colCount }).map((_, i) => (
       <td key={i} className="px-6 py-4">
         <div className="h-4 bg-gray-200 rounded w-24" />
       </td>
@@ -45,14 +45,14 @@ const SkeletonRow = ({ colCount }) => (
 );
 
 const Th = ({ children }) => (
-  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
     {children}
   </th>
 );
 
 const Td = ({ children, bold = false }) => (
-  <td className="px-6 py-4 whitespace-nowrap">
-    <div className={`text-sm ${bold ? 'font-semibold text-gray-900' : 'text-gray-900'}`}>
+  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+    <div className={`${bold ? 'font-semibold' : ''}`}>
       {children}
     </div>
   </td>
@@ -121,14 +121,14 @@ function TablaSolicitudes({
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
-      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-gray-200 bg-[#00BCD4] text-white flex items-center justify-between">
         <h2 className="text-lg font-semibold">{titulo}</h2>
-        <span className="text-sm text-gray-600">{data?.length || 0} registros</span>
+        <span className="text-sm">{data?.length || 0} registros</span>
       </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-[#00BCD4] text-white">
             <tr>
               {columnas.folio && <Th>Folio</Th>}
               {columnas.solicitante && <Th>Solicitante</Th>}
@@ -142,7 +142,7 @@ function TablaSolicitudes({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
-          [...Array(5)].map((_, i) => <SkeletonRow key={i} colCount={colCount} />)
+              [...Array(5)].map((_, i) => <SkeletonRow key={i} colCount={colCount} />)
             ) : data.length === 0 ? (
               <tr>
                 <td className="px-6 py-10 text-center text-gray-500" colSpan={colCount}>
@@ -150,10 +150,10 @@ function TablaSolicitudes({
                 </td>
               </tr>
             ) : (
-          data.map((s) => {
+              data.map((s) => {
                 const createDateStr = (s.fecha_solicitud || '').split('T')[0];
                 const recoDateStr   = (s.fecha_recoleccion || '').split('T')[0];
-             const dateStr = usuario?.rol === 'almacen' ? recoDateStr : createDateStr;
+                const dateStr = usuario?.rol === 'almacen' ? recoDateStr : createDateStr;
                 const isOverdue =
                   recoDateStr && recoDateStr < todayStr && s.estado === 'entrega pendiente';
                 const showMsg =
@@ -162,122 +162,122 @@ function TablaSolicitudes({
                   recoDateStr > todayStr &&
                   recoDateStr !== todayStr;
                 return (
-                <tr key={s.id} className={`hover:bg-gray-50 ${isOverdue ? 'border-2 border-red-500' : ''}`}>
-                  {columnas.folio && <Td bold>{s.folio}</Td>}
+                  <tr key={s.id} className={`hover:bg-gray-50 ${isOverdue ? 'border-2 border-red-500' : ''}`}>
+                    {columnas.folio && <Td bold>{s.folio}</Td>}
 
-                  {columnas.solicitante && (
-                   <Td>{s.isDocenteRequest ? s.profesor : s.nombre_alumno}</Td>
-                  )}
+                    {columnas.solicitante && (
+                      <Td>{s.isDocenteRequest ? s.profesor : s.nombre_alumno}</Td>
+                    )}
 
-                  {columnas.encargado && <Td>{s.profesor || ''}</Td>}
+                    {columnas.encargado && <Td>{s.profesor || ''}</Td>}
 
-                  {columnas.materiales && (
-                    <td className="px-6 py-4">
-                      <div className="space-y-1">
-                        {(s.items || []).map((m) => (
-                          <div key={m.item_id} className="text-sm flex items-center gap-2">
-                            <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium">
-                              {m.cantidad} {getUnidad(m.tipo)}
-                            </span>
-                            <span>{m.nombre_material}</span>
+                    {columnas.materiales && (
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          {(s.items || []).map((m) => (
+                            <div key={m.item_id} className="text-sm flex items-center gap-2">
+                              <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium">
+                                {m.cantidad} {getUnidad(m.tipo)}
+                              </span>
+                              <span>{m.nombre_material}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    )}
+
+                    {columnas.fecha && (
+                      <Td>
+                        {dateStr
+                          ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
+                          : ''}
+                        {isOverdue && (
+                          <div className="text-xs text-red-600">
+                            Ha pasado la fecha.<br />
+                            Se eliminará la solicitud dentro de 1 día por falta de recolección
                           </div>
-                        ))}
-                      </div>
-                    </td>
-                  )}
+                        )}
+                        {showMsg && (
+                          <div className="text-xs text-orange-600">
+                            {recoDateStr === tomorrowStr
+                              ? 'Entrega para mañana'
+                              : 'Entrega para otro día'}
+                          </div>
+                        )}
+                      </Td>
+                    )}
 
-                  {columnas.fecha && (
-                   <Td>
-                      {dateStr
-                        ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
-                        : ''}
-                     {isOverdue && (
-                        <div className="text-xs text-red-600">
-                          Ha pasado la fecha.<br />
-                          Se eliminará la solicitud dentro de 1 día por falta de recolección
-                        </div>
-                      )}
-                      {showMsg && (
-                        <div className="text-xs text-orange-600">
-                          {recoDateStr === tomorrowStr
-                            ? 'Entrega para mañana'
-                            : 'Entrega para otro día'}
-                        </div>
-                      )}
-                    </Td>
-                  )}
+                    {columnas.grupo && <Td>{s.grupo || ''}</Td>}
 
-                  {columnas.grupo && <Td>{s.grupo || ''}</Td>}
+                    {columnas.estado && (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <EstadoBadge estado={isOverdue ? 'cancelada' : s.estado} />
+                      </td>
+                    )}
 
-                  {columnas.estado && (
-                    <td className="px-6 py-4 whitespace-nowrap">
-                     <EstadoBadge estado={isOverdue ? 'cancelada' : s.estado} />
-                    </td>
-                  )}
+                    {columnas.acciones && (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {/* Docente: aprobar / rechazar */}
+                          {usuario?.rol === 'docente' &&
+                            !s.isDocenteRequest &&
+                            (s.estado === 'aprobación pendiente') && (
+                              <>
+                                <Btn
+                                  color="green"
+                                  onClick={() => onAccion(s.id, 'aprobar', 'entrega pendiente')}
+                                  disabled={procesandoId === s.id}
+                                >
+                                  Aprobar
+                                </Btn>
+                                <Btn
+                                  color="red"
+                                  onClick={() => onAccion(s.id, 'rechazar', 'rechazada')}
+                                  disabled={procesandoId === s.id}
+                                >
+                                  Rechazar
+                                </Btn>
+                              </>
+                            )}
 
-                  {columnas.acciones && (
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        {/* Docente: aprobar / rechazar */}
-                        {usuario?.rol === 'docente' &&
-                          !s.isDocenteRequest &&
-                          (s.estado === 'aprobación pendiente') && (
-                            <>
+                          {/* Almacén: Entregar cuando UI = entrega pendiente */}
+                          {usuario?.rol === 'almacen' &&
+                            s.estado === 'entrega pendiente' &&
+                            (s.fecha_recoleccion || '').split('T')[0] === todayStr && (
                               <Btn
-                                color="green"
-                                onClick={() => onAccion(s.id, 'aprobar', 'entrega pendiente')}
+                                color="blue"
+                                onClick={() => onAccion(s.id, 'entregar', 'entregada')}
                                 disabled={procesandoId === s.id}
                               >
-                                Aprobar
+                                Entregar
                               </Btn>
+                            )}
+
+                          {/* Alumno: cancelar si está en aprobación pendiente */}
+                          {usuario?.rol === 'alumno' &&
+                            (s.estado === 'aprobación pendiente') && (
                               <Btn
-                                color="red"
-                                onClick={() => onAccion(s.id, 'rechazar', 'rechazada')}
+                                color="gray"
+                                onClick={() => onAccion(s.id, 'cancelar', 'cancelado')}
                                 disabled={procesandoId === s.id}
                               >
-                                Rechazar
+                                Cancelar
                               </Btn>
-                            </>
-                          )}
+                            )}
 
-                        {/* Almacén: Entregar cuando UI = entrega pendiente */}
-                        {usuario?.rol === 'almacen' &&
-                        s.estado === 'entrega pendiente' &&
-                          (s.fecha_recoleccion || '').split('T')[0] === todayStr && (
-                            <Btn
-                              color="blue"
-                              onClick={() => onAccion(s.id, 'entregar', 'entregada')}
-                              disabled={procesandoId === s.id}
-                            >
-                              Entregar
-                            </Btn>
-                          )}
-
-                        {/* Alumno: cancelar si está en aprobación pendiente */}
-                        {usuario?.rol === 'alumno' &&
-                          (s.estado === 'aprobación pendiente') && (
-                            <Btn
-                              color="gray"
-                              onClick={() => onAccion(s.id, 'cancelar', 'cancelado')}
-                              disabled={procesandoId === s.id}
-                            >
-                              Cancelar
-                            </Btn>
-                          )}
-
-                        <Btn
-                          color="purple"
-                          onClick={() => onPDF(s)}
-                          disabled={procesandoId === s.id}
-                        >
-                          PDF
-                        </Btn>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-               );
-            })
+                          <Btn
+                            color="purple"
+                            onClick={() => onPDF(s)}
+                            disabled={procesandoId === s.id}
+                          >
+                            PDF
+                          </Btn>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -300,7 +300,7 @@ export default function SolicitudesPage() {
   const [almDocentes, setAlmDocentes] = useState([]); // almacén: tabla 2
   const [procesando, setProcesando] = useState(null);
   const [filterDate, setFilterDate] = useState('');
-const [minFilterDate, setMinFilterDate] = useState('');
+  const [minFilterDate, setMinFilterDate] = useState('');
   const [maxFilterDate, setMaxFilterDate] = useState('');
   const [notice, setNotice] = useState('');
 
@@ -360,7 +360,7 @@ const [minFilterDate, setMinFilterDate] = useState('');
             `${process.env.NEXT_PUBLIC_API_URL}/api/materials/usuario/solicitudes`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
-        alumnoArr = agrupar(data, 'alumno', grupos);
+          alumnoArr = agrupar(data, 'alumno', grupos);
           setAlumnoData(alumnoArr);
         }
 
@@ -372,7 +372,7 @@ const [minFilterDate, setMinFilterDate] = useState('');
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/docente/mias`,
               { headers: { Authorization: `Bearer ${token}` } })
           ]);
-        docAprobarArr = agrupar(aprobarRes.data, 'docente', grupos);
+          docAprobarArr = agrupar(aprobarRes.data, 'docente', grupos);
           docMiasArr = agrupar(miasRes.data, 'docente', grupos);
           setDocAprobar(docAprobarArr);
           setDocMias(docMiasArr);
@@ -385,7 +385,7 @@ const [minFilterDate, setMinFilterDate] = useState('');
             { headers: { Authorization: `Bearer ${token}` } }
           );
           const grouped = agrupar(data, 'almacen', grupos);
-      almAlumnosArr = grouped.filter(s => !s.isDocenteRequest);
+          almAlumnosArr = grouped.filter(s => !s.isDocenteRequest);
           almDocentesArr = grouped.filter(s => s.isDocenteRequest);
           setAlmAlumnos(almAlumnosArr);
           setAlmDocentes(almDocentesArr);
@@ -490,9 +490,6 @@ by[key].items.push({
   );
 }
 
-
-
-
   /** Mapeo de estados con sensibilidad al rol que visualiza */
   function mapEstadoPorRol(estadoSQL, isDocenteReq, rolVista) {
     const e = (estadoSQL || '').toLowerCase().trim();
@@ -502,7 +499,7 @@ by[key].items.push({
       if (e === 'entregado') return 'entregada';
       if (e === 'rechazada') return 'rechazada';
       if (e === 'cancelado') return 'cancelado';
-       if (e === 'sin recoleccion') return 'eliminación automática por falta de recolección';
+      if (e === 'sin recoleccion') return 'eliminación automática por falta de recolección';
       // Cualquier otro (incluido 'aprobada' y un posible 'pendiente') se ve como entrega pendiente
       return 'entrega pendiente';
     }
@@ -550,7 +547,7 @@ by[key].items.push({
 
       if (accion === 'cancelar' || accion === 'rechazar') {
         drop(setAlumnoData);
-         drop(setDocAprobar);
+        drop(setDocAprobar);
         drop(setDocMias);
         drop(setAlmAlumnos);
         drop(setAlmDocentes);
@@ -582,7 +579,7 @@ by[key].items.push({
   }
 
   const filterByDate = (arr) =>
-   filterDate
+    filterDate
       ? arr.filter(s => (s.fecha_recoleccion || '').split('T')[0] === filterDate)
       : arr;
 
@@ -688,7 +685,7 @@ by[key].items.push({
 
   // --- RENDER POR ROL ---
   return (
-<div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen font-sans">
       {/* Header */}
       <div className="mb-8 flex items-center gap-4">
         <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center">
@@ -729,7 +726,7 @@ by[key].items.push({
         </div>
       )}
 
-{usuario?.rol !== 'almacen' && notice && (
+      {usuario?.rol !== 'almacen' && notice && (
         <div className="mb-4 flex justify-end">
           <div className="px-3 py-1 text-xs bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
             {notice}
@@ -738,21 +735,21 @@ by[key].items.push({
       )}
   
       {/* ALUMNO */}
-  {usuario?.rol === 'alumno' && (
-  <TablaSolicitudes
-    titulo="Mis solicitudes"
-    data={alumnoData}
-    loading={loading}
-    showSolicitante
-    showEncargado={false}
-    showGrupo={false} 
-    columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
-    usuario={usuario}
-    onAccion={actualizarEstado}
-    onPDF={descargarPDF}
-    procesandoId={procesando}
-  />
-)}
+      {usuario?.rol === 'alumno' && (
+        <TablaSolicitudes
+          titulo="Mis solicitudes"
+          data={alumnoData}
+          loading={loading}
+          showSolicitante
+          showEncargado={false}
+          showGrupo={false} 
+          columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
+          usuario={usuario}
+          onAccion={actualizarEstado}
+          onPDF={descargarPDF}
+          procesandoId={procesando}
+        />
+      )}
 
       {/* DOCENTE */}
       {usuario?.rol === 'docente' && (
@@ -777,7 +774,7 @@ by[key].items.push({
             showSolicitante={false}
             showEncargado={false}
             showGrupo={false}
-             columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
+            columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
             usuario={usuario}
             onAccion={actualizarEstado}
             onPDF={descargarPDF}
@@ -816,7 +813,7 @@ by[key].items.push({
                 Limpiar
               </button>
             )}
-       {notice && (
+            {notice && (
               <div className="ml-auto">
                 <div className="px-4 py-2 text-sm bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
                   {notice}
