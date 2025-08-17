@@ -13,22 +13,22 @@ const encabezadoUT = '/universidad.png';
 /** Badge de estado */
 const EstadoBadge = ({ estado }) => {
   const config = {
-    'aprobación pendiente': { bg: 'bg-amber-100', text: 'text-amber-800', icon: '⏳' },
-    'aprobacion pendiente': { bg: 'bg-amber-100', text: 'text-amber-800', icon: '⏳' }, // fallback sin tilde
-    'entrega pendiente':    { bg: 'bg-blue-100',  text: 'text-blue-800',  icon: '📦' },
-    'entregada':            { bg: 'bg-green-100', text: 'text-green-800', icon: '✓'  },
-    'rechazada':            { bg: 'bg-red-100',   text: 'text-red-800',   icon: '✗'  },
-    'cancelado':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
-     'cancelada':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
-     'eliminación automática por falta de recolección': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' },
-    'eliminacion automatica por falta de recoleccion': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' }, // fallback sin tildes
-    'pendiente':            { bg: 'bg-yellow-100',text: 'text-yellow-800',icon: '⏳' } // fallback
+    'aprobación pendiente': { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: '⏳' },
+    'aprobacion pendiente': { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: '⏳' },
+    'entrega pendiente':    { bg: 'bg-blue-50',   text: 'text-blue-700',   border: 'border-blue-200',   icon: '📦' },
+    'entregada':            { bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200',  icon: '✓'  },
+    'rechazada':            { bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200',    icon: '✗'  },
+    'cancelado':            { bg: 'bg-gray-50',   text: 'text-gray-600',   border: 'border-gray-200',   icon: '❌' },
+    'cancelada':            { bg: 'bg-gray-50',   text: 'text-gray-600',   border: 'border-gray-200',   icon: '❌' },
+    'eliminación automática por falta de recolección': { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', icon: '⚠️' },
+    'eliminacion automatica por falta de recoleccion': { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', icon: '⚠️' },
+    'pendiente': { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200', icon: '⏳' }
   };
   const safe = (estado || '').toLowerCase().trim();
-  const { bg, text, icon } = config[safe] || config.pendiente;
+  const { bg, text, border, icon } = config[safe] || config.pendiente;
   return (
-    <span className={`${bg} ${text} inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium`}>
-      <span>{icon}</span>
+    <span className={`${bg} ${text} ${border} inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border`}>
+      <span className="text-sm">{icon}</span>
       <span className="capitalize">{estado}</span>
     </span>
   );
@@ -37,22 +37,22 @@ const EstadoBadge = ({ estado }) => {
 const SkeletonRow = ({ colCount }) => (
   <tr className="animate-pulse">
      {Array.from({ length: colCount }).map((_, i) => (
-      <td key={i} className="px-6 py-4">
-        <div className="h-4 bg-gray-200 rounded w-24" />
+      <td key={i} className="px-4 py-3">
+        <div className="h-4 bg-gray-100 rounded w-20" />
       </td>
     ))}
   </tr>
 );
 
 const Th = ({ children }) => (
-  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wide bg-gray-50">
     {children}
   </th>
 );
 
 const Td = ({ children, bold = false }) => (
-  <td className="px-6 py-4 whitespace-nowrap">
-    <div className={`text-sm ${bold ? 'font-semibold text-gray-900' : 'text-gray-900'}`}>
+  <td className="px-4 py-3 border-b border-gray-100">
+    <div className={`text-sm ${bold ? 'font-medium text-gray-900' : 'text-gray-700'}`}>
       {children}
     </div>
   </td>
@@ -60,15 +60,18 @@ const Td = ({ children, bold = false }) => (
 
 const Btn = ({ children, color, onClick, disabled }) => {
   const palette = {
-    green:  'bg-green-600 hover:bg-green-700',
-    red:    'bg-red-600 hover:bg-red-700',
-    blue:   'bg-blue-600 hover:bg-blue-700',
-    gray:   'bg-gray-600 hover:bg-gray-700',
-    purple: 'bg-purple-600 hover:bg-purple-700'
-  }[color] || 'bg-slate-600 hover:bg-slate-700';
+    green:  'bg-green-600 hover:bg-green-700 focus:ring-green-500',
+    red:    'bg-red-600 hover:bg-red-700 focus:ring-red-500',
+    blue:   'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+    gray:   'bg-gray-500 hover:bg-gray-600 focus:ring-gray-400',
+    purple: 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
+  }[color] || 'bg-slate-600 hover:bg-slate-700 focus:ring-slate-500';
+  
   return (
     <button
-      className={`${palette} text-white text-sm rounded-md px-3 py-1 disabled:opacity-60 disabled:cursor-not-allowed`}
+      className={`${palette} text-white text-xs font-medium rounded px-3 py-1.5 
+                  transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1
+                  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-opacity-60`}
       onClick={onClick}
       disabled={disabled}
     >
@@ -120,16 +123,20 @@ function TablaSolicitudes({
   const tomorrowStr = toLocalDateStr(tomorrow);
   
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
-      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{titulo}</h2>
-        <span className="text-sm text-gray-600">{data?.length || 0} registros</span>
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 shadow-sm">
+      <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium text-gray-900">{titulo}</h2>
+          <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded border">
+            {data?.length || 0} registros
+          </span>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
+        <table className="min-w-full">
+          <thead>
+            <tr className="border-b border-gray-200">
               {columnas.folio && <Th>Folio</Th>}
               {columnas.solicitante && <Th>Solicitante</Th>}
               {columnas.encargado && <Th>Encargado</Th>}
@@ -140,13 +147,19 @@ function TablaSolicitudes({
               {columnas.acciones && <Th>Acciones</Th>}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white">
             {loading ? (
           [...Array(5)].map((_, i) => <SkeletonRow key={i} colCount={colCount} />)
             ) : data.length === 0 ? (
               <tr>
-                <td className="px-6 py-10 text-center text-gray-500" colSpan={colCount}>
-                  No hay solicitudes para mostrar.
+                <td className="px-6 py-12 text-center text-gray-500" colSpan={colCount}>
+                  <div className="flex flex-col items-center gap-2">
+                    <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>No hay solicitudes para mostrar</span>
+                  </div>
                 </td>
               </tr>
             ) : (
@@ -162,7 +175,7 @@ function TablaSolicitudes({
                   recoDateStr > todayStr &&
                   recoDateStr !== todayStr;
                 return (
-                <tr key={s.id} className={`hover:bg-gray-50 ${isOverdue ? 'border-2 border-red-500' : ''}`}>
+                <tr key={s.id} className={`hover:bg-gray-50 transition-colors duration-150 ${isOverdue ? 'bg-red-50 border-l-4 border-red-400' : ''}`}>
                   {columnas.folio && <Td bold>{s.folio}</Td>}
 
                   {columnas.solicitante && (
@@ -172,14 +185,14 @@ function TablaSolicitudes({
                   {columnas.encargado && <Td>{s.profesor || ''}</Td>}
 
                   {columnas.materiales && (
-                    <td className="px-6 py-4">
-                      <div className="space-y-1">
+                    <td className="px-4 py-3 border-b border-gray-100">
+                      <div className="space-y-1.5">
                         {(s.items || []).map((m) => (
                           <div key={m.item_id} className="text-sm flex items-center gap-2">
-                            <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium">
+                            <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-medium border border-blue-200">
                               {m.cantidad} {getUnidad(m.tipo)}
                             </span>
-                            <span>{m.nombre_material}</span>
+                            <span className="text-gray-700">{m.nombre_material}</span>
                           </div>
                         ))}
                       </div>
@@ -187,37 +200,39 @@ function TablaSolicitudes({
                   )}
 
                   {columnas.fecha && (
-                   <Td>
-                      {dateStr
-                        ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
-                        : ''}
+                   <td className="px-4 py-3 border-b border-gray-100">
+                     <div className="text-sm text-gray-700">
+                       {dateStr
+                         ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
+                         : ''}
+                     </div>
                      {isOverdue && (
-                        <div className="text-xs text-red-600">
+                        <div className="text-xs text-red-600 mt-1 font-medium">
                           Ha pasado la fecha.<br />
                           Se eliminará la solicitud dentro de 1 día por falta de recolección
                         </div>
                       )}
                       {showMsg && (
-                        <div className="text-xs text-orange-600">
+                        <div className="text-xs text-orange-600 mt-1">
                           {recoDateStr === tomorrowStr
                             ? 'Entrega para mañana'
                             : 'Entrega para otro día'}
                         </div>
                       )}
-                    </Td>
+                    </td>
                   )}
 
                   {columnas.grupo && <Td>{s.grupo || ''}</Td>}
 
                   {columnas.estado && (
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 border-b border-gray-100">
                      <EstadoBadge estado={isOverdue ? 'cancelada' : s.estado} />
                     </td>
                   )}
 
                   {columnas.acciones && (
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
+                    <td className="px-4 py-3 border-b border-gray-100">
+                      <div className="flex items-center gap-1.5">
                         {/* Docente: aprobar / rechazar */}
                         {usuario?.rol === 'docente' &&
                           !s.isDocenteRequest &&
@@ -490,9 +505,6 @@ by[key].items.push({
   );
 }
 
-
-
-
   /** Mapeo de estados con sensibilidad al rol que visualiza */
   function mapEstadoPorRol(estadoSQL, isDocenteReq, rolVista) {
     const e = (estadoSQL || '').toLowerCase().trim();
@@ -688,171 +700,180 @@ by[key].items.push({
 
   // --- RENDER POR ROL ---
   return (
-<div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="mb-8 flex items-center gap-4">
-        <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center">
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Solicitudes de Préstamo</h1>
-          <p className="text-gray-600">Gestiona y supervisa las solicitudes según tu rol</p>
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-2xl font-medium text-gray-900">Solicitudes de Préstamo</h1>
+                <p className="text-gray-600 text-sm">Gestiona y supervisa las solicitudes según tu rol</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Error */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div>
-                <h3 className="font-medium text-red-800">Error</h3>
-                <p className="text-red-700 text-sm">{error}</p>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-red-800">Error</h3>
+                <p className="text-red-700 text-sm mt-1">{error}</p>
+              </div>
+              <button onClick={() => setError('')} className="text-red-400 hover:text-red-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Notice para almacén */}
+        {usuario?.rol === 'almacen' && notice && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className="text-blue-700 text-sm font-medium">{notice}</p>
+            </div>
+          </div>
+        )}
+
+        {/* ALUMNO */}
+        {usuario?.rol === 'alumno' && (
+          <TablaSolicitudes
+            titulo="Mis solicitudes"
+            data={alumnoData}
+            loading={loading}
+            showSolicitante
+            showEncargado={false}
+            showGrupo={false} 
+            columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
+            usuario={usuario}
+            onAccion={actualizarEstado}
+            onPDF={descargarPDF}
+            procesandoId={procesando}
+          />
+        )}
+
+        {/* DOCENTE */}
+        {usuario?.rol === 'docente' && (
+          <>
+            <TablaSolicitudes
+              titulo="Solicitudes de alumnos para aprobar"
+              data={docAprobar}
+              loading={loading}
+              showSolicitante
+              showEncargado={false}
+              showGrupo
+              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+              usuario={usuario}
+              onAccion={actualizarEstado}
+              onPDF={descargarPDF}
+              procesandoId={procesando}
+            />
+            <TablaSolicitudes
+              titulo="Mis solicitudes como docente"
+              data={docMias}
+              loading={loading}
+              showSolicitante={false}
+              showEncargado={false}
+              showGrupo={false}
+              columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
+              usuario={usuario}
+              onAccion={actualizarEstado}
+              onPDF={descargarPDF}
+              procesandoId={procesando}
+            />
+          </>
+        )}
+
+        {/* ALMACÉN */}
+        {usuario?.rol === 'almacen' && (
+          <>
+            <div className="mb-6 bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium text-gray-700">Filtrar por fecha:</label>
+                <input
+                  type="date"
+                  value={filterDate}
+                  min={minFilterDate}
+                  max={maxFilterDate}
+                  onChange={e => {
+                    const v = e.target.value;
+                    if (!v) { setFilterDate(''); return; }
+                    const d = new Date(v);
+                    const day = d.getDay();
+                    if (day === 0 || day === 6) return; // evitar fines de semana
+                    if (v >= minFilterDate && v <= maxFilterDate) {
+                      setFilterDate(v);
+                    }
+                  }}
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {filterDate && (
+                  <button
+                    onClick={() => setFilterDate('')}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Limpiar filtro
+                  </button>
+                )}
               </div>
             </div>
-            <button onClick={() => setError('')} className="text-red-500 hover:text-red-700">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
 
-{usuario?.rol !== 'almacen' && notice && (
-        <div className="mb-4 flex justify-end">
-          <div className="px-3 py-1 text-xs bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
-            {notice}
-          </div>
-        </div>
-      )}
-  
-      {/* ALUMNO */}
-  {usuario?.rol === 'alumno' && (
-  <TablaSolicitudes
-    titulo="Mis solicitudes"
-    data={alumnoData}
-    loading={loading}
-    showSolicitante
-    showEncargado={false}
-    showGrupo={false} 
-    columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
-    usuario={usuario}
-    onAccion={actualizarEstado}
-    onPDF={descargarPDF}
-    procesandoId={procesando}
-  />
-)}
-
-      {/* DOCENTE */}
-      {usuario?.rol === 'docente' && (
-        <>
-          <TablaSolicitudes
-            titulo="Solicitudes de alumnos para aprobar"
-            data={docAprobar}
-            loading={loading}
-            showSolicitante
-            showEncargado={false}
-            showGrupo
-            columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-            usuario={usuario}
-            onAccion={actualizarEstado}
-            onPDF={descargarPDF}
-            procesandoId={procesando}
-          />
-          <TablaSolicitudes
-            titulo="Mis solicitudes como docente"
-            data={docMias}
-            loading={loading}
-            showSolicitante={false}
-            showEncargado={false}
-            showGrupo={false}
-             columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
-            usuario={usuario}
-            onAccion={actualizarEstado}
-            onPDF={descargarPDF}
-            procesandoId={procesando}
-          />
-        </>
-      )}
-
-      {/* ALMACÉN */}
-      {usuario?.rol === 'almacen' && (
-        <>
-          <div className="mb-4 flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Filtrar por fecha:</label>
-            <input
-              type="date"
-              value={filterDate}
-              min={minFilterDate}
-              max={maxFilterDate}
-              onChange={e => {
-                const v = e.target.value;
-                if (!v) { setFilterDate(''); return; }
-                const d = new Date(v);
-                const day = d.getDay();
-                if (day === 0 || day === 6) return; // evitar fines de semana
-                if (v >= minFilterDate && v <= maxFilterDate) {
-                  setFilterDate(v);
-                }
-              }}
-              className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+            <TablaSolicitudes
+              titulo="Solicitudes de alumnos"
+              data={filteredAlmAlumnos}
+              loading={loading}
+              showSolicitante
+              showEncargado
+              showGrupo
+              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+              usuario={usuario}
+              onAccion={actualizarEstado}
+              onPDF={descargarPDF}
+              procesandoId={procesando}
             />
-            {filterDate && (
-              <button
-                onClick={() => setFilterDate('')}
-                className="text-xs text-blue-600 hover:underline"
-              >
-                Limpiar
-              </button>
-            )}
-       {notice && (
-              <div className="ml-auto">
-                <div className="px-4 py-2 text-sm bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
-                  {notice}
-                </div>
-              </div>
-            )}
-          </div>
-          <TablaSolicitudes
-            titulo="Solicitudes de alumnos"
-            data={filteredAlmAlumnos}
-            loading={loading}
-            showSolicitante
-            showEncargado
-            showGrupo
-            columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-            usuario={usuario}
-            onAccion={actualizarEstado}
-            onPDF={descargarPDF}
-            procesandoId={procesando}
-          />
 
-          <TablaSolicitudes
-            titulo="Solicitudes de docentes"
-            data={filteredAlmDocentes}
-            loading={loading}
-            showSolicitante
-            showEncargado={false}
-            showGrupo={false}
-            columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-            usuario={usuario}
-            onAccion={actualizarEstado}
-            onPDF={descargarPDF}
-            procesandoId={procesando}
-          />
-        </>
-      )}
+            <TablaSolicitudes
+              titulo="Solicitudes de docentes"
+              data={filteredAlmDocentes}
+              loading={loading}
+              showSolicitante
+              showEncargado={false}
+              showGrupo={false}
+              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+              usuario={usuario}
+              onAccion={actualizarEstado}
+              onPDF={descargarPDF}
+              procesandoId={procesando}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }
