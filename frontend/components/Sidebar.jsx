@@ -98,17 +98,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       color: 'amber',
     },
     {
-      href: '/historial',
-      label: 'Historial',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-     visible: [3, 4].includes(usuario.rol_id),
-      color: 'blue',
-    },
-    {
       href: '/residuos',
       label: 'Residuos',
       icon: (
@@ -155,6 +144,17 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       ),
       visible: usuario.rol_id === 4, // solo admin
       color: 'rose',
+    },
+        {
+      href: '/historial',
+      label: 'Historial',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+     visible: [3, 4].includes(usuario.rol_id),
+      color: 'blue',
     },
      {
       href: '/notificaciones',
