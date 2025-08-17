@@ -237,6 +237,15 @@ router.post(
   materialController.registrarSalidaStock
 );
 
+// Ajuste masivo de stock (solo personal de almacén con permisos)
+router.post(
+  '/ajuste-masivo',
+  verificarToken,
+  verificarRol([3]),
+  verificarAccesoStock,
+  materialController.ajusteMasivoStock
+);
+
 /**
  * ========================
  * RUTAS DE CONSULTA PARA ALMACENISTAS (SIN PERMISOS ESPECIALES)
