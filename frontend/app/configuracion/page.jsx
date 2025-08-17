@@ -19,6 +19,10 @@ export default function Configuracion() {
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
   const [vistaActiva, setVistaActiva] = useState('crear');
   const [searchTerm, setSearchTerm] = useState('');
+  const [grupos, setGrupos] = useState([]);
+  const [grupoSeleccionado, setGrupoSeleccionado] = useState('');
+  const [searchGrupo, setSearchGrupo] = useState('');
+  const [usuariosSeleccionados, setUsuariosSeleccionados] = useState([]);
 
   const roles = [
     { id: 2, nombre: 'docente' },
@@ -104,6 +108,19 @@ export default function Configuracion() {
     }
   };
 
+   // Cargar grupos
+  const cargarGrupos = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/grupos`);
+      if (response.ok) {
+        const data = await response.json();
+        setGrupos(data);
+      }
+    } catch (error) {
+      console.error('Error al cargar grupos:', error);
+    }
+  };
+  
   // Cargar estadísticas
   const cargarEstadisticas = async () => {
     try {
@@ -376,6 +393,54 @@ export default function Configuracion() {
     usuario.rol.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const usuariosPorGrupo = todosUsuarios.filter(
+    (u) => grupoSeleccionado && u.grupo_id === parseInt(grupoSeleccionado)
+  );
+  const usuariosGrupoFiltrados = usuariosPorGrupo.filter((u) =>
+    u.nombre.toLowerCase().includes(searchGrupo.toLowerCase())
+  );
+
+  const toggleSeleccion = (id) => {
+    setUsuariosSeleccionados((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const eliminarUsuariosMasivo = async () => {
+    if (usuariosSeleccionados.length === 0) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        mostrarMensaje('error', 'Token no encontrado');
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/admin/eliminar-usuarios`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ids: usuariosSeleccionados })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        mostrarMensaje('success', 'Usuarios eliminados exitosamente');
+        setTodosUsuarios((prev) => prev.filter(u => !usuariosSeleccionados.includes(u.id)));
+        setUsuariosSeleccionados([]);
+        cargarEstadisticas();
+      } else {
+        mostrarMensaje('error', data.error || 'Error al eliminar usuarios');
+      }
+    } catch (error) {
+      console.error('Error al eliminar usuarios:', error);
+      mostrarMensaje('error', 'Error de conexión al eliminar usuarios');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const getRolColor = (rol) => {
     switch (rol.toLowerCase()) {
       case 'estudiante':
@@ -396,6 +461,7 @@ export default function Configuracion() {
       cargarUsuariosAlmacen();
       cargarTodosUsuarios();
       cargarEstadisticas();
+      cargarGrupos();
     }
   }, [usuario]);
 
@@ -454,8 +520,9 @@ export default function Configuracion() {
                 { id: 'crear', name: 'Crear Usuario', icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z' },
                 { id: 'almacen', name: 'Personal Almacén', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
                 { id: 'usuarios', name: 'Todos los Usuarios', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
-                { id: 'acciones', name: 'Acciones', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' }
-              ].map((tab) => (
+                { id: 'acciones', name: 'Acciones', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
+                { id: 'ajustes', name: 'Ajuste Masivo de Usuarios', icon: 'M6 18L18 6M6 6l12 12' }
+        ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setVistaActiva(tab.id)}
@@ -757,7 +824,24 @@ export default function Configuracion() {
                           <div>
                             <div className="text-sm font-semibold text-gray-900">{user.nombre}</div>
                             <div className="text-sm text-gray-500">{user.correo_institucional}</div>
-                          </div>
+                            {user.rol?.toLowerCase() === 'estudiante' && (
+                              <div className="mt-1 flex gap-2 flex-wrap">
+                                <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">
+                                  {user.solicitudes_count || 0} solicitudes
+                                </span>
+                                <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">
+                                  {user.entregas_count || 0} entregas
+                                </span>
+                              </div>
+                            )}
+                            {user.rol?.toLowerCase() === 'docente' && (
+                              <div className="mt-1 flex gap-2 flex-wrap">
+                                <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-medium">
+                                  {user.entregas_count || 0} reactivos
+                                </span>
+                              </div>
+                            )}
+                          </div>  
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -779,18 +863,15 @@ export default function Configuracion() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex space-x-2">
-                          {user.acceso_chat && (
+                         {Boolean(user.acceso_chat) && (
                             <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
                               Chat
                             </span>
                           )}
-                          {user.modificar_stock && (
+                         {Boolean(user.modificar_stock) && (
                             <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">
                               Stock
                             </span>
-                          )}
-                          {!user.acceso_chat && !user.modificar_stock && user.rol === 'almacen' && (
-                            <span className="text-gray-400 text-xs">Sin permisos</span>
                           )}
                         </div>
                       </td>
@@ -956,6 +1037,82 @@ export default function Configuracion() {
                 </button>
               </form>
             </div>
+          </div>
+        )}
+
+      {vistaActiva === 'ajustes' && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-purple-600 rounded-2xl flex items-center justify-center mr-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Ajuste Masivo de Usuarios</h2>
+                <p className="text-gray-600">Elimina varios usuarios por grupo</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="md:col-span-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Grupo</label>
+                <select
+                  value={grupoSeleccionado}
+                  onChange={(e) => {
+                    setGrupoSeleccionado(e.target.value);
+                    setUsuariosSeleccionados([]);
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                >
+                  <option value="">Seleccione un grupo</option>
+                  {grupos.map((g) => (
+                    <option key={g.id} value={g.id}>{g.nombre}</option>
+                  ))}
+                </select>
+              </div>
+
+              {grupoSeleccionado && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Buscar alumnos</label>
+                  <input
+                    type="text"
+                    value={searchGrupo}
+                    onChange={(e) => setSearchGrupo(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                    placeholder="Nombre del alumno"
+                  />
+                </div>
+              )}
+            </div>
+
+            {grupoSeleccionado && (
+              <div>
+                <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-4 mb-4">
+                  {usuariosGrupoFiltrados.map((u) => (
+                    <label key={u.id} className="flex items-center space-x-2 mb-2">
+                      <input
+                        type="checkbox"
+                        checked={usuariosSeleccionados.includes(u.id)}
+                        onChange={() => toggleSeleccion(u.id)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{u.nombre}</span>
+                    </label>
+                  ))}
+                  {usuariosGrupoFiltrados.length === 0 && (
+                    <p className="text-sm text-gray-500">No se encontraron usuarios</p>
+                  )}
+                </div>
+                <button
+                  onClick={eliminarUsuariosMasivo}
+                  disabled={usuariosSeleccionados.length === 0 || loading}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
+                >
+                  Eliminar seleccionados
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>
