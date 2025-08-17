@@ -921,7 +921,11 @@ const getHistorialMovimientos = async (req, res) => {
       return res.status(403).json({ error: 'Solo administradores o almacenistas pueden ver el historial' });
     }
 
-    const { fecha, busqueda } = req.query;
+    const { busqueda } = req.query;
+
+    await pool.query(
+      "DELETE FROM MovimientosInventario WHERE fecha_movimiento < DATE_SUB(NOW(), INTERVAL 30 DAY)"
+    );
 
     let query = `
       SELECT
@@ -945,7 +949,7 @@ const getHistorialMovimientos = async (req, res) => {
         m.tipo_movimiento,
         m.fecha_movimiento,
        COALESCE(u.nombre, 'Desconocido') AS usuario,
-        COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) AS nombre_material
+     COALESCE(REPLACE(ml.nombre, '_', ' '), REPLACE(ms.nombre, '_', ' '), REPLACE(me.nombre, '_', ' '), REPLACE(mlab.nombre, '_', ' ')) AS nombre_material
       FROM MovimientosInventario m
       LEFT JOIN Usuario u ON m.usuario_id = u.id
       LEFT JOIN MaterialLiquido ml ON m.tipo = 'liquido' AND m.material_id = ml.id
@@ -956,15 +960,10 @@ const getHistorialMovimientos = async (req, res) => {
 
     const params = [];
 
-    if (fecha) {
-      query += ' AND DATE(m.fecha_movimiento) = ?';
-      params.push(fecha);
-    }
-
     if (busqueda) {
       const like = `%${busqueda}%`;
       query +=
-        " AND (COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) LIKE ? OR COALESCE(u.nombre, '') LIKE ?)";
+       " AND (COALESCE(REPLACE(ml.nombre, '_', ' '), REPLACE(ms.nombre, '_', ' '), REPLACE(me.nombre, '_', ' '), REPLACE(mlab.nombre, '_', ' ')) LIKE ? OR COALESCE(u.nombre, '') LIKE ?)";
       params.push(like, like);
     }
 
@@ -998,7 +997,7 @@ const getHistorialSolicitudes = async (req, res) => {
       return res.status(403).json({ error: 'Solo administradores o almacenistas pueden ver el historial' });
     }
     
-    const { fecha, busqueda } = req.query;
+    const { busqueda } = req.query;
     
     // Query principal para obtener solicitudes con todos los estados
     let query = `
@@ -1024,8 +1023,8 @@ const getHistorialSolicitudes = async (req, res) => {
               WHEN 'solido' THEN 'gr'
               ELSE 'Unidad'
             END,
-            ' ',
-            COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre, 'Material Desconocido')
+             ', ',
+            COALESCE(REPLACE(ml.nombre, '_', ' '), REPLACE(ms.nombre, '_', ' '), REPLACE(me.nombre, '_', ' '), REPLACE(mlab.nombre, '_', ' '), 'Material Desconocido')
           ) SEPARATOR ', '
         ) AS materiales
       FROM Solicitud s
@@ -1040,16 +1039,10 @@ const getHistorialSolicitudes = async (req, res) => {
       WHERE 1=1`;
     
     const params = [];
-    
-    // Filtrar por fecha si se proporciona
-    if (fecha) {
-      query += ' AND DATE(s.fecha_solicitud) = ?';
-      params.push(fecha);
-    }
 
     if (busqueda) {
       const like = `%${busqueda}%`;
-      query += ' AND (u.nombre LIKE ? OR s.nombre_alumno LIKE ? OR g.nombre LIKE ?)';
+     query += ' AND (u.nombre LIKE ? OR s.nombre_alumno LIKE ? OR s.folio LIKE ?)';
       params.push(like, like, like);
     }
     
