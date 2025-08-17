@@ -244,7 +244,7 @@ function TablaSolicitudes({
                           {/* Almacén: Entregar cuando UI = entrega pendiente */}
                           {usuario?.rol === 'almacen' &&
                             s.estado === 'entrega pendiente' &&
-                            (s.fecha_recoleccion || '').split('T')[0] === todayStr && (
+                            (s.fecha_recoleccion || '').split('T')[0] === toLocalDateStr(new Date()) && (
                               <Btn
                                 color="blue"
                                 onClick={() => onAccion(s.id, 'entregar', 'entregada')}
@@ -431,65 +431,63 @@ export default function SolicitudesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario]);
 
-/** Agrupa por solicitud y mapea estados UI; para ALMACÉN lo no entregado/rechazado/cancelado = "entrega pendiente". */
-function agrupar(rows, rolVista, gruposMap) {
-  const by = {};
-  for (const item of rows) {
-    const key = item.solicitud_id ?? item.id;
-    if (!key) continue;
+  /** Agrupa por solicitud y mapea estados UI; para ALMACÉN lo no entregado/rechazado/cancelado = "entrega pendiente". */
+  function agrupar(rows, rolVista, gruposMap) {
+    const by = {};
+    for (const item of rows) {
+      const key = item.solicitud_id ?? item.id;
+      if (!key) continue;
 
-    const isDocenteReq = !item.nombre_alumno; // solicitudes de docente no traen nombre_alumno
+      const isDocenteReq = !item.nombre_alumno; // solicitudes de docente no traen nombre_alumno
 
-    if (!by[key]) {
-      const rawEstado = String(item.estado || '').toLowerCase().trim();
-      const estadoUI = mapEstadoPorRol(rawEstado, isDocenteReq, rolVista);
+      if (!by[key]) {
+        const rawEstado = String(item.estado || '').toLowerCase().trim();
+        const estadoUI = mapEstadoPorRol(rawEstado, isDocenteReq, rolVista);
 
-      by[key] = {
-        id: key,
-        folio: item.folio || Math.random().toString(36).slice(2, 6).toUpperCase(),
-        nombre_alumno: item.nombre_alumno || '',
-        profesor: item.profesor || '',
-        fecha_solicitud: item.fecha_solicitud,
-        fecha_recoleccion: item.fecha_recoleccion,
-        estado: estadoUI,
-        rawEstado,
-        isDocenteRequest: isDocenteReq,
-        grupo: isDocenteReq
-          ? ''
-          : (item.grupo_nombre || (item.grupo_id && gruposMap[item.grupo_id]) || ''),
-        items: []
-      };
+        by[key] = {
+          id: key,
+          folio: item.folio || Math.random().toString(36).slice(2, 6).toUpperCase(),
+          nombre_alumno: item.nombre_alumno || '',
+          profesor: item.profesor || '',
+          fecha_solicitud: item.fecha_solicitud,
+          fecha_recoleccion: item.fecha_recoleccion,
+          estado: estadoUI,
+          rawEstado,
+          isDocenteRequest: isDocenteReq,
+          grupo: isDocenteReq
+            ? ''
+            : (item.grupo_nombre || (item.grupo_id && gruposMap[item.grupo_id]) || ''),
+          items: []
+        };
+      }
+
+      const nombreMaterialRaw =
+        item?.nombre_material ??
+        item?.nombreMaterial ??
+        item?.material_nombre ??     // ← alias común en otros endpoints
+        item?.materialNombre ??      // ← camelCase
+        item?.material ??            // ← a veces solo "material"
+        item?.nombre ??              // ← último recurso si el backend lo nombra así
+        '';
+
+      if (!nombreMaterialRaw) {
+        // Debug temporal para ver qué trae esa fila del endpoint "para aprobar"
+        console.debug('Fila sin nombre_material:', item);
+      }
+
+      const nombreMaterial = String(nombreMaterialRaw).replace(/_/g, ' ').trim();
+
+      by[key].items.push({
+        item_id: item.item_id ?? item.solicitud_item_id ?? `${key}-itm-${by[key].items.length + 1}`,
+        nombre_material: nombreMaterial || '(Sin nombre)',
+        cantidad: item.cantidad ?? item.cantidad_pedida ?? 0,
+        tipo: item.tipo
+      });
     }
-
-    
-const nombreMaterialRaw =
-  item?.nombre_material ??
-  item?.nombreMaterial ??
-  item?.material_nombre ??     // ← alias común en otros endpoints
-  item?.materialNombre ??      // ← camelCase
-  item?.material ??            // ← a veces solo "material"
-  item?.nombre ??              // ← último recurso si el backend lo nombra así
-  '';
-
-    
-if (!nombreMaterialRaw) {
-  // Debug temporal para ver qué trae esa fila del endpoint "para aprobar"
-  console.debug('Fila sin nombre_material:', item);
-}
-
-const nombreMaterial = String(nombreMaterialRaw).replace(/_/g, ' ').trim();
-
-by[key].items.push({
-  item_id: item.item_id ?? item.solicitud_item_id ?? `${key}-itm-${by[key].items.length + 1}`,
-  nombre_material: nombreMaterial || '(Sin nombre)',
-  cantidad: item.cantidad ?? item.cantidad_pedida ?? 0,
-  tipo: item.tipo
-});
+    return Object.values(by).sort(
+      (a, b) => new Date(b.fecha_solicitud) - new Date(a.fecha_solicitud)
+    );
   }
-  return Object.values(by).sort(
-    (a, b) => new Date(b.fecha_solicitud) - new Date(a.fecha_solicitud)
-  );
-}
 
   /** Mapeo de estados con sensibilidad al rol que visualiza */
   function mapEstadoPorRol(estadoSQL, isDocenteReq, rolVista) {
@@ -687,12 +685,11 @@ by[key].items.push({
   // --- RENDER POR ROL ---
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen font-sans">
-     <div className="mb-8 flex items-center gap-4">
-          <Image src="/loboUniversitario.png" alt="Lobo universitario" width={48} height={48} className="w-12 h-12 object-contain" />
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Solicitudes de Préstamo</h1>
-            <p className="text-gray-600">Gestiona y supervisa las solicitudes según tu rol</p>
-          </div>
+      <div className="mb-8 flex items-center gap-4">
+        <Image src="/loboUniversitario.png" alt="Lobo universitario" width={48} height={48} className="w-12 h-12 object-contain" />
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Solicitudes de Préstamo</h1>
+          <p className="text-gray-600">Gestiona y supervisa las solicitudes según tu rol</p>
         </div>
       </div>
 
@@ -817,6 +814,7 @@ by[key].items.push({
               </div>
             )}
           </div>
+
           <TablaSolicitudes
             titulo="Solicitudes de alumnos"
             data={filteredAlmAlumnos}
