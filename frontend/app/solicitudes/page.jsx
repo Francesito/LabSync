@@ -13,7 +13,9 @@
               <p className="text-blue-800 font-semibold text-lg">{notice}</p>
             </div>
           </div>
-        )}'use client';
+        )}
+
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
