@@ -100,6 +100,7 @@ function TablaSolicitudes({
   columnasFijas = {},
   usuario,
   onAccion,
+  onEntregar,
   onPDF,
   procesandoId
 }) {
@@ -247,7 +248,9 @@ function TablaSolicitudes({
                             (s.fecha_recoleccion || '').split('T')[0] === toLocalDateStr(new Date()) && (
                               <Btn
                                 color="blue"
-                                onClick={() => onAccion(s.id, 'entregar', 'entregada')}
+                           onClick={() =>
+                                  onEntregar ? onEntregar(s) : onAccion(s.id, 'entregar', 'entregada')
+                                }
                                 disabled={procesandoId === s.id}
                               >
                                 Entregar
@@ -304,6 +307,10 @@ export default function SolicitudesPage() {
   const [minFilterDate, setMinFilterDate] = useState('');
   const [maxFilterDate, setMaxFilterDate] = useState('');
   const [notice, setNotice] = useState('');
+   const [activeTab, setActiveTab] = useState('alumnos');
+  const [search, setSearch] = useState('');
+  const [modalEntrega, setModalEntrega] = useState(null); // {id, items}
+  const [selectedItems, setSelectedItems] = useState([]);
 
   useEffect(() => {
     if (!notice) return;
@@ -523,14 +530,14 @@ export default function SolicitudesPage() {
   }
 
   /** Acciones aprobar/rechazar/entregar/cancelar */
-  const actualizarEstado = async (id, accion, nuevoEstadoUI) => {
+ const actualizarEstado = async (id, accion, nuevoEstadoUI, items = []) => {
     if (procesando) return;
     setProcesando(id);
     const token = localStorage.getItem('token');
     try {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitud/${id}/${accion}`,
-        {},
+       accion === 'entregar' ? { items_entregados: items } : {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -584,6 +591,50 @@ export default function SolicitudesPage() {
 
   const filteredAlmAlumnos = filterByDate(almAlumnos);
   const filteredAlmDocentes = filterByDate(almDocentes);
+
+   const applySearch = (arr) => {
+    const term = search.toLowerCase();
+    if (!term) return arr;
+    return arr.filter(s =>
+      s.folio.toLowerCase().includes(term) ||
+      (s.nombre_alumno || '').toLowerCase().includes(term) ||
+      (s.profesor || '').toLowerCase().includes(term)
+    );
+  };
+
+  const filteredDocAprobar = applySearch(docAprobar);
+  const filteredDocMias = applySearch(docMias);
+  const searchedAlmAlumnos = applySearch(filteredAlmAlumnos);
+  const searchedAlmDocentes = applySearch(filteredAlmDocentes);
+
+  const pendientesEntrega = usuario?.rol === 'almacen'
+    ? [...almAlumnos, ...almDocentes].filter(s => s.estado === 'entrega pendiente').length
+    : 0;
+
+  const abrirEntrega = (sol) => {
+    setModalEntrega(sol);
+    setSelectedItems([]);
+  };
+
+  const toggleItem = (id) => {
+    setSelectedItems(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const seleccionarTodos = () => {
+    if (!modalEntrega) return;
+    setSelectedItems(modalEntrega.items.map(i => i.item_id));
+  };
+
+  const confirmarEntrega = async () => {
+    if (!modalEntrega) return;
+    const items = modalEntrega.items
+      .filter(i => selectedItems.includes(i.item_id))
+      .map(i => ({ item_id: i.item_id, cantidad_entregada: i.cantidad }));
+    await actualizarEstado(modalEntrega.id, 'entregar', 'entregada', items);
+    setModalEntrega(null);
+  };
   
   /** PDF */
   const descargarPDF = async (vale) => {
@@ -746,32 +797,58 @@ export default function SolicitudesPage() {
       {/* DOCENTE */}
       {usuario?.rol === 'docente' && (
         <>
-          <TablaSolicitudes
-            titulo="Solicitudes de alumnos para aprobar"
-            data={docAprobar}
-            loading={loading}
-            showSolicitante
-            showEncargado={false}
-            showGrupo
-            columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-            usuario={usuario}
-            onAccion={actualizarEstado}
-            onPDF={descargarPDF}
-            procesandoId={procesando}
-          />
-          <TablaSolicitudes
-            titulo="Mis solicitudes como docente"
-            data={docMias}
-            loading={loading}
-            showSolicitante={false}
-            showEncargado={false}
-            showGrupo={false}
-            columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
-            usuario={usuario}
-            onAccion={actualizarEstado}
-            onPDF={descargarPDF}
-            procesandoId={procesando}
-          />
+         <div className="mb-4 flex items-center gap-2">
+            <div className="flex">
+              <button
+                className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+                onClick={() => setActiveTab('alumnos')}
+              >
+                Solicitudes de Alumnos
+              </button>
+              <button
+                className={`px-4 py-2 rounded-r border ${activeTab === 'mias' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+                onClick={() => setActiveTab('mias')}
+              >
+                Mis Solicitudes como Docente
+              </button>
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar por nombre o folio"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+            />
+          </div>
+          {activeTab === 'alumnos' ? (
+            <TablaSolicitudes
+              titulo="Solicitudes de alumnos para aprobar"
+              data={filteredDocAprobar}
+              loading={loading}
+              showSolicitante
+              showEncargado={false}
+              showGrupo
+              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+              usuario={usuario}
+              onAccion={actualizarEstado}
+              onPDF={descargarPDF}
+              procesandoId={procesando}
+            />
+          ) : (
+            <TablaSolicitudes
+              titulo="Mis solicitudes como docente"
+              data={filteredDocMias}
+              loading={loading}
+              showSolicitante={false}
+              showEncargado={false}
+              showGrupo={false}
+              columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
+              usuario={usuario}
+              onAccion={actualizarEstado}
+              onPDF={descargarPDF}
+              procesandoId={procesando}
+            />
+          )}
         </>
       )}
 
@@ -814,34 +891,100 @@ export default function SolicitudesPage() {
             )}
           </div>
 
-          <TablaSolicitudes
-            titulo="Solicitudes de alumnos"
-            data={filteredAlmAlumnos}
-            loading={loading}
-            showSolicitante
-            showEncargado
-            showGrupo
-            columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-            usuario={usuario}
-            onAccion={actualizarEstado}
-            onPDF={descargarPDF}
-            procesandoId={procesando}
-          />
+          <div className="mb-4 flex items-center gap-2">
+            <div className="relative flex">
+              {pendientesEntrega > 0 && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                  {pendientesEntrega}
+                </span>
+              )}
+              <button
+                className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+                onClick={() => setActiveTab('alumnos')}
+              >
+                Solicitudes de Alumnos
+              </button>
+              <button
+                className={`px-4 py-2 rounded-r border ${activeTab === 'docentes' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+                onClick={() => setActiveTab('docentes')}
+              >
+                Solicitudes de Docentes
+              </button>
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar por nombre o folio"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+            />
+          </div>
 
-          <TablaSolicitudes
-            titulo="Solicitudes de docentes"
-            data={filteredAlmDocentes}
-            loading={loading}
-            showSolicitante
-            showEncargado={false}
-            showGrupo={false}
-            columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-            usuario={usuario}
-            onAccion={actualizarEstado}
-            onPDF={descargarPDF}
-            procesandoId={procesando}
-          />
+          {activeTab === 'alumnos' ? (
+            <TablaSolicitudes
+              titulo="Solicitudes de alumnos"
+              data={searchedAlmAlumnos}
+              loading={loading}
+              showSolicitante
+              showEncargado
+              showGrupo
+              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+              usuario={usuario}
+              onAccion={actualizarEstado}
+              onEntregar={abrirEntrega}
+              onPDF={descargarPDF}
+              procesandoId={procesando}
+            />
+          ) : (
+            <TablaSolicitudes
+              titulo="Solicitudes de docentes"
+              data={searchedAlmDocentes}
+              loading={loading}
+              showSolicitante
+              showEncargado={false}
+              showGrupo={false}
+              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+              usuario={usuario}
+              onAccion={actualizarEstado}
+              onEntregar={abrirEntrega}
+              onPDF={descargarPDF}
+              procesandoId={procesando}
+            />
+          )}
         </>
+      )}
+
+       {modalEntrega && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Entregar materiales</h3>
+            <div className="space-y-2 mb-4">
+              {modalEntrega.items.map(item => (
+                <label key={item.item_id} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(item.item_id)}
+                    onChange={() => toggleItem(item.item_id)}
+                  />
+                  <span>{item.cantidad} {getUnidad(item.tipo)} {item.nombre_material}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex justify-between mb-4">
+              <button onClick={seleccionarTodos} className="text-sm text-blue-600">
+                Seleccionar todo
+              </button>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setModalEntrega(null)} className="px-3 py-1 text-sm">
+                Cancelar
+              </button>
+              <button onClick={confirmarEntrega} className="px-3 py-1 bg-blue-600 text-white rounded">
+                Entregar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
