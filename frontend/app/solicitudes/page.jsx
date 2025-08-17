@@ -1,20 +1,3 @@
-{/* Notice para almacén */}
-        {usuario?.rol === 'almacen' && notice && (
-          <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-100 border-l-4 border-blue-500 rounded-lg p-6 shadow-lg">
-            <div className="flex items-center gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-md">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-              <p className="text-blue-800 font-semibold text-lg">{notice}</p>
-            </div>
-          </div>
-        )}
-
 'use client';
 
 import { useEffect, useState } from 'react';
