@@ -166,7 +166,7 @@ function TablaSolicitudes({
                   {columnas.folio && <Td bold>{s.folio}</Td>}
 
                   {columnas.solicitante && (
-                    <Td>{s.isDocenteRequest ? `${s.profesor} (Docente)` : s.nombre_alumno}</Td>
+                   <Td>{s.isDocenteRequest ? s.profesor : s.nombre_alumno}</Td>
                   )}
 
                   {columnas.encargado && <Td>{s.profesor || ''}</Td>}
