@@ -10,7 +10,7 @@ export default function Historial() {
   const [historial, setHistorial] = useState([]);
   const [movimientos, setMovimientos] = useState([]);
   const [vista, setVista] = useState('solicitudes');
-const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [mostrarTodoSolicitudes, setMostrarTodoSolicitudes] = useState(false);
   const [mostrarTodoMovimientos, setMostrarTodoMovimientos] = useState(false);
@@ -45,7 +45,7 @@ const [loading, setLoading] = useState(false);
   const movimientosMostrados = mostrarTodoMovimientos ? movimientos : movimientos.slice(0, 8);
   
   useEffect(() => {
-// Verificar permisos - almacén (3) o administradores (4)
+    // Verificar permisos - almacén (3) o administradores (4)
     if (!usuario || ![3, 4].includes(usuario.rol_id)) {
       setError('Acceso denegado. Solo administradores o almacenistas pueden ver el historial.');
       return;
@@ -62,17 +62,17 @@ const [loading, setLoading] = useState(false);
         }
 
         const headers = { Authorization: `Bearer ${token}` };
-      const params = new URLSearchParams();
+        const params = new URLSearchParams();
         if (busqueda) params.append('busqueda', busqueda);
         const query = params.toString() ? `?${params.toString()}` : '';
 
         const solicitudesPromise = axios.get(
-       `${baseUrl}/api/materials/solicitudes/historial${query}`,
+          `${baseUrl}/api/materials/solicitudes/historial${query}`,
           { headers }
         );
 
         const movimientosPromise = axios.get(
-         `${baseUrl}/api/materials/historial-movimientos${query}`,
+          `${baseUrl}/api/materials/historial-movimientos${query}`,
           { headers }
         );
 
@@ -96,11 +96,11 @@ const [loading, setLoading] = useState(false);
       }
     };
 
-   const handler = setTimeout(() => {
+    const handler = setTimeout(() => {
       cargarDatos();
     }, 300);
 
- return () => clearTimeout(handler);
+    return () => clearTimeout(handler);
   }, [usuario, busqueda, baseUrl]);
 
   if (error) {
@@ -127,46 +127,46 @@ const [loading, setLoading] = useState(false);
   }
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen font-sans space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Historial del Sistema</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Historial del Sistema</h1>
         <div className="text-sm text-gray-600">
           {historial.length} solicitudes • {movimientos.length} movimientos
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white p-4 rounded-lg shadow">
-    <div className="flex flex-wrap gap-4 items-end">
+      <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+        <div className="flex flex-wrap gap-4 items-end">
           <div>
-            <label className="block mb-1 font-medium text-sm">Buscar</label>
+            <label className="block mb-1 font-medium text-sm text-gray-700">Buscar</label>
             <input
               type="text"
               value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
               placeholder="Nombre o folio"
               disabled={vista === 'movimientos'}
-              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 text-sm"
             />
           </div>
-         <div className="flex gap-2">
+          <div className="flex gap-2">
             <button
               onClick={() => setVista('solicitudes')}
-              className={`px-4 py-2 rounded ${vista === 'solicitudes' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+              className={`px-4 py-2 rounded ${vista === 'solicitudes' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-600 hover:text-white transition-colors`}
             >
               Solicitudes
             </button>
             <button
               onClick={() => setVista('movimientos')}
-              className={`px-4 py-2 rounded ${vista === 'movimientos' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+              className={`px-4 py-2 rounded ${vista === 'movimientos' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-600 hover:text-white transition-colors`}
             >
               Movimientos de Inventario
             </button>
           </div>
           {busqueda && (
             <button
-            onClick={() => setBusqueda('')}
-              className="px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+              onClick={() => setBusqueda('')}
+              className="px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-sm"
             >
               Limpiar filtro
             </button>
@@ -174,37 +174,37 @@ const [loading, setLoading] = useState(false);
         </div>
       </div>
 
-     <div className="space-y-6">
+      <div className="space-y-6">
         {vista === 'solicitudes' ? (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="bg-gray-50 px-4 py-3 border-b">
+          <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+            <div className="px-4 py-3 border-b bg-[#00BCD4] text-white">
               <h2 className="font-semibold text-lg">Historial de Solicitudes</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm mt-1">
                 {historial.length} solicitudes encontradas
               </p>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-[#00BCD4] text-white">
                   <tr>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitante</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Encargado</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recolección</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Devolución</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Materiales</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Folio</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Solicitante</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Encargado</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Recolección</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Devolución</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Estado</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Materiales</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                {solicitudesMostradas.length === 0 ? (
+                  {solicitudesMostradas.length === 0 ? (
                     <tr>
-               <td colSpan="7" className="px-3 py-8 text-center text-gray-500">
+                      <td colSpan="7" className="px-3 py-8 text-center text-gray-500">
                         No se encontraron solicitudes
                       </td>
                     </tr>
-                 ) : (
-                  solicitudesMostradas.map(h => (
+                  ) : (
+                    solicitudesMostradas.map(h => (
                       <tr key={h.id} className="hover:bg-gray-50">
                         <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{h.folio}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{h.nombre_display || h.solicitante}</td>
@@ -220,16 +220,16 @@ const [loading, setLoading] = useState(false);
                           <div className="truncate" title={h.materiales}>{h.materiales || 'Sin materiales'}</div>
                         </td>
                       </tr>
-                   ))
+                    ))
                   )}
                 </tbody>
               </table>
             </div>
-             {(!mostrarTodoSolicitudes && historial.length > 8) && (
+            {(!mostrarTodoSolicitudes && historial.length > 8) && (
               <div className="px-4 py-2 bg-gray-50 text-center">
                 <button
                   onClick={() => setMostrarTodoSolicitudes(true)}
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-600 hover:underline text-sm"
                 >
                   Mostrar más
                 </button>
@@ -237,34 +237,34 @@ const [loading, setLoading] = useState(false);
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="bg-gray-50 px-4 py-3 border-b">
+          <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+            <div className="px-4 py-3 border-b bg-[#00BCD4] text-white">
               <h2 className="font-semibold text-lg">Movimientos de Inventario</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm mt-1">
                 {movimientos.length} movimientos registrados
               </p>
             </div>
-         <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-[#00BCD4] text-white">
                   <tr>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Movimiento</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-                     <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Actual</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Material</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Tipo</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Movimiento</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Cantidad</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Stock Actual</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Usuario</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Fecha</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                   {movimientosMostrados.length === 0 ? (
+                  {movimientosMostrados.length === 0 ? (
                     <tr>
-                     <td colSpan="7" className="px-3 py-8 text-center text-gray-500">
+                      <td colSpan="7" className="px-3 py-8 text-center text-gray-500">
                         No se encontraron movimientos
                       </td>
                     </tr>
-                   ) : (
+                  ) : (
                     movimientosMostrados.map(m => (
                       <tr key={m.id} className="hover:bg-gray-50">
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{m.nombre_material || 'Material Desconocido'}</td>
@@ -272,23 +272,23 @@ const [loading, setLoading] = useState(false);
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{m.tipo_movimiento}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                           <span className={m.cantidad > 0 ? 'text-green-600' : 'text-red-600'}>
-                         {m.cantidad > 0 ? '+' : ''}{m.cantidad} {m.unidad}
+                            {m.cantidad > 0 ? '+' : ''}{m.cantidad} {m.unidad}
                           </span>
                         </td>
-                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{m.stock_actual} {m.unidad}</td>
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{m.stock_actual} {m.unidad}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{m.usuario || 'Sistema'}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{formatearFecha(m.fecha_movimiento)}</td>
                       </tr>
-                     ))
+                    ))
                   )}
                 </tbody>
               </table>
             </div>
-             {(!mostrarTodoMovimientos && movimientos.length > 8) && (
+            {(!mostrarTodoMovimientos && movimientos.length > 8) && (
               <div className="px-4 py-2 bg-gray-50 text-center">
                 <button
                   onClick={() => setMostrarTodoMovimientos(true)}
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-600 hover:underline text-sm"
                 >
                   Mostrar más
                 </button>
@@ -296,7 +296,7 @@ const [loading, setLoading] = useState(false);
             )}
           </div>
         )}
-        </div>
+      </div>
     </div>
   );
 }
