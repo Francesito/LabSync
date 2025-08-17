@@ -676,6 +676,13 @@ export default function Catalog() {
     }));
   };
 
+  const removeMassAdjustment = (key) => {
+    setMassAdjustments((prev) => {
+      const { [key]: _, ...rest } = prev;
+      return rest;
+    });
+  };
+
   const handleMassAdjustSubmit = async () => {
     const ajustes = Object.values(massAdjustments);
     if (ajustes.length === 0) return;
@@ -816,7 +823,7 @@ export default function Catalog() {
           <div className="main-card">
             <div className="header-section">
               {userPermissions.rol === 'almacen' && userPermissions.modificar_stock && (
-              <div className="header-buttons">
+             <div className="header-buttons">
                   <button
                     onClick={() => setShowAddModal(true)}
                     className="btn-add-material"
@@ -1207,7 +1214,7 @@ export default function Catalog() {
         </div>
       )}
 
-      {showMassAdjustModal && (
+       {showMassAdjustModal && (
         <div className="modal-overlay">
           <div className="modal-content-custom" style={{ maxWidth: '800px', width: '90%' }}>
             <div className="modal-header-custom">
@@ -1251,11 +1258,22 @@ export default function Catalog() {
               </div>
               {Object.values(massAdjustments).length > 0 && (
                 <div className="mass-tags mt-3">
-                  {Object.values(massAdjustments).map((a) => (
-                    <span key={`${a.id}-${a.tipo}`} className="ajuste-tag">
-                      {`${formatName(a.nombre)} ${a.cantidad} ${getUnidad(a.tipo)}`}
-                    </span>
-                  ))}
+                  {Object.values(massAdjustments).map((a) => {
+                    const key = `${a.id}-${a.tipo}`;
+                    return (
+                      <span key={key} className="ajuste-tag">
+                        {`${formatName(a.nombre)} ${a.cantidad} ${getUnidad(a.tipo)}`}
+                        <button
+                          type="button"
+                          className="tag-remove"
+                          aria-label="Eliminar"
+                          onClick={() => removeMassAdjustment(key)}
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    );
+                  })}
                 </div>
               )}
             </div>
