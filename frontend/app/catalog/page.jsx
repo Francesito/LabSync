@@ -256,10 +256,6 @@ export default function Catalog() {
       setLoading(true);
       console.log('fetchMaterials: Rol del usuario:', userPermissions.rol);
 
-      if (userPermissions.rol === 'administrador') {
-        setError('Como administrador, solo puedes ver los reactivos (sin interacción)');
-      }
-
       const [liquidoRes, solidoRes, laboratorioRes, equipoRes] = await Promise.all([
         makeSecureApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/liquidos`),
         makeSecureApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/solidos`),
@@ -841,7 +837,7 @@ export default function Catalog() {
               <h1>Catálogo de Materiales</h1>
             </div>
 
-            {canModifyStock() && lowStockMaterials.length > 0 && (
+         {userPermissions.rol === 'almacen' && canModifyStock() && lowStockMaterials.length > 0 && (
               <div className="low-stock-alerts">
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
                   <div
