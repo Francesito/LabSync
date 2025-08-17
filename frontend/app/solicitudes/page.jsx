@@ -610,16 +610,8 @@ export default function SolicitudesPage() {
   const pendientesDocAlumnos = docAprobar.filter(
     s => ['aprobación pendiente', 'aprobacion pendiente'].includes((s.estado || '').toLowerCase())
   ).length;
-  const pendientesDocMias = docMias.filter(s => s.estado === 'entrega pendiente').length;
   const pendientesAlmAlumnos = almAlumnos.filter(s => s.estado === 'entrega pendiente').length;
   const pendientesAlmDocentes = almDocentes.filter(s => s.estado === 'entrega pendiente').length;
-
-  const pendientesEntrega = usuario?.rol === 'almacen'
-    ? pendientesAlmAlumnos + pendientesAlmDocentes
-    : 0;
-  const pendientesAprobacion = usuario?.rol === 'docente'
-    ? pendientesDocAlumnos
-    : 0;
 
   const abrirEntrega = (sol) => {
     setModalEntrega(sol);
@@ -809,11 +801,6 @@ export default function SolicitudesPage() {
         <>
          <div className="mb-4 flex items-center gap-2">
             <div className="relative flex">
-              {pendientesAprobacion > 0 && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
-                  {pendientesAprobacion}
-                </span>
-              )}
               <div className="relative">
                 {pendientesDocAlumnos > 0 && (
                   <span className="absolute -top-2 right-0 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
@@ -828,11 +815,6 @@ export default function SolicitudesPage() {
                 </button>
               </div>
               <div className="relative -ml-px">
-                {pendientesDocMias > 0 && (
-                  <span className="absolute -top-2 right-0 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
-                    {pendientesDocMias}
-                  </span>
-                )}
                 <button
                   className={`px-4 py-2 rounded-r border ${activeTab === 'mias' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
                   onClick={() => setActiveTab('mias')}
@@ -846,7 +828,7 @@ export default function SolicitudesPage() {
               placeholder="Buscar por nombre o folio"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+               className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
           {activeTab === 'alumnos' ? (
@@ -922,11 +904,6 @@ export default function SolicitudesPage() {
 
           <div className="mb-4 flex items-center gap-2">
             <div className="relative flex">
-              {pendientesEntrega > 0 && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
-                  {pendientesEntrega}
-                </span>
-              )}
               <div className="relative">
                 {pendientesAlmAlumnos > 0 && (
                   <span className="absolute -top-2 right-0 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
@@ -959,7 +936,7 @@ export default function SolicitudesPage() {
               placeholder="Buscar por nombre o folio"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+            className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
