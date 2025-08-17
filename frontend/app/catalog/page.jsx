@@ -14,6 +14,7 @@ export default function Catalog() {
   const [selectedCart, setSelectedCart] = useState([]);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
+    const [showMassAdjustModal, setShowMassAdjustModal] = useState(false);  
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [materialToAdjust, setMaterialToAdjust] = useState(null);
@@ -33,6 +34,9 @@ export default function Catalog() {
   const [maxPickupDate, setMaxPickupDate] = useState('');
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+    const [massAdjustments, setMassAdjustments] = useState({});
+  const [massSearchTerm, setMassSearchTerm] = useState('');
+  const [massError, setMassError] = useState('');
   const [newMaterial, setNewMaterial] = useState({
     tipoGeneral: 'Reactivo',
     subTipo: '',
@@ -649,6 +653,57 @@ export default function Catalog() {
     }
   };
 
+   const handleMassAdjustChange = (material, value) => {
+    const delta = parseInt(value, 10);
+    const key = `${material.id}-${material.tipo}`;
+    if (isNaN(delta) || delta === 0) {
+      setMassAdjustments((prev) => {
+        const { [key]: _, ...rest } = prev;
+        return rest;
+      });
+      return;
+    }
+    if (delta < 0 && Math.abs(delta) > material.cantidad) {
+      setMassError(
+        `No puedes restar más de ${material.cantidad} ${getUnidad(material.tipo)} de ${formatName(material.nombre)}`
+      );
+      return;
+    }
+    setMassError('');
+    setMassAdjustments((prev) => ({
+      ...prev,
+      [key]: { id: material.id, tipo: material.tipo, nombre: material.nombre, cantidad: delta },
+    }));
+  };
+
+  const handleMassAdjustSubmit = async () => {
+    const ajustes = Object.values(massAdjustments);
+    if (ajustes.length === 0) return;
+
+    if (!(userPermissions.rol === 'almacen' && userPermissions.modificar_stock)) {
+      handlePermissionError('adjust_stock');
+      return;
+    }
+
+    try {
+      await makeSecureApiCall(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/materials/ajuste-masivo`,
+        {
+          method: 'POST',
+          data: { ajustes: ajustes.map(({ id, tipo, cantidad }) => ({ id, tipo, cantidad })) },
+        }
+      );
+      setMassAdjustments({});
+      setMassSearchTerm('');
+      setMassError('');
+      setShowMassAdjustModal(false);
+      await fetchMaterials();
+    } catch (err) {
+      console.error('Error en ajuste masivo:', err);
+      setMassError(err.response?.data?.error || 'No se pudo ajustar el stock');
+    }
+  };
+  
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     setAddError('');
@@ -761,12 +816,20 @@ export default function Catalog() {
           <div className="main-card">
             <div className="header-section">
               {userPermissions.rol === 'almacen' && userPermissions.modificar_stock && (
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="btn-add-material"
-                >
-                  Agregar Material/Reactivo
-                </button>
+              <div className="header-buttons">
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="btn-add-material"
+                  >
+                    Agregar Material/Reactivo
+                  </button>
+                  <button
+                    onClick={() => setShowMassAdjustModal(true)}
+                    className="btn-mass-adjust"
+                  >
+                    Ajuste Masivo
+                  </button>
+                </div>
               )}
               <h1>Catálogo de Materiales</h1>
             </div>
@@ -1144,6 +1207,77 @@ export default function Catalog() {
         </div>
       )}
 
+      {showMassAdjustModal && (
+        <div className="modal-overlay">
+          <div className="modal-content-custom" style={{ maxWidth: '800px', width: '90%' }}>
+            <div className="modal-header-custom">
+              <h5 className="modal-title">Ajuste Masivo de Inventario</h5>
+              <button
+                className="btn-close btn-close-white"
+                onClick={() => setShowMassAdjustModal(false)}
+              />
+            </div>
+            <div className="modal-body p-4">
+              {massError && <div className="alert-custom mb-3">{massError}</div>}
+              <input
+                type="text"
+                className="form-control mb-3"
+                placeholder="Buscar..."
+                value={massSearchTerm}
+                onChange={(e) => setMassSearchTerm(e.target.value)}
+              />
+              <div className="mass-adjust-grid">
+                {allMaterials
+                  .filter((m) =>
+                    formatName(m.nombre)
+                      .toLowerCase()
+                      .includes(massSearchTerm.toLowerCase())
+                  )
+                  .map((m) => {
+                    const key = `${m.id}-${m.tipo}`;
+                    return (
+                      <div key={key} className="mass-adjust-item">
+                        <span>{formatName(m.nombre)}</span>
+                        <input
+                          type="number"
+                          className="mass-input"
+                          placeholder={getUnidad(m.tipo)}
+                          value={massAdjustments[key]?.cantidad ?? ''}
+                          onChange={(e) => handleMassAdjustChange(m, e.target.value)}
+                        />
+                      </div>
+                    );
+                  })}
+              </div>
+              {Object.values(massAdjustments).length > 0 && (
+                <div className="mass-tags mt-3">
+                  {Object.values(massAdjustments).map((a) => (
+                    <span key={`${a.id}-${a.tipo}`} className="ajuste-tag">
+                      {`${formatName(a.nombre)} ${a.cantidad} ${getUnidad(a.tipo)}`}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="modal-footer-custom">
+              <button
+                className="btn-secondary-custom"
+                onClick={() => setShowMassAdjustModal(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn-adjust btn-w-md"
+                onClick={handleMassAdjustSubmit}
+                disabled={Object.values(massAdjustments).length === 0}
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {showRequestModal && (
         <div className="modal-overlay">
           <div className="modal-content-custom">
