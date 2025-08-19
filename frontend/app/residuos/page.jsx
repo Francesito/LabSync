@@ -4,6 +4,8 @@
 import { useState, useEffect } from 'react';
 import { obtenerResiduos, registrarResiduo, eliminarResiduos } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const LABS = [
   'Laboratorio de Química Básica',
@@ -44,6 +46,7 @@ export default function ResiduosPage() {
   const [entries, setEntries] = useState([]);
   const [selected, setSelected] = useState([]);
   const [historial, setHistorial] = useState([]);
+   const [search, setSearch] = useState('');
   const { usuario } = useAuth();
 
   useEffect(() => {
@@ -154,6 +157,25 @@ export default function ResiduosPage() {
     }
   };
 
+  const handleDownloadPDF = () => {
+    if (entries.length === 0) return;
+    const doc = new jsPDF();
+    const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
+    const rows = entries.map(e => [
+      formatDate(e.fecha),
+      e.laboratorio,
+      e.reactivo,
+      getTipoLabel(e.tipo),
+      e.cantidad,
+      e.unidad
+    ]);
+    autoTable(doc, {
+      head: [headers],
+      body: rows,
+    });
+    doc.save('residuos.pdf');
+  };
+  
   const downloadHistorial = (registros, nombre) => {
     if (!registros || registros.length === 0) return;
     const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
@@ -177,13 +199,49 @@ export default function ResiduosPage() {
     URL.revokeObjectURL(url);
   };
 
+  const downloadHistorialPDF = (registros, nombre) => {
+    if (!registros || registros.length === 0) return;
+    const doc = new jsPDF();
+    const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
+    const rows = registros.map(r => [
+      formatDate(r.fecha),
+      r.laboratorio,
+      r.reactivo,
+      getTipoLabel(r.tipo),
+      r.cantidad,
+      r.unidad
+    ]);
+    autoTable(doc, {
+      head: [headers],
+      body: rows,
+    });
+    doc.save(`residuos_${nombre || 'alumno'}.pdf`);
+  };
+  
   const allChecked = selected.length === entries.length && entries.length > 0;
 
+  const filteredHistorial = historial.filter((h) => {
+    const term = search.toLowerCase();
+    return (
+      (h.nombre || '').toLowerCase().includes(term) ||
+      (h.grupo || '').toLowerCase().includes(term)
+    );
+  });
+  
   if (usuario?.rol === 'almacen' || usuario?.rol === 'administrador') {
     return (
       <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
         <h1 className="text-3xl font-bold mb-6 text-center">Historial de Residuos</h1>
-        {historial.length === 0 ? (
+       <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Buscar por nombre o grupo"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full sm:w-64 border px-3 py-2 rounded"
+          />
+        </div>
+        {filteredHistorial.length === 0 ? (
           <p className="text-gray-600">No hay registros.</p>
         ) : (
           <div className="overflow-x-auto">
@@ -196,17 +254,25 @@ export default function ResiduosPage() {
                 </tr>
               </thead>
               <tbody>
-                {historial.map((h, idx) => (
+               {filteredHistorial.map((h, idx) => (
                   <tr key={idx} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-2">{h.nombre}</td>
                     <td className="px-4 py-2">{h.grupo}</td>
                     <td className="px-4 py-2">
-                      <button
-                        onClick={() => downloadHistorial(h.registros, h.nombre)}
-                        className="bg-blue-600 text-white px-3 py-1 rounded"
-                      >
-                        Descargar CSV
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => downloadHistorial(h.registros, h.nombre)}
+                          className="bg-blue-600 text-white px-3 py-1 rounded"
+                        >
+                          CSV
+                        </button>
+                        <button
+                          onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
+                          className="bg-green-600 text-white px-3 py-1 rounded"
+                        >
+                          PDF
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -229,13 +295,20 @@ export default function ResiduosPage() {
         <section className="flex-1">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold">Historial de Registros</h2>
-       <div className="flex gap-2">
+        <div className="flex gap-2">
               <button
                 onClick={handleDownload}
                 className="bg-green-600 text-white px-4 py-2 rounded"
                 disabled={entries.length === 0}
               >
                 Descargar CSV
+              </button>
+           <button
+                onClick={handleDownloadPDF}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+                disabled={entries.length === 0}
+              >
+                PDF
               </button>
               <button
                 onClick={handleDelete}
