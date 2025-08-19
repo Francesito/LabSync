@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { obtenerResiduos, registrarResiduo, eliminarResiduos } from '../../lib/api';
+import { useAuth } from '../../lib/auth';
 
 const LABS = [
   'Laboratorio de Química Básica',
@@ -42,12 +43,31 @@ export default function ResiduosPage() {
 
   const [entries, setEntries] = useState([]);
   const [selected, setSelected] = useState([]);
+  const [historial, setHistorial] = useState([]);
+  const { usuario } = useAuth();
 
   useEffect(() => {
     obtenerResiduos()
-      .then((data) => setEntries(Array.isArray(data) ? data : []))
-      .catch(() => setEntries([]));
-  }, []);
+      .then((data) => {
+        if (usuario?.rol === 'almacen' || usuario?.rol === 'administrador') {
+          const grouped = {};
+          (Array.isArray(data) ? data : []).forEach((e) => {
+            const key = `${e.nombre || ''}-${e.grupo || ''}`;
+            if (!grouped[key]) {
+              grouped[key] = { nombre: e.nombre || '', grupo: e.grupo || '', registros: [] };
+            }
+            grouped[key].registros.push(e);
+          });
+          setHistorial(Object.values(grouped));
+        } else {
+          setEntries(Array.isArray(data) ? data : []);
+        }
+      })
+      .catch(() => {
+        if (usuario?.rol === 'almacen' || usuario?.rol === 'administrador') setHistorial([]);
+        else setEntries([]);
+      });
+  }, [usuario]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -103,7 +123,100 @@ export default function ResiduosPage() {
     }
   };
 
+  const handleDownload = async () => {
+    if (entries.length === 0) return;
+    if (!window.confirm('Al descargar el CSV se eliminarán todos los registros. ¿Deseas continuar?')) return;
+    const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
+    const rows = entries.map(e => [
+      formatDate(e.fecha),
+      e.laboratorio,
+      e.reactivo,
+      getTipoLabel(e.tipo),
+      e.cantidad,
+      e.unidad
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'residuos.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    try {
+      await eliminarResiduos(entries.map(e => e.id));
+      setEntries([]);
+      setSelected([]);
+    } catch (err) {
+      console.error('Error al eliminar residuos:', err);
+    }
+  };
+
+  const downloadHistorial = (registros, nombre) => {
+    if (!registros || registros.length === 0) return;
+    const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
+    const rows = registros.map(r => [
+      formatDate(r.fecha),
+      r.laboratorio,
+      r.reactivo,
+      getTipoLabel(r.tipo),
+      r.cantidad,
+      r.unidad
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `residuos_${nombre || 'alumno'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const allChecked = selected.length === entries.length && entries.length > 0;
+
+  if (usuario?.rol === 'almacen' || usuario?.rol === 'administrador') {
+    return (
+      <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
+        <h1 className="text-3xl font-bold mb-6 text-center">Historial de Residuos</h1>
+        {historial.length === 0 ? (
+          <p className="text-gray-600">No hay registros.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full bg-white rounded-lg shadow">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 text-left">Nombre</th>
+                  <th className="px-4 py-2 text-left">Grupo</th>
+                  <th className="px-4 py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {historial.map((h, idx) => (
+                  <tr key={idx} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-2">{h.nombre}</td>
+                    <td className="px-4 py-2">{h.grupo}</td>
+                    <td className="px-4 py-2">
+                      <button
+                        onClick={() => downloadHistorial(h.registros, h.nombre)}
+                        className="bg-blue-600 text-white px-3 py-1 rounded"
+                      >
+                        Descargar CSV
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
@@ -116,13 +229,22 @@ export default function ResiduosPage() {
         <section className="flex-1">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold">Historial de Registros</h2>
-            <button
-              onClick={handleDelete}
-              disabled={selected.length === 0}
-              className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
-            >
-              Eliminar seleccionados
-            </button>
+       <div className="flex gap-2">
+              <button
+                onClick={handleDownload}
+                className="bg-green-600 text-white px-4 py-2 rounded"
+                disabled={entries.length === 0}
+              >
+                Descargar CSV
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={selected.length === 0}
+                className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
+              >
+                Eliminar seleccionados
+              </button>
+            </div>
           </div>
 
           {entries.length === 0 ? (
