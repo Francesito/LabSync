@@ -741,13 +741,13 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen font-sans">
      <div className="mb-8">
         <Image
-          src="/background.jpg"
+          src="/Solicitudes.png"
           alt="Solicitudes de préstamo"
           width={1200}
           height={150}
           className="w-full h-[150px] object-cover rounded"
         />
-      </div>
+         </div>
 
       {/* Error */}
       {error && (
