@@ -592,19 +592,20 @@ export default function SolicitudesPage() {
   const filteredAlmAlumnos = filterByDate(almAlumnos);
   const filteredAlmDocentes = filterByDate(almDocentes);
 
-    const applySearch = (arr) => {
+    const applySearch = (arr, includeGrupo = false) => {
     const term = search.toLowerCase();
     if (!term) return arr;
     return arr.filter(s =>
       s.folio.toLowerCase().includes(term) ||
       (s.nombre_alumno || '').toLowerCase().includes(term) ||
-      (s.profesor || '').toLowerCase().includes(term)
+      (s.profesor || '').toLowerCase().includes(term) ||
+      (includeGrupo && (s.grupo || '').toLowerCase().includes(term))
     );
   };
 
-  const filteredDocAprobar = applySearch(docAprobar);
+const filteredDocAprobar = applySearch(docAprobar, true);
   const filteredDocMias = applySearch(docMias);
-  const searchedAlmAlumnos = applySearch(filteredAlmAlumnos);
+  const searchedAlmAlumnos = applySearch(filteredAlmAlumnos, true);
   const searchedAlmDocentes = applySearch(filteredAlmDocentes);
 
   const pendientesDocAlumnos = docAprobar.filter(
@@ -738,11 +739,14 @@ export default function SolicitudesPage() {
   // --- RENDER POR ROL ---
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen font-sans">
-      <div className="mb-8 flex items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Solicitudes de Préstamo</h1>
-          <p className="text-gray-600">Gestiona y supervisa las solicitudes según tu rol</p>
-        </div>
+     <div className="mb-8">
+        <Image
+          src="/background.jpg"
+          alt="Solicitudes de préstamo"
+          width={1200}
+          height={150}
+          className="w-full h-[150px] object-cover rounded"
+        />
       </div>
 
       {/* Error */}
@@ -825,7 +829,7 @@ export default function SolicitudesPage() {
             </div>
             <input
               type="text"
-              placeholder="Buscar por nombre o folio"
+           placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo' : 'Buscar por nombre o folio'}
               value={search}
               onChange={e => setSearch(e.target.value)}
                className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -933,7 +937,7 @@ export default function SolicitudesPage() {
             </div>
             <input
               type="text"
-              placeholder="Buscar por nombre o folio"
+              placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo' : 'Buscar por nombre o folio'}
               value={search}
               onChange={e => setSearch(e.target.value)}
             className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
