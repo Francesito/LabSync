@@ -171,3 +171,11 @@ export async function registrarResiduo(payload) {
   });
   return data;
 }
+
+export async function eliminarResiduos(ids) {
+  const token = localStorage.getItem('token');
+  await API.delete('/residuos', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    data: { ids }
+  });
+}
