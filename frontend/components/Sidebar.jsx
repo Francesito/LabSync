@@ -58,11 +58,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   if (!usuario) return null;
 
-  // Visibilidad por rol:
-  // Docente (2): catálogo, solicitudes, adeudos
-  // Alumno  (1): catálogo, solicitudes, adeudos, residuos, chat
-  // Almacén (3): catálogo, solicitudes, préstamos, chat
-  // Admin   (4): catálogo, configuración
+// Visibilidad por rol:
+// Docente (2): catálogo, solicitudes, adeudos
+// Alumno  (1): catálogo, solicitudes, adeudos, residuos, chat
+// Almacén (3): catálogo, solicitudes, préstamos, residuos, chat
+// Admin   (4): catálogo, configuración, residuos
   const navItems = [
     { 
       href: '/catalog', 
@@ -106,7 +106,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             d="M3 6h18M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6M10 10h4M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
         </svg>
       ),
-      visible: usuario.rol_id === 1, // solo alumno
+     visible: [1, 3, 4].includes(usuario.rol_id), // alumno, almacén y admin
       color: 'emerald',
     },
     {
