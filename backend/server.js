@@ -159,13 +159,16 @@ const initializeResiduoTable = async () => {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS Residuo (
         id INT NOT NULL AUTO_INCREMENT,
+         usuario_id INT NOT NULL,
         fecha DATE NOT NULL,
         laboratorio VARCHAR(100) NOT NULL,
         reactivo VARCHAR(100) NOT NULL,
         tipo ENUM('quimico','biologico','radiactivo','comun') NOT NULL,
         cantidad DECIMAL(10,2) NOT NULL,
         unidad ENUM('ml','g','u') NOT NULL,
-        PRIMARY KEY (id)
+       PRIMARY KEY (id),
+        KEY usuario_id (usuario_id),
+        CONSTRAINT Residuo_ibfk_1 FOREIGN KEY (usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE
       );
     `);
     console.log('✅ Tabla Residuo inicializada correctamente');
