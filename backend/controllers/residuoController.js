@@ -2,7 +2,7 @@ const { getResiduos, createResiduo, deleteResiduos } = require('../models/residu
 
 const obtenerResiduos = async (req, res) => {
   try {
-    const residuos = await getResiduos();
+  const residuos = await getResiduos(req.usuario);
     res.json(residuos);
   } catch (error) {
     console.error('[Error] obtenerResiduos:', error);
@@ -16,7 +16,11 @@ const registrarResiduo = async (req, res) => {
     return res.status(400).json({ error: 'Faltan datos obligatorios' });
   }
   try {
-    const nuevo = await createResiduo({ fecha, laboratorio, reactivo, tipo, cantidad, unidad });
+   const usuario_id = req.usuario?.id;
+    if (!usuario_id) {
+      return res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+    const nuevo = await createResiduo({ usuario_id, fecha, laboratorio, reactivo, tipo, cantidad, unidad });
     res.status(201).json(nuevo);
   } catch (error) {
     console.error('[Error] registrarResiduo:', error);
