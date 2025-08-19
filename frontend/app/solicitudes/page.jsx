@@ -871,43 +871,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
       {/* ALMACÉN */}
       {usuario?.rol === 'almacen' && (
         <>
-          <div className="mb-4 flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Filtrar por fecha:</label>
-            <input
-              type="date"
-              value={filterDate}
-              min={minFilterDate}
-              max={maxFilterDate}
-              onChange={e => {
-                const v = e.target.value;
-                if (!v) { setFilterDate(''); return; }
-                const d = new Date(v);
-                const day = d.getDay();
-                if (day === 0 || day === 6) return; // evitar fines de semana
-                if (v >= minFilterDate && v <= maxFilterDate) {
-                  setFilterDate(v);
-                }
-              }}
-              className="border border-gray-300 rounded-md px-2 py-1 text-sm"
-            />
-            {filterDate && (
-              <button
-                onClick={() => setFilterDate('')}
-                className="text-xs text-blue-600 hover:underline"
-              >
-                Limpiar
-              </button>
-            )}
-            {notice && (
-              <div className="ml-auto">
-                <div className="px-4 py-2 text-sm bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
-                  {notice}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="mb-4 flex items-center gap-2">
+    <div className="mb-4 flex flex-wrap items-center gap-2">
             <div className="relative flex">
               <div className="relative">
                 {pendientesAlmAlumnos > 0 && (
@@ -943,7 +907,42 @@ const filteredDocAprobar = applySearch(docAprobar, true);
               onChange={e => setSearch(e.target.value)}
             className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-          </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">Filtrar por fecha:</label>
+              <input
+                type="date"
+                value={filterDate}
+                min={minFilterDate}
+                max={maxFilterDate}
+                onChange={e => {
+                  const v = e.target.value;
+                  if (!v) { setFilterDate(''); return; }
+                  const d = new Date(v);
+                  const day = d.getDay();
+                  if (day === 0 || day === 6) return; // evitar fines de semana
+                  if (v >= minFilterDate && v <= maxFilterDate) {
+                    setFilterDate(v);
+                  }
+                }}
+                className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+              />
+              {filterDate && (
+                <button
+                  onClick={() => setFilterDate('')}
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+            {notice && (
+              <div className="ml-auto">
+                <div className="px-4 py-2 text-sm bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
+                  {notice}
+                </div>
+              </div>
+            )}
+         </div>
 
           {activeTab === 'alumnos' ? (
             <TablaSolicitudes
