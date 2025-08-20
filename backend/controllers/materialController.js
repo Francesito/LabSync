@@ -730,9 +730,30 @@ const deliverSolicitud = async (req, res) => {
       [id]
     );
     
-    const items = Array.isArray(items_entregados) && items_entregados.length > 0
-      ? itemsRows.filter((it) => items_entregados.includes(it.solicitud_item_id))
-      : itemsRows;
+    // Normalizar la lista de ítems entregados. El frontend puede enviar
+    // un arreglo de IDs o un arreglo de objetos { item_id, cantidad_entregada }.
+    let items;
+    if (Array.isArray(items_entregados) && items_entregados.length > 0) {
+      const idToCantidad = new Map();
+      for (const entry of items_entregados) {
+        if (entry && typeof entry === 'object') {
+          idToCantidad.set(entry.item_id, entry.cantidad_entregada);
+        } else {
+          idToCantidad.set(entry, undefined);
+        }
+      }
+
+      items = itemsRows
+        .filter((it) => idToCantidad.has(it.solicitud_item_id))
+        .map((it) => ({
+          ...it,
+          cantidad: idToCantidad.get(it.solicitud_item_id) ?? it.cantidad,
+        }));
+
+      if (items.length === 0) items = itemsRows;
+    } else {
+      items = itemsRows;
+    }
 
     // 5) Insertar un registro de adeudo por cada ítem seleccionado
     for (const it of items) {
