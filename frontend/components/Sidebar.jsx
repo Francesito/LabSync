@@ -106,7 +106,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             d="M3 6h18M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6M10 10h4M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
         </svg>
       ),
-     visible: [1, 3, 4].includes(usuario.rol_id), // alumno, almacén y admin
+    visible: usuario.rol_id === 1, // solo alumno
       color: 'emerald',
     },
     {
@@ -130,6 +130,18 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </svg>
       ),
       visible: [1, 3].includes(usuario.rol_id), // alumno y almacén (docente y admin no)
+      color: 'indigo',
+    },
+    {
+      href: '/reportes',
+      label: 'Reportes',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v2H7a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v3" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h5l-1.5 2M17 16l-1.5-2" />
+        </svg>
+      ),
+      visible: [3,4].includes(usuario.rol_id), // almacén y admin
       color: 'indigo',
     },
     {
