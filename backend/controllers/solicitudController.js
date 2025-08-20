@@ -478,14 +478,14 @@ const entregarMateriales = async (req, res) => {
       return res.status(400).json({ error: 'La solicitud debe estar aprobada para entregar materiales' });
     }
 
-     const reco = solicitud[0].fecha_recoleccion;
+      const reco = solicitud[0].fecha_recoleccion;
     const fechaDevolucion = solicitud[0].fecha_devolucion;
     const solicitanteId = solicitud[0].usuario_id;
-    const fmt = (d) =>
-      new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-        .toISOString()
-        .split('T')[0];
-    if (!reco || fmt(new Date(reco)) !== fmt(new Date())) {
+    const formatDateMX = (date) =>
+      new Date(date).toLocaleDateString('en-CA', {
+        timeZone: 'America/Mexico_City',
+      });
+    if (!reco || formatDateMX(reco) !== formatDateMX(new Date())) {
       await connection.rollback();
       return res
         .status(400)
@@ -589,7 +589,7 @@ const entregarMateriales = async (req, res) => {
             'Entrega de solicitud'
           ]
         );
-         await connection.query(
+        await connection.query(
           `INSERT INTO Adeudo
              (solicitud_id, solicitud_item_id, usuario_id, material_id, tipo, cantidad_pendiente, fecha_entrega)
            VALUES (?, ?, ?, ?, ?, ?, ?)`,
