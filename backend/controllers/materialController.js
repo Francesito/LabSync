@@ -686,22 +686,23 @@ const deliverSolicitud = async (req, res) => {
         .json({ error: 'Solo solicitudes aprobadas pueden entregarse' });
     }
 
-   // Comparar fechas en la zona horaria local para evitar desajustes por UTC
-    const formatMX = (date) =>
-      new Date(date).toLocaleDateString('en-CA', {
-        timeZone: 'America/Mexico_City'
-      });
+   // Comparar fechas usando la zona horaria local para evitar desajustes por UTC
+    const fmt = (d) =>
+      new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
 
-    const todayStr = formatMX(new Date());
-    if (!sol.fecha_recoleccion || formatMX(sol.fecha_recoleccion) !== todayStr) {
+    const todayStr = fmt(new Date());
+    const recoStr = sol.fecha_recoleccion ? fmt(new Date(sol.fecha_recoleccion)) : null;
+    if (!recoStr || recoStr !== todayStr) {
       return res
         .status(400)
         .json({ error: 'La solicitud solo puede entregarse en su fecha de recolección' });
     }
     
-    // 2) Marcar la solicitud como entregada
+     // 2) Marcar la solicitud como entregada y registrar la fecha de entrega
     await pool.query(
-      'UPDATE Solicitud SET estado = ? WHERE id = ?',
+     'UPDATE Solicitud SET estado = ?, fecha_entrega = NOW() WHERE id = ?',
       ['entregado', id]
     );
 
