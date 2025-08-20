@@ -109,8 +109,8 @@ export default function Login() {
                 type="submit" 
                 className="btn w-100 fw-semibold mb-4"
                 style={{
-                  backgroundColor: '#d4634a',
-                  borderColor: '#d4634a',
+                 backgroundColor: '#003579',
+                  borderColor: '#003579',
                   color: 'white',
                   borderRadius: '4px',
                   padding: '12px',
@@ -160,8 +160,8 @@ export default function Login() {
         }
         
         .form-check-input:checked {
-          background-color: #d4634a !important;
-          border-color: #d4634a !important;
+         background-color: #003579 !important;
+          border-color: #003579 !important;
         }
         
         .form-check-input:focus {
