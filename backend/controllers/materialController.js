@@ -670,11 +670,11 @@ const rejectSolicitud = async (req, res) => {
 const deliverSolicitud = async (req, res) => {
   logRequest('deliverSolicitud');
   const { id } = req.params;
+  const { items_entregados } = req.body || {};
   try {
     // 1) Verificar existencia y estado
     const [rows] = await pool.query(
- `SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion,
-              DATE(fecha_recoleccion) = CURDATE() AS es_hoy
+  `SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion
          FROM Solicitud WHERE id = ?`,
       [id]
     );
@@ -688,7 +688,14 @@ const deliverSolicitud = async (req, res) => {
         .json({ error: 'Solo solicitudes aprobadas pueden entregarse' });
     }
 
- if (!sol.es_hoy) {
+const fmt = (d) =>
+      new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
+    if (
+      !sol.fecha_recoleccion ||
+      fmt(new Date(sol.fecha_recoleccion)) !== fmt(new Date())
+    ) {
       return res
         .status(400)
         .json({ error: 'La solicitud solo puede entregarse en su fecha de recolección' });
@@ -701,12 +708,15 @@ const deliverSolicitud = async (req, res) => {
     );
 
     // 3) Leer los ítems asociados
-    const [items] = await pool.query(
+    const [itemsRows] = await pool.query(
       'SELECT id AS solicitud_item_id, material_id, tipo, cantidad FROM SolicitudItem WHERE solicitud_id = ?',
       [id]
     );
+     const items = Array.isArray(items_entregados) && items_entregados.length > 0
+      ? itemsRows.filter((it) => items_entregados.includes(it.solicitud_item_id))
+      : itemsRows;
 
-    // 4) Insertar un registro de adeudo por cada ítem, usando la fecha_devolucion como fecha límite
+    // 4) Insertar un registro de adeudo por cada ítem seleccionado, usando la fecha_devolucion como fecha límite
     for (const it of items) {
       await pool.query(
         `INSERT INTO Adeudo
