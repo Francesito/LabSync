@@ -716,7 +716,6 @@ const deliverSolicitud = async (req, res) => {
     }
     
     // 3) Marcar la solicitud como entregada y registrar la fecha de entrega
-     tomando la fecha/hora actual en la zona horaria de México.
     const fechaEntregaMx = new Date().toLocaleString('sv-SE', {
       timeZone: 'America/Mexico_City'
     });
