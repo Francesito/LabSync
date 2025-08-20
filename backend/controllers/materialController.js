@@ -688,13 +688,10 @@ const deliverSolicitud = async (req, res) => {
         .json({ error: 'Solo solicitudes aprobadas pueden entregarse' });
     }
 
- const formatDateMX = (date) =>
-      new Date(date).toLocaleDateString('en-CA', {
-        timeZone: 'America/Mexico_City',
-      });
+const formatDate = (date) => new Date(date).toISOString().split('T')[0];
     if (
       !sol.fecha_recoleccion ||
-      formatDateMX(sol.fecha_recoleccion) !== formatDateMX(new Date())
+    formatDate(sol.fecha_recoleccion) !== formatDate(new Date())
     ) {
       return res
         .status(400)
