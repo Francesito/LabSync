@@ -215,7 +215,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
  <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 z-50 bg-gray-600 text-white rounded-full p-1 transition-all duration-300"
+       className="fixed top-4 z-50 bg-[#003579] text-white rounded-full p-1 transition-all duration-300"
         style={{ left: isOpen ? '16rem' : '0.5rem' }}
       >
         {isOpen ? (
@@ -240,7 +240,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
          <aside
         className="fixed top-0 left-0 h-screen flex flex-col overflow-y-auto transition-all duration-300"
         style={{
-          backgroundColor: '#4b5563',
+         backgroundColor: '#003579',
           width: isOpen ? '16rem' : '0',
           zIndex: 40,
         }}
