@@ -691,29 +691,26 @@ const deliverSolicitud = async (req, res) => {
       });
     }
 
-    // 2) Validar fecha de recolección - CORREGIDO
+    // 2) Validar fecha de recolección - CORREGIDO CON ZONA HORARIA MÉXICO
     if (sol.fecha_recoleccion) {
-      // Obtener fecha actual en México (zona horaria del sistema)
-      const hoy = new Date();
-      const hoySoloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+      // Obtener fecha actual en zona horaria de México
+      const hoyMexico = new Date().toLocaleDateString('en-CA', {
+        timeZone: 'America/Mexico_City'
+      });
       
-      // Convertir fecha_recoleccion a objeto Date y extraer solo la fecha
-      const fechaRecoleccion = new Date(sol.fecha_recoleccion);
-      const fechaRecoleccionSoloFecha = new Date(
-        fechaRecoleccion.getFullYear(), 
-        fechaRecoleccion.getMonth(), 
-        fechaRecoleccion.getDate()
-      );
+      // Convertir fecha_recoleccion a string formato YYYY-MM-DD
+      const fechaRecoleccionStr = new Date(sol.fecha_recoleccion).toISOString().split('T')[0];
 
-      // Comparar solo las fechas (sin hora)
-      if (fechaRecoleccionSoloFecha.getTime() !== hoySoloFecha.getTime()) {
+      // Comparar las fechas como strings
+      if (fechaRecoleccionStr !== hoyMexico) {
         // Debug para verificar las fechas
-        console.log('[DEBUG] Fecha actual:', hoySoloFecha.toISOString().split('T')[0]);
-        console.log('[DEBUG] Fecha recolección:', fechaRecoleccionSoloFecha.toISOString().split('T')[0]);
+        console.log('[DEBUG] Fecha actual México:', hoyMexico);
+        console.log('[DEBUG] Fecha recolección:', fechaRecoleccionStr);
         console.log('[DEBUG] Fecha recolección original:', sol.fecha_recoleccion);
+        console.log('[DEBUG] Zona horaria servidor:', Intl.DateTimeFormat().resolvedOptions().timeZone);
         
         return res.status(400).json({ 
-          error: `La solicitud solo puede entregarse en su fecha de recolección (${fechaRecoleccionSoloFecha.toISOString().split('T')[0]})` 
+          error: `La solicitud solo puede entregarse en su fecha de recolección (${fechaRecoleccionStr}). Hoy es ${hoyMexico}` 
         });
       }
     }
