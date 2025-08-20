@@ -464,7 +464,7 @@ const entregarMateriales = async (req, res) => {
 
     // Verificar que la solicitud existe y está aprobada
     const [solicitud] = await connection.query(
-   'SELECT estado, fecha_recoleccion FROM Solicitud WHERE id = ?',
+   'SELECT estado, fecha_recoleccion, fecha_devolucion, usuario_id FROM Solicitud WHERE id = ?',
       [id]
     );
 
@@ -478,8 +478,10 @@ const entregarMateriales = async (req, res) => {
       return res.status(400).json({ error: 'La solicitud debe estar aprobada para entregar materiales' });
     }
 
-   const reco = solicitud[0].fecha_recoleccion;
- const fmt = (d) =>
+     const reco = solicitud[0].fecha_recoleccion;
+    const fechaDevolucion = solicitud[0].fecha_devolucion;
+    const solicitanteId = solicitud[0].usuario_id;
+    const fmt = (d) =>
       new Date(d.getTime() - d.getTimezoneOffset() * 60000)
         .toISOString()
         .split('T')[0];
@@ -585,6 +587,20 @@ const entregarMateriales = async (req, res) => {
             -cantidad_entregada,
             'salida',
             'Entrega de solicitud'
+          ]
+        );
+         await connection.query(
+          `INSERT INTO Adeudo
+             (solicitud_id, solicitud_item_id, usuario_id, material_id, tipo, cantidad_pendiente, fecha_entrega)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [
+            id,
+            item_id,
+            solicitanteId,
+            material_id,
+            tipo,
+            cantidad_entregada,
+            fechaDevolucion
           ]
         );
       }
