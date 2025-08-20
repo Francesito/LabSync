@@ -110,10 +110,12 @@ async function getAllAdeudos(req, res) {
          s.folio,
          s.nombre_alumno,
          s.profesor,
-         s.fecha_entrega
+          g.nombre AS grupo,
+         DATE_FORMAT(s.fecha_entrega, '%Y-%m-%d') AS fecha_entrega
        FROM Adeudo a
        JOIN SolicitudItem si ON a.solicitud_item_id = si.id
        JOIN Solicitud s       ON a.solicitud_id       = s.id
+       LEFT JOIN Grupo g      ON s.grupo_id = g.id
        LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND a.material_id=ml.id
        LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND a.material_id=ms.id
        LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND a.material_id=me.id
