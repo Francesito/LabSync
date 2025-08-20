@@ -716,9 +716,13 @@ const deliverSolicitud = async (req, res) => {
     }
     
     // 3) Marcar la solicitud como entregada y registrar la fecha de entrega
+     tomando la fecha/hora actual en la zona horaria de México.
+    const fechaEntregaMx = new Date().toLocaleString('sv-SE', {
+      timeZone: 'America/Mexico_City'
+    });
     await pool.query(
-      'UPDATE Solicitud SET estado = ?, fecha_entrega = NOW() WHERE id = ?',
-      ['entregado', id]
+    'UPDATE Solicitud SET estado = ?, fecha_entrega = ? WHERE id = ?',
+      ['entregado', fechaEntregaMx, id]
     );
 
     // 4) Leer los ítems asociados
@@ -751,7 +755,7 @@ const deliverSolicitud = async (req, res) => {
 
     return res.json({ 
       message: 'Entregado y adeudos generados',
-      fecha_entrega: new Date().toISOString().split('T')[0]
+      fecha_entrega: fechaEntregaMx.split(' ')[0]
     });
     
   } catch (err) {
