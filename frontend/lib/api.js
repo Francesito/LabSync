@@ -180,6 +180,12 @@ export async function eliminarResiduos(ids) {
   });
 }
 
+// --- Grupos ---
+export async function obtenerGrupos() {
+  const { data } = await API.get('/grupos');
+  return data;
+}
+
 // --- Adeudos globales (almacen/administrador) ---
 export async function obtenerAdeudosGlobal() {
   const token = localStorage.getItem('token');
@@ -204,7 +210,7 @@ export async function obtenerSolicitudesAprobadas() {
 export async function obtenerInventarioLiquidos() {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('No hay token de autenticación');
-  const { data } = await API.get('/materials/tipo/liquidos', {
+ const { data } = await API.get('/materials/inventario/liquidos', {
     headers: { Authorization: `Bearer ${token}` }
   });
   return data;
@@ -213,7 +219,7 @@ export async function obtenerInventarioLiquidos() {
 export async function obtenerInventarioSolidos() {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('No hay token de autenticación');
-  const { data } = await API.get('/materials/tipo/solidos', {
+   const { data } = await API.get('/materials/inventario/solidos', {
     headers: { Authorization: `Bearer ${token}` }
   });
   return data;
