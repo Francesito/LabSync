@@ -673,7 +673,9 @@ const deliverSolicitud = async (req, res) => {
   try {
     // 1) Verificar existencia y estado
     const [rows] = await pool.query(
- 'SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion FROM Solicitud WHERE id = ?',
+ `SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion,
+              DATE(fecha_recoleccion) = CURDATE() AS es_hoy
+         FROM Solicitud WHERE id = ?`,
       [id]
     );
     const sol = rows[0];
@@ -686,15 +688,7 @@ const deliverSolicitud = async (req, res) => {
         .json({ error: 'Solo solicitudes aprobadas pueden entregarse' });
     }
 
-   // Comparar fechas usando la zona horaria local para evitar desajustes por UTC
-    const fmt = (d) =>
-      new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-        .toISOString()
-        .split('T')[0];
-
-    const todayStr = fmt(new Date());
-    const recoStr = sol.fecha_recoleccion ? fmt(new Date(sol.fecha_recoleccion)) : null;
-    if (!recoStr || recoStr !== todayStr) {
+ if (!sol.es_hoy) {
       return res
         .status(400)
         .json({ error: 'La solicitud solo puede entregarse en su fecha de recolección' });
@@ -702,7 +696,7 @@ const deliverSolicitud = async (req, res) => {
     
      // 2) Marcar la solicitud como entregada y registrar la fecha de entrega
     await pool.query(
-     'UPDATE Solicitud SET estado = ?, fecha_entrega = NOW() WHERE id = ?',
+   'UPDATE Solicitud SET estado = ?, fecha_entrega = NOW() WHERE id = ?',
       ['entregado', id]
     );
 
