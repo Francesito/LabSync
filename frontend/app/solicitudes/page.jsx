@@ -123,14 +123,14 @@ function TablaSolicitudes({
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
-      <div className="px-6 py-4 border-b border-gray-200 bg-[#00BCD4] text-white flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-gray-200 bg-[#003579] text-white flex items-center justify-between">
         <h2 className="text-lg font-semibold">{titulo}</h2>
         <span className="text-sm">{data?.length || 0} registros</span>
       </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-[#00BCD4] text-white">
+      <thead className="bg-[#003579] text-white">
             <tr>
               {columnas.folio && <Th>Folio</Th>}
               {columnas.solicitante && <Th>Solicitante</Th>}
@@ -813,7 +813,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
                   </span>
                 )}
                 <button
-                  className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+               className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#003579] text-white' : 'bg-white'}`}
                   onClick={() => setActiveTab('alumnos')}
                 >
                   Solicitudes de Alumnos
@@ -821,7 +821,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
               </div>
               <div className="relative -ml-px">
                 <button
-                  className={`px-4 py-2 rounded-r border ${activeTab === 'mias' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+                  className={`px-4 py-2 rounded-r border ${activeTab === 'mias' ? 'bg-[#003579] text-white' : 'bg-white'}`}
                   onClick={() => setActiveTab('mias')}
                 >
                   Mis Solicitudes como Docente
@@ -880,7 +880,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
                   </span>
                 )}
                 <button
-                  className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+                 className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#003579] text-white' : 'bg-white'}`}
                   onClick={() => setActiveTab('alumnos')}
                 >
                   Solicitudes de Alumnos
@@ -893,7 +893,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
                   </span>
                 )}
                 <button
-                  className={`px-4 py-2 rounded-r border ${activeTab === 'docentes' ? 'bg-[#00BCD4] text-white' : 'bg-white'}`}
+               className={`px-4 py-2 rounded-r border ${activeTab === 'docentes' ? 'bg-[#003579] text-white' : 'bg-white'}`}
                   onClick={() => setActiveTab('docentes')}
                 >
                   Solicitudes de Docentes
