@@ -52,6 +52,7 @@ const SELECT_SOLICITUDES_CON_NOMBRE = `
   SELECT 
     s.id            AS solicitud_id,
     s.usuario_id,
+    u.rol_id        AS usuario_rol,
     s.fecha_solicitud,
     s.fecha_recoleccion,
     s.estado,
@@ -66,6 +67,7 @@ const SELECT_SOLICITUDES_CON_NOMBRE = `
     g.nombre        AS grupo_nombre
   FROM Solicitud s
   JOIN SolicitudItem si ON s.id = si.solicitud_id
+  LEFT JOIN Usuario u ON s.usuario_id = u.id
   LEFT JOIN MaterialLiquido ml ON si.tipo = 'liquido' AND si.material_id = ml.id
   LEFT JOIN MaterialSolido ms ON si.tipo = 'solido' AND si.material_id = ms.id
   LEFT JOIN MaterialEquipo me ON si.tipo = 'equipo' AND si.material_id = me.id
@@ -133,6 +135,97 @@ const getSolidos = async (req, res) => {
   }
 };
 
+// Función auxiliar para obtener meses del cuatrimestre actual
+function obtenerMesesCuatri() {
+  const now = new Date();
+  const grupos = [
+    [8, 9, 10, 11],
+    [0, 1, 2, 3],
+    [4, 5, 6, 7],
+  ];
+  const nombres = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  let grupo;
+  if (now.getMonth() >= 8) grupo = grupos[0];
+  else if (now.getMonth() <= 3) grupo = grupos[1];
+  else grupo = grupos[2];
+  return grupo.map(i => ({ index: i, nombre: nombres[i], year: now.getFullYear() }));
+}
+
+const getInventarioLiquidosReport = async (req, res) => {
+  logRequest('getInventarioLiquidosReport');
+  try {
+    const meses = obtenerMesesCuatri();
+    const inicio = `${meses[0].year}-${String(meses[0].index + 1).padStart(2, '0')}-01`;
+    const finDate = new Date(meses[3].year, meses[3].index + 1, 0);
+    const fin = `${finDate.getFullYear()}-${String(finDate.getMonth() + 1).padStart(2, '0')}-${String(finDate.getDate()).padStart(2, '0')}`;
+    const consumoSelect = meses
+      .map(m => `SUM(CASE WHEN MONTH(mov.fecha_movimiento) = ${m.index + 1} AND YEAR(mov.fecha_movimiento) = ${m.year} THEN -mov.cantidad ELSE 0 END) AS ${m.nombre}`)
+      .join(', ');
+    const query = `
+      SELECT ml.id, ml.nombre, ml.cantidad_disponible_ml, ${consumoSelect}
+      FROM MaterialLiquido ml
+      LEFT JOIN MovimientosInventario mov
+        ON mov.material_id = ml.id AND mov.tipo = 'liquido' AND mov.tipo_movimiento = 'salida'
+        AND mov.fecha_movimiento BETWEEN ? AND ?
+      GROUP BY ml.id`;
+    const [rows] = await pool.query(query, [inicio, fin]);
+    const datos = rows.map(r => {
+      const consumos = {};
+      meses.forEach(m => { consumos[m.nombre] = r[m.nombre] || 0; });
+      const total = Object.values(consumos).reduce((a,b) => a + b, 0);
+      return {
+        nombre: r.nombre,
+        unidad: 'ml',
+        cantidad_inicial: r.cantidad_disponible_ml + total,
+        consumos,
+        existencia_final: r.cantidad_disponible_ml,
+        total_consumido: total,
+      };
+    });
+    res.json({ meses: meses.map(m => m.nombre), datos });
+  } catch (error) {
+    console.error('[Error] getInventarioLiquidosReport:', error);
+    res.status(500).json({ error: 'Error al obtener inventario de líquidos' });
+  }
+};
+
+const getInventarioSolidosReport = async (req, res) => {
+  logRequest('getInventarioSolidosReport');
+  try {
+    const meses = obtenerMesesCuatri();
+    const inicio = `${meses[0].year}-${String(meses[0].index + 1).padStart(2, '0')}-01`;
+    const finDate = new Date(meses[3].year, meses[3].index + 1, 0);
+    const fin = `${finDate.getFullYear()}-${String(finDate.getMonth() + 1).padStart(2, '0')}-${String(finDate.getDate()).padStart(2, '0')}`;
+    const consumoSelect = meses
+      .map(m => `SUM(CASE WHEN MONTH(mov.fecha_movimiento) = ${m.index + 1} AND YEAR(mov.fecha_movimiento) = ${m.year} THEN -mov.cantidad ELSE 0 END) AS ${m.nombre}`)
+      .join(', ');
+    const query = `
+      SELECT ms.id, ms.nombre, ms.cantidad_disponible_g, ${consumoSelect}
+      FROM MaterialSolido ms
+      LEFT JOIN MovimientosInventario mov
+        ON mov.material_id = ms.id AND mov.tipo = 'solido' AND mov.tipo_movimiento = 'salida'
+        AND mov.fecha_movimiento BETWEEN ? AND ?
+      GROUP BY ms.id`;
+    const [rows] = await pool.query(query, [inicio, fin]);
+    const datos = rows.map(r => {
+      const consumos = {};
+      meses.forEach(m => { consumos[m.nombre] = r[m.nombre] || 0; });
+      const total = Object.values(consumos).reduce((a,b) => a + b, 0);
+      return {
+        nombre: r.nombre,
+        unidad: 'g',
+        cantidad_inicial: r.cantidad_disponible_g + total,
+        consumos,
+        existencia_final: r.cantidad_disponible_g,
+        total_consumido: total,
+      };
+    });
+    res.json({ meses: meses.map(m => m.nombre), datos });
+  } catch (error) {
+    console.error('[Error] getInventarioSolidosReport:', error);
+    res.status(500).json({ error: 'Error al obtener inventario de sólidos' });
+  }
+};
 
 /** Obtener equipos */
 const getEquipos = async (req, res) => {
@@ -482,7 +575,7 @@ const getApprovedSolicitudes = async (req, res) => {
     // Inserta la condición AND para el estado aprobado
     const query = SELECT_SOLICITUDES_CON_NOMBRE.replace(
       '/*AND_CONDITION*/',
-      "AND s.estado = 'aprobada'"
+          "AND s.estado = 'aprobada' AND u.rol_id = 1"
     );
 
     const [rows] = await pool.query(query);
@@ -2398,6 +2491,8 @@ module.exports = {
   getSolidos,
   getEquipos,
   getLaboratorio,
+  getInventarioLiquidosReport,
+  getInventarioSolidosReport,
   
   // Materiales generales
   getMaterials,
