@@ -479,8 +479,11 @@ const entregarMateriales = async (req, res) => {
     }
 
    const reco = solicitud[0].fecha_recoleccion;
-const fmt = (d) => new Date(d).toISOString().split('T')[0];
-    if (!reco || fmt(reco) !== fmt(new Date())) {
+ const fmt = (d) =>
+      new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
+    if (!reco || fmt(new Date(reco)) !== fmt(new Date())) {
       await connection.rollback();
       return res
         .status(400)
