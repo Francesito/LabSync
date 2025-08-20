@@ -1337,7 +1337,8 @@ const getDeliveredSolicitudes = async (req, res) => {
       JOIN Adeudo a ON a.solicitud_id = s.id
       LEFT JOIN Grupo g ON s.grupo_id = g.id
       WHERE s.estado = 'entregado'
-       GROUP BY s.id, s.folio, s.nombre_alumno, s.profesor, g.nombre, s.fecha_devolucion
+       AND a.cantidad_pendiente > 0
+      GROUP BY s.id, s.folio, s.nombre_alumno, s.profesor, g.nombre, s.fecha_devolucion
       ORDER BY fecha_devolucion DESC
     `);
     res.json(rows);
