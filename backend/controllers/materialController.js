@@ -686,12 +686,14 @@ const deliverSolicitud = async (req, res) => {
         .json({ error: 'Solo solicitudes aprobadas pueden entregarse' });
     }
 
- const fmt = (d) =>
-      new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-        .toISOString()
-        .split('T')[0];
-    const todayStr = fmt(new Date());
-    if (!sol.fecha_recoleccion || fmt(sol.fecha_recoleccion) !== todayStr) {
+   // Comparar fechas en la zona horaria local para evitar desajustes por UTC
+    const formatMX = (date) =>
+      new Date(date).toLocaleDateString('en-CA', {
+        timeZone: 'America/Mexico_City'
+      });
+
+    const todayStr = formatMX(new Date());
+    if (!sol.fecha_recoleccion || formatMX(sol.fecha_recoleccion) !== todayStr) {
       return res
         .status(400)
         .json({ error: 'La solicitud solo puede entregarse en su fecha de recolección' });
