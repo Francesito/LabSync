@@ -671,78 +671,97 @@ const deliverSolicitud = async (req, res) => {
   logRequest('deliverSolicitud');
   const { id } = req.params;
   const { items_entregados } = req.body || {};
+  
   try {
     // 1) Verificar existencia y estado
     const [rows] = await pool.query(
-  `SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion
-         FROM Solicitud WHERE id = ?`,
+      `SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion
+       FROM Solicitud WHERE id = ?`,
       [id]
     );
+    
     const sol = rows[0];
     if (!sol) {
       return res.status(404).json({ error: 'Solicitud no encontrada' });
     }
+    
     if (sol.estado !== 'aprobada') {
-      return res
-        .status(400)
-        .json({ error: 'Solo solicitudes aprobadas pueden entregarse' });
+      return res.status(400).json({ 
+        error: 'Solo solicitudes aprobadas pueden entregarse' 
+      });
     }
 
-const formatDate = (date) => new Date(date).toISOString().split('T')[0];
-    if (
-      !sol.fecha_recoleccion ||
-    formatDate(sol.fecha_recoleccion) !== formatDate(new Date())
-    ) {
-      return res
-        .status(400)
-        .json({ error: 'La solicitud solo puede entregarse en su fecha de recolección' });
+    // 2) Validar fecha de recolección - CORREGIDO
+    if (sol.fecha_recoleccion) {
+      // Obtener fecha actual en México (zona horaria del sistema)
+      const hoy = new Date();
+      const hoySoloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+      
+      // Convertir fecha_recoleccion a objeto Date y extraer solo la fecha
+      const fechaRecoleccion = new Date(sol.fecha_recoleccion);
+      const fechaRecoleccionSoloFecha = new Date(
+        fechaRecoleccion.getFullYear(), 
+        fechaRecoleccion.getMonth(), 
+        fechaRecoleccion.getDate()
+      );
+
+      // Comparar solo las fechas (sin hora)
+      if (fechaRecoleccionSoloFecha.getTime() !== hoySoloFecha.getTime()) {
+        // Debug para verificar las fechas
+        console.log('[DEBUG] Fecha actual:', hoySoloFecha.toISOString().split('T')[0]);
+        console.log('[DEBUG] Fecha recolección:', fechaRecoleccionSoloFecha.toISOString().split('T')[0]);
+        console.log('[DEBUG] Fecha recolección original:', sol.fecha_recoleccion);
+        
+        return res.status(400).json({ 
+          error: `La solicitud solo puede entregarse en su fecha de recolección (${fechaRecoleccionSoloFecha.toISOString().split('T')[0]})` 
+        });
+      }
     }
     
-     // 2) Marcar la solicitud como entregada y registrar la fecha de entrega
+    // 3) Marcar la solicitud como entregada y registrar la fecha de entrega
     await pool.query(
-  'UPDATE Solicitud SET estado = ?, fecha_entrega = NOW() WHERE id = ?',
+      'UPDATE Solicitud SET estado = ?, fecha_entrega = NOW() WHERE id = ?',
       ['entregado', id]
     );
 
-    // 3) Leer los ítems asociados
+    // 4) Leer los ítems asociados
     const [itemsRows] = await pool.query(
       'SELECT id AS solicitud_item_id, material_id, tipo, cantidad FROM SolicitudItem WHERE solicitud_id = ?',
       [id]
     );
-      const items = Array.isArray(items_entregados) && items_entregados.length > 0
+    
+    const items = Array.isArray(items_entregados) && items_entregados.length > 0
       ? itemsRows.filter((it) => items_entregados.includes(it.solicitud_item_id))
       : itemsRows;
 
-    // 4) Insertar un registro de adeudo por cada ítem seleccionado, usando la fecha_devolucion como fecha límite
+    // 5) Insertar un registro de adeudo por cada ítem seleccionado
     for (const it of items) {
       await pool.query(
         `INSERT INTO Adeudo
-           (solicitud_id,
-            solicitud_item_id,
-            usuario_id,
-            material_id,
-            tipo,
-            cantidad_pendiente,
-            fecha_entrega)
-        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+           (solicitud_id, solicitud_item_id, usuario_id, material_id, tipo, cantidad_pendiente, fecha_entrega)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           it.solicitud_item_id,
           sol.usuario_id,
           it.material_id,
           it.tipo,
-       it.cantidad,
-           sol.fecha_devolucion
+          it.cantidad,
+          sol.fecha_devolucion
         ]
       );
     }
 
-    return res.json({ message: 'Entregado y adeudos generados' });
+    return res.json({ 
+      message: 'Entregado y adeudos generados',
+      fecha_entrega: new Date().toISOString().split('T')[0]
+    });
+    
   } catch (err) {
     console.error('[Error] deliverSolicitud:', err);
-    return res
-      .status(500)
-      .json({ error: 'Error al entregar solicitud: ' + err.message });
+    return res.status(500).json({ 
+      error: 'Error al entregar solicitud: ' + err.message 
+    });
   }
 };
 
