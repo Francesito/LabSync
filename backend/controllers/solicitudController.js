@@ -481,11 +481,8 @@ const entregarMateriales = async (req, res) => {
       const reco = solicitud[0].fecha_recoleccion;
     const fechaDevolucion = solicitud[0].fecha_devolucion;
     const solicitanteId = solicitud[0].usuario_id;
-    const formatDateMX = (date) =>
-      new Date(date).toLocaleDateString('en-CA', {
-        timeZone: 'America/Mexico_City',
-      });
-    if (!reco || formatDateMX(reco) !== formatDateMX(new Date())) {
+const formatDate = (date) => new Date(date).toISOString().split('T')[0];
+    if (!reco || formatDate(reco) !== formatDate(new Date())) {
       await connection.rollback();
       return res
         .status(400)
