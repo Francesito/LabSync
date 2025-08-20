@@ -37,6 +37,21 @@ router.get('/tipo/laboratorio', verificarToken, materialController.getLaboratori
 router.get('/categorias', verificarToken, materialController.getCategorias);
 router.get('/verify-image', verificarToken, materialController.verifyImage);
 
+// Inventario para reportes (almacenistas y administradores)
+router.get(
+  '/inventario/liquidos',
+  verificarToken,
+  verificarRol([3, 4]),
+  materialController.getInventarioLiquidosReport
+);
+
+router.get(
+  '/inventario/solidos',
+  verificarToken,
+  verificarRol([3, 4]),
+  materialController.getInventarioSolidosReport
+);
+
 /**
  * ========================
  * RUTAS PARA ALUMNOS (ROL 1) Y DOCENTES (ROL 2)
