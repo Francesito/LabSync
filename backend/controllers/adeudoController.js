@@ -74,8 +74,17 @@ async function ajustarAdeudo(req, res) {
       [solicitudId]
     );
 
+    if (cnt === 0) {
+      await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [solicitudId]);
+      await pool.query('DELETE FROM Solicitud WHERE id = ?', [solicitudId]);
+      return res.json({
+        message: 'Adeudo completado y solicitud eliminada',
+        pendingItems: 0
+      });
+    }
+    
     return res.json({
-      message: cnt === 0 ? 'Adeudo completado' : 'Adeudo parcial registrado',
+     message: 'Adeudo parcial registrado',
       pendingItems: cnt
     });
   } catch (error) {
