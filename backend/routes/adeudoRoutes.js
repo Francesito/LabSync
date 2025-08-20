@@ -1,8 +1,11 @@
 // backend/routes/adeudoRoutes.js
 const express = require('express');
 const router  = express.Router();
-const { getUsuarioAdeudos, ajustarAdeudo } = require('../controllers/adeudoController');
-const { verificarToken } = require('../middleware/authMiddleware');
+const { getUsuarioAdeudos, ajustarAdeudo, getAllAdeudos } = require('../controllers/adeudoController');
+const { verificarToken, requireAlmacen } = require('../middleware/authMiddleware');
+
+// Obtiene todos los adeudos (almacenista/administrador)
+router.get('/', verificarToken, requireAlmacen, getAllAdeudos);
 
 // Obtiene adeudos del usuario
 router.get('/usuario', verificarToken, getUsuarioAdeudos);
