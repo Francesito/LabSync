@@ -179,3 +179,42 @@ export async function eliminarResiduos(ids) {
     data: { ids }
   });
 }
+
+// --- Adeudos globales (almacen/administrador) ---
+export async function obtenerAdeudosGlobal() {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No hay token de autenticación');
+  const { data } = await API.get('/adeudos', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return data;
+}
+
+// --- Solicitudes aprobadas (almacen/administrador) ---
+export async function obtenerSolicitudesAprobadas() {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No hay token de autenticación');
+  const { data } = await API.get('/materials/solicitudes/aprobadas', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return data;
+}
+
+// --- Inventario ---
+export async function obtenerInventarioLiquidos() {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No hay token de autenticación');
+  const { data } = await API.get('/materials/tipo/liquidos', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return data;
+}
+
+export async function obtenerInventarioSolidos() {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No hay token de autenticación');
+  const { data } = await API.get('/materials/tipo/solidos', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return data;
+}
