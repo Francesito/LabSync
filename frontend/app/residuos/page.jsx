@@ -45,30 +45,15 @@ export default function ResiduosPage() {
 
   const [entries, setEntries] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [historial, setHistorial] = useState([]);
-   const [search, setSearch] = useState('');
   const { usuario } = useAuth();
 
   useEffect(() => {
     obtenerResiduos()
       .then((data) => {
-        if (usuario?.rol === 'almacen' || usuario?.rol === 'administrador') {
-          const grouped = {};
-          (Array.isArray(data) ? data : []).forEach((e) => {
-            const key = `${e.nombre || ''}-${e.grupo || ''}`;
-            if (!grouped[key]) {
-              grouped[key] = { nombre: e.nombre || '', grupo: e.grupo || '', registros: [] };
-            }
-            grouped[key].registros.push(e);
-          });
-          setHistorial(Object.values(grouped));
-        } else {
-          setEntries(Array.isArray(data) ? data : []);
-        }
+       setEntries(Array.isArray(data) ? data : []);
       })
       .catch(() => {
-        if (usuario?.rol === 'almacen' || usuario?.rol === 'administrador') setHistorial([]);
-        else setEntries([]);
+        setEntries([]);
       });
   }, [usuario]);
 
@@ -176,113 +161,9 @@ export default function ResiduosPage() {
     doc.save('residuos.pdf');
   };
   
-  const downloadHistorial = (registros, nombre) => {
-    if (!registros || registros.length === 0) return;
-    const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
-    const rows = registros.map(r => [
-      formatDate(r.fecha),
-      r.laboratorio,
-      r.reactivo,
-      getTipoLabel(r.tipo),
-      r.cantidad,
-      r.unidad
-    ]);
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `residuos_${nombre || 'alumno'}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
-  const downloadHistorialPDF = (registros, nombre) => {
-    if (!registros || registros.length === 0) return;
-    const doc = new jsPDF();
-    const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
-    const rows = registros.map(r => [
-      formatDate(r.fecha),
-      r.laboratorio,
-      r.reactivo,
-      getTipoLabel(r.tipo),
-      r.cantidad,
-      r.unidad
-    ]);
-    autoTable(doc, {
-      head: [headers],
-      body: rows,
-    });
-    doc.save(`residuos_${nombre || 'alumno'}.pdf`);
-  };
-  
   const allChecked = selected.length === entries.length && entries.length > 0;
 
-  const filteredHistorial = historial.filter((h) => {
-    const term = search.toLowerCase();
-    return (
-      (h.nombre || '').toLowerCase().includes(term) ||
-      (h.grupo || '').toLowerCase().includes(term)
-    );
-  });
-  
-  if (usuario?.rol === 'almacen' || usuario?.rol === 'administrador') {
-    return (
-      <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
-        <h1 className="text-3xl font-bold mb-6 text-center">Historial de Residuos</h1>
-       <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Buscar por nombre o grupo"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64 border px-3 py-2 rounded"
-          />
-        </div>
-        {filteredHistorial.length === 0 ? (
-          <p className="text-gray-600">No hay registros.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full bg-white rounded-lg shadow">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-4 py-2 text-left">Nombre</th>
-                  <th className="px-4 py-2 text-left">Grupo</th>
-                  <th className="px-4 py-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-               {filteredHistorial.map((h, idx) => (
-                  <tr key={idx} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-2">{h.nombre}</td>
-                    <td className="px-4 py-2">{h.grupo}</td>
-                    <td className="px-4 py-2">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => downloadHistorial(h.registros, h.nombre)}
-                          className="bg-blue-600 text-white px-3 py-1 rounded"
-                        >
-                          CSV
-                        </button>
-                        <button
-                          onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
-                          className="bg-green-600 text-white px-3 py-1 rounded"
-                        >
-                          PDF
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    );
-  }
+ if ([3, 4].includes(usuario?.rol_id)) return <p>Acceso denegado</p>;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
