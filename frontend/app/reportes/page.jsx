@@ -3,7 +3,13 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../lib/auth';
-import { obtenerResiduos } from '../../lib/api';
+import {
+  obtenerResiduos,
+  obtenerAdeudosGlobal,
+  obtenerSolicitudesAprobadas,
+  obtenerInventarioLiquidos,
+  obtenerInventarioSolidos,
+} from '../../lib/api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -32,172 +38,79 @@ export default function ReportesPage() {
       .then((data) => {
         const grouped = {};
         (Array.isArray(data) ? data : []).forEach((e) => {
+           const fecha = e.fecha ? new Date(e.fecha).toISOString().split('T')[0] : '';
           const key = `${e.nombre || ''}-${e.grupo || ''}`;
           if (!grouped[key]) {
             grouped[key] = { nombre: e.nombre || '', grupo: e.grupo || '', registros: [] };
           }
-          grouped[key].registros.push(e);
+        grouped[key].registros.push({ ...e, fecha });
         });
         setHistorial(Object.values(grouped));
       })
       .catch(() => setHistorial([]));
 
-    // Datos de ejemplo para las demás tablas
-    setGrupos([
-      {
-        nombre: '1A',
-        adeudos: [
-          { material: 'Bureta', cantidad: 1, unidad: 'u' },
-          { material: 'Agua destilada', cantidad: 100, unidad: 'ml' },
-        ],
-      },
-      {
-        nombre: '2B',
-        adeudos: [{ material: 'Probeta', cantidad: 2, unidad: 'u' }],
-      },
-      {
-        nombre: '3C',
-        adeudos: [{ material: 'Sosa cáustica', cantidad: 50, unidad: 'g' }],
-      },
-      {
-        nombre: '4D',
-        adeudos: [{ material: 'Matraz', cantidad: 1, unidad: 'u' }],
-      },
-      {
-        nombre: '5E',
-        adeudos: [{ material: 'Pipeta', cantidad: 3, unidad: 'u' }],
-      },
-      {
-        nombre: '6F',
-        adeudos: [{ material: 'Vaso de precipitados', cantidad: 2, unidad: 'u' }],
-      },
-    ]);
+    obtenerAdeudosGlobal()
+      .then((data) => {
+        const grouped = {};
+        (Array.isArray(data) ? data : []).forEach((a) => {
+          const g = a.grupo || 'Sin grupo';
+          if (!grouped[g]) grouped[g] = { nombre: g, adeudos: [] };
+          grouped[g].adeudos.push({
+            material: a.nombre_material,
+            cantidad: a.cantidad,
+            unidad: a.unidad,
+          });
+        });
+        setGrupos(Object.values(grouped));
+      })
+      .catch(() => setGrupos([]));
 
-    setSolicitudes([
-      {
-        id: 1,
-        materiales: [
-          { nombre: 'acido citrico', cantidad: 50, unidad: 'ml' },
-          { nombre: 'sosa', cantidad: 100, unidad: 'g' },
-        ],
-        docente: 'Dr. López',
-        grupo: '1A',
-        fecha: '2024-09-01',
-      },
-      {
-        id: 2,
-        materiales: [{ nombre: 'pipeta', cantidad: 1, unidad: 'u' }],
-        docente: 'Mtra. Pérez',
-        grupo: '2B',
-        fecha: '2024-09-05',
-      },
-      {
-        id: 3,
-        materiales: [{ nombre: 'termometro', cantidad: 1, unidad: 'u' }],
-        docente: 'Dr. Hernández',
-        grupo: '3C',
-        fecha: '2024-09-10',
-      },
-      {
-        id: 4,
-        materiales: [{ nombre: 'cinta', cantidad: 2, unidad: 'u' }],
-        docente: 'Mtra. Ruiz',
-        grupo: '4D',
-        fecha: '2024-09-15',
-      },
-      {
-        id: 5,
-        materiales: [{ nombre: 'microscopio', cantidad: 1, unidad: 'u' }],
-        docente: 'Dr. Díaz',
-        grupo: '5E',
-        fecha: '2024-09-20',
-      },
-      {
-        id: 6,
-        materiales: [{ nombre: 'balanza', cantidad: 1, unidad: 'u' }],
-        docente: 'Mtra. León',
-        grupo: '6F',
-        fecha: '2024-09-25',
-      },
-    ]);
+   obtenerSolicitudesAprobadas()
+      .then((data) => {
+        const grouped = {};
+        (Array.isArray(data) ? data : []).forEach((s) => {
+          const id = s.solicitud_id;
+          if (!grouped[id]) {
+            grouped[id] = {
+              id,
+              materiales: [],
+              docente: s.profesor || '',
+              grupo: s.grupo_nombre || '',
+              fecha: s.fecha_solicitud ? s.fecha_solicitud.split('T')[0] : '',
+            };
+          }
+          const unidad = s.tipo === 'liquido' ? 'ml' : s.tipo === 'solido' ? 'g' : 'u';
+          grouped[id].materiales.push({
+            nombre: s.nombre_material,
+            cantidad: s.cantidad,
+            unidad,
+          });
+        });
+        setSolicitudes(Object.values(grouped));
+      })
+      .catch(() => setSolicitudes([]));
 
-    setInventarioLiquidos([
-      {
-        nombre: 'acido citrico',
-        stock: 500,
-        consumo: { sept: 50, oct: 30, nov: 20, dec: 10 },
-        existencia: 390,
-      },
-      {
-        nombre: 'agua destilada',
-        stock: 1000,
-        consumo: { sept: 100, oct: 120, nov: 80, dec: 70 },
-        existencia: 630,
-      },
-      {
-        nombre: 'etanol',
-        stock: 800,
-        consumo: { sept: 60, oct: 40, nov: 30, dec: 20 },
-        existencia: 650,
-      },
-      {
-        nombre: 'acetona',
-        stock: 400,
-        consumo: { sept: 20, oct: 25, nov: 15, dec: 10 },
-        existencia: 330,
-      },
-      {
-        nombre: 'acido sulfurico',
-        stock: 300,
-        consumo: { sept: 10, oct: 15, nov: 10, dec: 5 },
-        existencia: 260,
-      },
-      {
-        nombre: 'acido clorhidrico',
-        stock: 350,
-        consumo: { sept: 15, oct: 10, nov: 20, dec: 10 },
-        existencia: 295,
-      },
-    ]);
+    obtenerInventarioLiquidos()
+      .then((data) => {
+        const mapped = (Array.isArray(data) ? data : []).map((r) => ({
+          nombre: r.nombre,
+          cantidad: r.cantidad_disponible_ml,
+          unidad: 'ml',
+        }));
+        setInventarioLiquidos(mapped);
+      })
+      .catch(() => setInventarioLiquidos([]));
 
-    setInventarioSolidos([
-      {
-        nombre: 'cloruro de sodio',
-        stock: 2000,
-        consumo: { sept: 200, oct: 150, nov: 100, dec: 50 },
-        existencia: 1500,
-      },
-      {
-        nombre: 'azucar',
-        stock: 800,
-        consumo: { sept: 60, oct: 50, nov: 40, dec: 30 },
-        existencia: 620,
-      },
-      {
-        nombre: 'bicarbonato de sodio',
-        stock: 600,
-        consumo: { sept: 40, oct: 35, nov: 25, dec: 20 },
-        existencia: 480,
-      },
-      {
-        nombre: 'sulfato de cobre',
-        stock: 500,
-        consumo: { sept: 20, oct: 30, nov: 25, dec: 15 },
-        existencia: 410,
-      },
-      {
-        nombre: 'carbonato de calcio',
-        stock: 700,
-        consumo: { sept: 35, oct: 30, nov: 25, dec: 20 },
-        existencia: 590,
-      },
-      {
-        nombre: 'nitrato de plata',
-        stock: 300,
-        consumo: { sept: 15, oct: 10, nov: 5, dec: 5 },
-        existencia: 265,
-      },
-    ]);
+     obtenerInventarioSolidos()
+      .then((data) => {
+        const mapped = (Array.isArray(data) ? data : []).map((r) => ({
+          nombre: r.nombre,
+          cantidad: r.cantidad_disponible_g,
+          unidad: 'g',
+        }));
+        setInventarioSolidos(mapped);
+      })
+      .catch(() => setInventarioSolidos([]));
   }, []);
 
   const downloadHistorialCSV = (registros, nombre) => {
@@ -363,28 +276,16 @@ export default function ReportesPage() {
               <thead>
                 <tr>
                   <th>Reactivo</th>
-                  <th>Stock</th>
-                  <th>Sept</th>
-                  <th>Oct</th>
-                  <th>Nov</th>
-                  <th>Dic</th>
-                  <th>Existencia Final</th>
-                  <th>Consumo Total</th>
+                  <th>Cantidad</th>
+                  <th>Unidad</th>
                 </tr>
               </thead>
               <tbody>
                 {inventarioLiquidos.slice(0, 5).map((r, idx) => (
                   <tr key={idx} className="border-t">
                     <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-1">{r.stock}</td>
-                    <td className="py-1">{r.consumo.sept}</td>
-                    <td className="py-1">{r.consumo.oct}</td>
-                    <td className="py-1">{r.consumo.nov}</td>
-                    <td className="py-1">{r.consumo.dec}</td>
-                    <td className="py-1">{r.existencia}</td>
-                    <td className="py-1">
-                      {r.consumo.sept + r.consumo.oct + r.consumo.nov + r.consumo.dec}
-                    </td>
+                    <td className="py-1">{r.cantidad}</td>
+                    <td className="py-1">{r.unidad}</td>
                   </tr>
                 ))}
               </tbody>
@@ -409,28 +310,16 @@ export default function ReportesPage() {
               <thead>
                 <tr>
                   <th>Reactivo</th>
-                  <th>Stock</th>
-                  <th>Sept</th>
-                  <th>Oct</th>
-                  <th>Nov</th>
-                  <th>Dic</th>
-                  <th>Existencia Final</th>
-                  <th>Consumo Total</th>
+                <th>Cantidad</th>
+                  <th>Unidad</th>
                 </tr>
               </thead>
               <tbody>
                 {inventarioSolidos.slice(0, 5).map((r, idx) => (
                   <tr key={idx} className="border-t">
                     <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-1">{r.stock}</td>
-                    <td className="py-1">{r.consumo.sept}</td>
-                    <td className="py-1">{r.consumo.oct}</td>
-                    <td className="py-1">{r.consumo.nov}</td>
-                    <td className="py-1">{r.consumo.dec}</td>
-                    <td className="py-1">{r.existencia}</td>
-                    <td className="py-1">
-                      {r.consumo.sept + r.consumo.oct + r.consumo.nov + r.consumo.dec}
-                    </td>
+                   <td className="py-1">{r.cantidad}</td>
+                    <td className="py-1">{r.unidad}</td>
                   </tr>
                 ))}
               </tbody>
@@ -591,28 +480,16 @@ export default function ReportesPage() {
               <thead>
                 <tr>
                   <th>Reactivo</th>
-                  <th>Stock</th>
-                  <th>Sept</th>
-                  <th>Oct</th>
-                  <th>Nov</th>
-                  <th>Dic</th>
-                  <th>Existencia Final</th>
-                  <th>Consumo Total</th>
+                  <th>Cantidad</th>
+                  <th>Unidad</th>
                 </tr>
               </thead>
               <tbody>
                 {inventarioLiquidos.map((r, idx) => (
                   <tr key={idx} className="border-t">
                     <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-1">{r.stock}</td>
-                    <td className="py-1">{r.consumo.sept}</td>
-                    <td className="py-1">{r.consumo.oct}</td>
-                    <td className="py-1">{r.consumo.nov}</td>
-                    <td className="py-1">{r.consumo.dec}</td>
-                    <td className="py-1">{r.existencia}</td>
-                    <td className="py-1">
-                      {r.consumo.sept + r.consumo.oct + r.consumo.nov + r.consumo.dec}
-                    </td>
+                  <td className="py-1">{r.cantidad}</td>
+                    <td className="py-1">{r.unidad}</td>
                   </tr>
                 ))}
               </tbody>
@@ -632,28 +509,16 @@ export default function ReportesPage() {
               <thead>
                 <tr>
                   <th>Reactivo</th>
-                  <th>Stock</th>
-                  <th>Sept</th>
-                  <th>Oct</th>
-                  <th>Nov</th>
-                  <th>Dic</th>
-                  <th>Existencia Final</th>
-                  <th>Consumo Total</th>
+                   <th>Cantidad</th>
+                  <th>Unidad</th>
                 </tr>
               </thead>
               <tbody>
                 {inventarioSolidos.map((r, idx) => (
                   <tr key={idx} className="border-t">
                     <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-1">{r.stock}</td>
-                    <td className="py-1">{r.consumo.sept}</td>
-                    <td className="py-1">{r.consumo.oct}</td>
-                    <td className="py-1">{r.consumo.nov}</td>
-                    <td className="py-1">{r.consumo.dec}</td>
-                    <td className="py-1">{r.existencia}</td>
-                    <td className="py-1">
-                      {r.consumo.sept + r.consumo.oct + r.consumo.nov + r.consumo.dec}
-                    </td>
+                    <td className="py-1">{r.cantidad}</td>
+                    <td className="py-1">{r.unidad}</td>
                   </tr>
                 ))}
               </tbody>
