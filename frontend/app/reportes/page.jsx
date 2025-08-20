@@ -6,6 +6,7 @@ import { useAuth } from '../../lib/auth';
 import {
   obtenerResiduos,
   obtenerAdeudosGlobal,
+   obtenerGrupos,
   obtenerSolicitudesAprobadas,
   obtenerInventarioLiquidos,
   obtenerInventarioSolidos,
@@ -27,10 +28,10 @@ export default function ReportesPage() {
   const [showSolicitudesModal, setShowSolicitudesModal] = useState(false);
   const [filtro, setFiltro] = useState('');
 
-  const [inventarioLiquidos, setInventarioLiquidos] = useState([]);
+  const [inventarioLiquidos, setInventarioLiquidos] = useState({ meses: [], datos: [] });
   const [showLiquidosModal, setShowLiquidosModal] = useState(false);
-
-  const [inventarioSolidos, setInventarioSolidos] = useState([]);
+  
+  const [inventarioSolidos, setInventarioSolidos] = useState({ meses: [], datos: [] });
   const [showSolidosModal, setShowSolidosModal] = useState(false);
 
   useEffect(() => {
@@ -49,19 +50,28 @@ export default function ReportesPage() {
       })
       .catch(() => setHistorial([]));
 
-    obtenerAdeudosGlobal()
-      .then((data) => {
+      Promise.all([obtenerGrupos(), obtenerAdeudosGlobal()])
+      .then(([listaGrupos, adeudos]) => {
         const grouped = {};
-        (Array.isArray(data) ? data : []).forEach((a) => {
+        (Array.isArray(adeudos) ? adeudos : []).forEach((a) => {
           const g = a.grupo || 'Sin grupo';
-          if (!grouped[g]) grouped[g] = { nombre: g, adeudos: [] };
-          grouped[g].adeudos.push({
+           if (!grouped[g]) grouped[g] = [];
+          grouped[g].push({
             material: a.nombre_material,
             cantidad: a.cantidad,
             unidad: a.unidad,
           });
         });
-        setGrupos(Object.values(grouped));
+       const all = (Array.isArray(listaGrupos) ? listaGrupos : []).map((g) => ({
+          nombre: g.nombre,
+          adeudos: grouped[g.nombre] || [],
+        }));
+        Object.keys(grouped).forEach((g) => {
+          if (!all.some((gr) => gr.nombre === g)) {
+            all.push({ nombre: g, adeudos: grouped[g] });
+          }
+        });
+        setGrupos(all);
       })
       .catch(() => setGrupos([]));
 
@@ -92,25 +102,21 @@ export default function ReportesPage() {
 
     obtenerInventarioLiquidos()
       .then((data) => {
-        const mapped = (Array.isArray(data) ? data : []).map((r) => ({
-          nombre: r.nombre,
-          cantidad: r.cantidad_disponible_ml,
-          unidad: 'ml',
-        }));
-        setInventarioLiquidos(mapped);
+        setInventarioLiquidos({
+          meses: data.meses || [],
+          datos: Array.isArray(data.datos) ? data.datos : [],
+        });
       })
-      .catch(() => setInventarioLiquidos([]));
+    .catch(() => setInventarioLiquidos({ meses: [], datos: [] }));
 
      obtenerInventarioSolidos()
       .then((data) => {
-        const mapped = (Array.isArray(data) ? data : []).map((r) => ({
-          nombre: r.nombre,
-          cantidad: r.cantidad_disponible_g,
-          unidad: 'g',
-        }));
-        setInventarioSolidos(mapped);
+        setInventarioSolidos({
+          meses: data.meses || [],
+          datos: Array.isArray(data.datos) ? data.datos : [],
+        });
       })
-      .catch(() => setInventarioSolidos([]));
+       .catch(() => setInventarioSolidos({ meses: [], datos: [] }));
   }, []);
 
   const downloadHistorialCSV = (registros, nombre) => {
@@ -268,7 +274,7 @@ export default function ReportesPage() {
       {/* Tabla 4: Reactivos líquidos */}
       <div className="bg-white p-4 rounded shadow">
         <h2 className="font-semibold mb-2">Inventario Reactivos Líquidos</h2>
-        {inventarioLiquidos.length === 0 ? (
+       {inventarioLiquidos.datos.length === 0 ? (
           <p>No hay registros.</p>
         ) : (
           <>
@@ -277,20 +283,32 @@ export default function ReportesPage() {
                 <tr>
                   <th>Reactivo</th>
                   <th>Cantidad</th>
-                  <th>Unidad</th>
+                  {inventarioLiquidos.meses.map((m) => (
+                    <th key={m} className="capitalize">
+                      {m}
+                    </th>
+                  ))}
+                  <th>Existencia Final</th>
+                  <th>Total</th>
                 </tr>
               </thead>
               <tbody>
-                {inventarioLiquidos.slice(0, 5).map((r, idx) => (
+               {inventarioLiquidos.datos.slice(0, 5).map((r, idx) => (
                   <tr key={idx} className="border-t">
                     <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-1">{r.cantidad}</td>
-                    <td className="py-1">{r.unidad}</td>
+                                       <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
+                    {inventarioLiquidos.meses.map((m) => (
+                      <td key={m} className="py-1">
+                        {r.consumos[m] || 0}
+                      </td>
+                    ))}
+                    <td className="py-1">{r.existencia_final} {r.unidad}</td>
+                    <td className="py-1">{r.total_consumido} {r.unidad}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {inventarioLiquidos.length > 5 && (
+          {inventarioLiquidos.datos.length > 5 && (
               <button className="mt-2 text-blue-600" onClick={() => setShowLiquidosModal(true)}>
                 Mostrar más
               </button>
@@ -302,7 +320,7 @@ export default function ReportesPage() {
       {/* Tabla 5: Reactivos sólidos */}
       <div className="bg-white p-4 rounded shadow">
         <h2 className="font-semibold mb-2">Inventario Reactivos Sólidos</h2>
-        {inventarioSolidos.length === 0 ? (
+        {inventarioSolidos.datos.length === 0 ? (
           <p>No hay registros.</p>
         ) : (
           <>
@@ -310,21 +328,33 @@ export default function ReportesPage() {
               <thead>
                 <tr>
                   <th>Reactivo</th>
-                <th>Cantidad</th>
-                  <th>Unidad</th>
+              <th>Cantidad</th>
+                  {inventarioSolidos.meses.map((m) => (
+                    <th key={m} className="capitalize">
+                      {m}
+                    </th>
+                  ))}
+                  <th>Existencia Final</th>
+                  <th>Total</th>
                 </tr>
               </thead>
               <tbody>
-                {inventarioSolidos.slice(0, 5).map((r, idx) => (
+               {inventarioSolidos.datos.slice(0, 5).map((r, idx) => (
                   <tr key={idx} className="border-t">
                     <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                   <td className="py-1">{r.cantidad}</td>
-                    <td className="py-1">{r.unidad}</td>
+                  <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
+                    {inventarioSolidos.meses.map((m) => (
+                      <td key={m} className="py-1">
+                        {r.consumos[m] || 0}
+                      </td>
+                    ))}
+                    <td className="py-1">{r.existencia_final} {r.unidad}</td>
+                    <td className="py-1">{r.total_consumido} {r.unidad}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {inventarioSolidos.length > 5 && (
+         {inventarioSolidos.datos.length > 5 && (
               <button className="mt-2 text-blue-600" onClick={() => setShowSolidosModal(true)}>
                 Mostrar más
               </button>
@@ -412,11 +442,15 @@ export default function ReportesPage() {
               <button onClick={() => setGrupoDetalle(null)}>Cerrar</button>
             </div>
             <div className="space-y-1">
-              {grupoDetalle.adeudos.map((a, idx) => (
-                <div key={idx} className="border-b py-1">
-                  {`${a.cantidad} ${a.unidad} ${a.material}`}
-                </div>
-              ))}
+              {grupoDetalle.adeudos.length === 0 ? (
+                <p>Sin adeudos</p>
+              ) : (
+                grupoDetalle.adeudos.map((a, idx) => (
+                  <div key={idx} className="border-b py-1">
+                    {`${a.cantidad} ${a.unidad} ${a.material}`}
+                  </div>
+                ))
+              )}
             </div>
             <button
               className="mt-2 text-blue-600"
@@ -481,15 +515,27 @@ export default function ReportesPage() {
                 <tr>
                   <th>Reactivo</th>
                   <th>Cantidad</th>
-                  <th>Unidad</th>
+                 {inventarioLiquidos.meses.map((m) => (
+                    <th key={m} className="capitalize">
+                      {m}
+                    </th>
+                  ))}
+                  <th>Existencia Final</th>
+                  <th>Total</th>
                 </tr>
               </thead>
               <tbody>
-                {inventarioLiquidos.map((r, idx) => (
+              {inventarioLiquidos.datos.map((r, idx) => (
                   <tr key={idx} className="border-t">
                     <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                  <td className="py-1">{r.cantidad}</td>
-                    <td className="py-1">{r.unidad}</td>
+                 <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
+                    {inventarioLiquidos.meses.map((m) => (
+                      <td key={m} className="py-1">
+                        {r.consumos[m] || 0}
+                      </td>
+                    ))}
+                    <td className="py-1">{r.existencia_final} {r.unidad}</td>
+                    <td className="py-1">{r.total_consumido} {r.unidad}</td>
                   </tr>
                 ))}
               </tbody>
@@ -509,16 +555,28 @@ export default function ReportesPage() {
               <thead>
                 <tr>
                   <th>Reactivo</th>
-                   <th>Cantidad</th>
-                  <th>Unidad</th>
+                    <th>Cantidad</th>
+                  {inventarioSolidos.meses.map((m) => (
+                    <th key={m} className="capitalize">
+                      {m}
+                    </th>
+                  ))}
+                  <th>Existencia Final</th>
+                  <th>Total</th>
                 </tr>
               </thead>
               <tbody>
-                {inventarioSolidos.map((r, idx) => (
+                 {inventarioSolidos.datos.map((r, idx) => (
                   <tr key={idx} className="border-t">
                     <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-1">{r.cantidad}</td>
-                    <td className="py-1">{r.unidad}</td>
+                    <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
+                    {inventarioSolidos.meses.map((m) => (
+                      <td key={m} className="py-1">
+                        {r.consumos[m] || 0}
+                      </td>
+                    ))}
+                    <td className="py-1">{r.existencia_final} {r.unidad}</td>
+                    <td className="py-1">{r.total_consumido} {r.unidad}</td>
                   </tr>
                 ))}
               </tbody>
