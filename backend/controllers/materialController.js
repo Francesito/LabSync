@@ -688,13 +688,13 @@ const deliverSolicitud = async (req, res) => {
         .json({ error: 'Solo solicitudes aprobadas pueden entregarse' });
     }
 
-const fmt = (d) =>
-      new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-        .toISOString()
-        .split('T')[0];
+ const formatDateMX = (date) =>
+      new Date(date).toLocaleDateString('en-CA', {
+        timeZone: 'America/Mexico_City',
+      });
     if (
       !sol.fecha_recoleccion ||
-      fmt(new Date(sol.fecha_recoleccion)) !== fmt(new Date())
+      formatDateMX(sol.fecha_recoleccion) !== formatDateMX(new Date())
     ) {
       return res
         .status(400)
@@ -703,7 +703,7 @@ const fmt = (d) =>
     
      // 2) Marcar la solicitud como entregada y registrar la fecha de entrega
     await pool.query(
-   'UPDATE Solicitud SET estado = ?, fecha_entrega = NOW() WHERE id = ?',
+  'UPDATE Solicitud SET estado = ?, fecha_entrega = NOW() WHERE id = ?',
       ['entregado', id]
     );
 
@@ -712,7 +712,7 @@ const fmt = (d) =>
       'SELECT id AS solicitud_item_id, material_id, tipo, cantidad FROM SolicitudItem WHERE solicitud_id = ?',
       [id]
     );
-     const items = Array.isArray(items_entregados) && items_entregados.length > 0
+      const items = Array.isArray(items_entregados) && items_entregados.length > 0
       ? itemsRows.filter((it) => items_entregados.includes(it.solicitud_item_id))
       : itemsRows;
 
