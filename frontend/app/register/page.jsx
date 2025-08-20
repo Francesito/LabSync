@@ -170,9 +170,9 @@ export default function Register() {
                         onClick={() => handleGrupoSelect(grupo.id.toString())}
                         className="btn w-100 text-center border border-2 fw-semibold"
                         style={{
-                          backgroundColor: grupoId === grupo.id.toString() ? '#90EE90' : '#ffffff',
-                          borderColor: grupoId === grupo.id.toString() ? '#28a745' : '#000000',
-                          color: '#000000',
+                         backgroundColor: grupoId === grupo.id.toString() ? '#003579' : '#ffffff',
+                          borderColor: grupoId === grupo.id.toString() ? '#003579' : '#000000',
+                          color: grupoId === grupo.id.toString() ? '#ffffff' : '#000000',
                           padding: '10px 8px',
                           fontSize: '14px',
                           borderRadius: '4px',
@@ -194,8 +194,8 @@ export default function Register() {
                 type="submit" 
                 className="btn w-100 fw-semibold mb-4"
                 style={{
-                  backgroundColor: '#d4634a',
-                  borderColor: '#d4634a',
+                  backgroundColor: '#003579',
+                  borderColor: '#003579',
                   color: '#ffffff',
                   borderRadius: '4px',
                   padding: '12px',
