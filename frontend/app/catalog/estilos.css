@@ -24,7 +24,7 @@
 }
 
 .header-section {
-  background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+  background: linear-gradient(135deg, #003579 0%, #00509e 100%);
   color: white;
   padding: 1.5rem;
   display: flex;
@@ -166,8 +166,8 @@
 .search-input:focus,
 .filter-select:focus {
   outline: none;
-   border-color: #4b5563;
-  box-shadow: 0 0 0 2px rgba(0, 98, 124, 0.1);
+  border-color: #003579;
+  box-shadow: 0 0 0 2px rgba(0, 53, 121, 0.1);
 }
 
 .material-grid {
@@ -193,7 +193,7 @@
 .material-card.clickable:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
- border-color: #4b5563;
+border-color: #003579;
 }
 
 .material-card.non-clickable {
@@ -297,8 +297,8 @@
 }
 
 .quantity-input:focus {
-  border-color: #4b5563;
-  box-shadow: 0 0 0 2px rgba(0, 98, 124, 0.1);
+   border-color: #003579;
+  box-shadow: 0 0 0 2px rgba(0, 53, 121, 0.1);
   outline: none;
 }
 
@@ -328,7 +328,7 @@
 }
 
 .btn-add-to-cart {
-  background: #4b5563;
+   background: #003579;
   border: none;
   border-radius: 6px;
   color: white;
@@ -341,7 +341,7 @@
 }
 
 .btn-add-to-cart:hover:not(:disabled) {
-  background: #004d63;
+  background: #00264f;
   transform: translateY(-1px);
 }
 
@@ -373,7 +373,7 @@
 
 
 .cart-header {
-  background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+  background: linear-gradient(135deg, #003579 0%, #00509e 100%);
   color: white;
   padding: 1.25rem;
 }
@@ -420,7 +420,7 @@
 }
 
 .cart-item-quantity {
-  color: #6b7280;
+  color: #00509e;
   font-size: 0.8rem;
   margin-bottom: 0;
 }
@@ -448,7 +448,7 @@
 }
 
 .btn-create-vale {
-  background: #4b5563;
+  background: #003579;
   border: none;
   border-radius: 6px;
   color: white;
@@ -461,7 +461,7 @@
 }
 
 .btn-create-vale:hover:not(:disabled) {
-  background: #004d63;
+  background: #00264f;
   transform: translateY(-1px);
 }
 
@@ -476,7 +476,7 @@
   background: white;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  color: #4b5563;
+ color: #003579;
   font-weight: 600;
   padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
@@ -524,7 +524,7 @@
 }
 
 .modal-header-custom {
-  background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+  background: linear-gradient(135deg, #003579 0%, #00509e 100%);
   color: white;
   padding: 1.25rem;
   border-bottom: none;
@@ -580,13 +580,13 @@
   width: 40px;
   height: 40px;
   border: 3px solid #e5e7eb;
-   border-top: 3px solid #4b5563;
+  border-top: 3px solid #003579;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 .loading-text {
-  color: #4b5563;
+ color: #003579;
   font-size: 1rem;
   font-weight: 500;
   margin-top: 1rem;
@@ -632,14 +632,14 @@
 }
 
 .error-message {
-  color: #6b7280;
+ color: #00509e;
   font-size: 1rem;
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
 
 .retry-button {
-  background: #4b5563;
+  background: #003579;
   color: white;
   border: none;
   border-radius: 6px;
@@ -651,14 +651,14 @@
 }
 
 .retry-button:hover {
-  background: #004d63;
+   background: #00264f;
   transform: translateY(-1px);
 }
 
 .empty-cart {
   text-align: center;
   padding: 1.5rem 0;
-  color: #6b7280;
+ color: #00509e;
 }
 
 .empty-cart-icon {
@@ -669,7 +669,7 @@
 
 .empty-cart p {
   font-weight: 600;
-  color: #4b5563;
+  color: #003579;
   margin-bottom: 0.25rem;
   font-size: 0.875rem;
 }
@@ -715,13 +715,13 @@
 }
 
 .request-item small {
-  color: #6b7280;
+  color: #00509e;
   font-size: 0.8rem;
 }
 
 .request-item .fw-bold {
   font-weight: 700;
-  color: #4b5563;
+ color: #003579;
   font-size: 0.875rem;
 }
 
@@ -729,7 +729,7 @@
   background: white;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  color: #4b5563;
+  color: #003579;
   font-weight: 600;
   padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
@@ -780,8 +780,8 @@
 
 .form-control:focus {
   outline: none;
-  border-color: #4b5563;
-  box-shadow: 0 0 0 2px rgba(0, 98, 124, 0.1);
+  border-color: #003579;
+  box-shadow: 0 0 0 2px rgba(0, 53, 121, 0.1);
 }
 
 .detail-image {
@@ -794,7 +794,7 @@
 }
 
 .text-muted {
-  color: #6b7280 !important;
+color: #00509e !important;
   font-size: 0.875rem;
 }
 
@@ -945,7 +945,7 @@
 }
 
 .no-risks {
-  color: #6b7280;
+    color: #00509e;
   font-size: 0.875rem;
   font-style: italic;
 }
@@ -1521,14 +1521,14 @@ flex-direction: row;
 
   .material-card {
     background: #374151;
-    border-color: #4b5563;
+    border-color: #003579;
   }
 
   .form-control,
   .search-input,
   .filter-select {
     background: #374151;
-    border-color: #4b5563;
+    border-color: #003579;
     color: #f9fafb;
   }
   */
