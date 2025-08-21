@@ -3,10 +3,11 @@ import axios from 'axios';
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL
   ? `${process.env.NEXT_PUBLIC_API_URL}/api`
-  : '/api';
+  : 'https://labsync-1090.onrender.com/api';
 
 const API = axios.create({
   baseURL,
+    timeout: 10000, // 10s de tiempo máximo por petición
 });
 
 // --- Solicitudes (alumno/docente) ---
