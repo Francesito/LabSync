@@ -464,7 +464,7 @@ const entregarMateriales = async (req, res) => {
 
     // Verificar que la solicitud existe y está aprobada
     const [solicitud] = await connection.query(
-   'SELECT estado, fecha_recoleccion, fecha_devolucion, usuario_id FROM Solicitud WHERE id = ?',
+      'SELECT estado, fecha_recoleccion, fecha_devolucion, usuario_id, docente_id FROM Solicitud WHERE id = ?',
       [id]
     );
 
@@ -481,6 +481,7 @@ const entregarMateriales = async (req, res) => {
       const reco = solicitud[0].fecha_recoleccion;
     const fechaDevolucion = solicitud[0].fecha_devolucion;
     const solicitanteId = solicitud[0].usuario_id;
+    const docenteId = solicitud[0].docente_id;
 const formatDate = (date) => new Date(date).toISOString().split('T')[0];
     if (!reco || formatDate(reco) !== formatDate(new Date())) {
       await connection.rollback();
@@ -600,6 +601,22 @@ const formatDate = (date) => new Date(date).toISOString().split('T')[0];
             fechaDevolucion
           ]
         );
+
+        // Actualizar cantidad del item a lo realmente entregado
+        await connection.query(
+          'UPDATE SolicitudItem SET cantidad = ? WHERE id = ?',
+          [cantidad_entregada, item_id]
+        );
+      }
+      // Eliminar items no entregados
+      const idsEntregados = items_entregados.map(i => i.item_id);
+      if (idsEntregados.length > 0) {
+        await connection.query(
+          `DELETE FROM SolicitudItem WHERE solicitud_id = ? AND id NOT IN (?)`,
+          [id, idsEntregados]
+        );
+      } else {
+        await connection.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
       }
     }
     
@@ -609,6 +626,13 @@ const formatDate = (date) => new Date(date).toISOString().split('T')[0];
       ['entregado', id]
     );
 
+     // Notificar al solicitante (y al docente si aplica)
+    const mensaje = `Se entregaron ${items_entregados?.length || 0} materiales de la solicitud ${id}`;
+    await crearNotificacion(solicitanteId, 'solicitud_entregada', mensaje);
+    if (docenteId && docenteId !== solicitanteId) {
+      await crearNotificacion(docenteId, 'solicitud_entregada', mensaje);
+    }
+    
     await connection.commit();
     res.json({ mensaje: 'Solicitud marcada como entregada correctamente' });
 
