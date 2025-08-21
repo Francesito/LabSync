@@ -865,7 +865,7 @@ const deliverSolicitud = async (req, res) => {
   try {
     // 1) Verificar existencia y estado
     const [rows] = await pool.query(
-      `SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion
+     `SELECT usuario_id, estado, fecha_devolucion, fecha_recoleccion, docente_id
        FROM Solicitud WHERE id = ?`,
       [id]
     );
@@ -961,9 +961,33 @@ const deliverSolicitud = async (req, res) => {
           sol.fecha_devolucion
         ]
       );
+
+       // Actualizar la cantidad del item al valor realmente entregado
+      await pool.query(
+        'UPDATE SolicitudItem SET cantidad = ? WHERE id = ?',
+        [it.cantidad, it.solicitud_item_id]
+      );
     }
 
-    return res.json({ 
+    // Eliminar los items que no fueron entregados
+    const entregadosIds = items.map(it => it.solicitud_item_id);
+    if (entregadosIds.length > 0) {
+      await pool.query(
+        'DELETE FROM SolicitudItem WHERE solicitud_id = ? AND id NOT IN (?)',
+        [id, entregadosIds]
+      );
+    } else {
+      await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
+    }
+    
+     // Notificar al solicitante y al docente si aplica
+    const mensaje = `Se entregaron ${items.length} materiales de la solicitud ${id}`;
+    await crearNotificacion(sol.usuario_id, 'solicitud_entregada', mensaje);
+    if (sol.docente_id && sol.docente_id !== sol.usuario_id) {
+      await crearNotificacion(sol.docente_id, 'solicitud_entregada', mensaje);
+    }
+
+    return res.json({
       message: 'Entregado y adeudos generados',
       fecha_entrega: fechaEntregaMx.split(' ')[0]
     });
