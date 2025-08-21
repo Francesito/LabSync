@@ -8,7 +8,7 @@ import {
   obtenerDetalleSolicitud,
   registrarDevolucion,
   informarPrestamoVencido
-} from '../../lib/api';rom '../../lib/api';
+} from '../../lib/api';
 
 const parseDate = (str) => {
   if (!str) return null;
