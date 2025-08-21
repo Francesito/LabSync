@@ -187,11 +187,16 @@ const initializeNotificacionTable = async () => {
         tipo VARCHAR(50) NOT NULL,
         mensaje VARCHAR(255) NOT NULL,
         fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        leida TINYINT(1) DEFAULT 0,
         PRIMARY KEY (id),
         KEY usuario_id (usuario_id),
         CONSTRAINT Notificacion_ibfk_1 FOREIGN KEY (usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE
       );
     `);
+      // Asegura que la columna 'leida' exista en instalaciones previas
+    await pool.query(
+      `ALTER TABLE Notificacion ADD COLUMN IF NOT EXISTS leida TINYINT(1) DEFAULT 0`
+    );
     console.log('✅ Tabla Notificacion inicializada correctamente');
   } catch (error) {
     console.error('❌ Error inicializando tabla Notificacion:', error);
