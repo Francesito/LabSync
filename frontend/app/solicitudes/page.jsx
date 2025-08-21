@@ -778,7 +778,6 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     doc.setFontSize(8);
     doc.setTextColor(...secondary);
     doc.setFont('helvetica', 'normal');
-    doc.text('Este documento es válido para el retiro de materiales del almacén.', pageWidth / 2, pageHeight - 20, { align: 'center' });
      doc.text(
       'NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
       pageWidth / 2,
