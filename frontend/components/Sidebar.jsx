@@ -34,8 +34,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   }, [pathname]);
 
 const handleNavClick = () => {
-    if (setIsOpen) setIsOpen(false);
-  };
+    // Mantener el sidebar abierto al navegar
+  if (setIsOpen) setIsOpen(true);
+};
 
   const handleLogout = () => {
     localStorage.removeItem('token');
