@@ -657,7 +657,11 @@ const filteredDocAprobar = applySearch(docAprobar, true);
   
   /** PDF */
   const descargarPDF = async (vale) => {
-    const doc = new jsPDF();
+     const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: [297, 167],
+    });
     const toBase64 = async (url) => {
       const blob = await fetch(url).then(r => r.blob());
       return new Promise(res => {
@@ -694,56 +698,85 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     doc.setLineWidth(0.3);
     doc.line(marginLeft, 55, pageWidth - marginLeft, 55);
 
-    // Datos
-    let yPos = 65;
-    const put = (label, value) => {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text(`${label}`, marginLeft, yPos);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`${value || ''}`, marginLeft + 45, yPos);
-      yPos += 9;
-    };
-
-    const fechaBonita = new Date(vale.fecha_solicitud).toLocaleDateString('es-MX', {
-      year: 'numeric', month: 'long', day: 'numeric'
-    });
-
-    put('Folio:', vale.folio);
-    put('Fecha:', fechaBonita);
-    if (vale.isDocenteRequest) {
-      put('Solicitante:', `${vale.profesor} (Docente)`);
-    } else {
-      put('Solicitante:', vale.nombre_alumno);
-      put('Encargado:', vale.profesor);
-      put('Grupo:', vale.grupo || '');
-    }
-
-    // Tabla de materiales
-    doc.setLineWidth(0.3);
-    doc.line(marginLeft, yPos + 4, pageWidth - marginLeft, yPos + 4);
-
-    const rows = (vale.items || []).map(m => [
-      `${m.cantidad} ${getUnidad(m.tipo)}`,
-      m.nombre_material
-    ]);
+    // Tabla de información principal
+    const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
+    const grupo = vale.isDocenteRequest ? 'No aplica' : (vale.grupo || '');
+    const fechaReco = vale.fecha_recoleccion
+      ? new Date(vale.fecha_recoleccion).toLocaleDateString('es-MX')
+      : '';
 
     autoTable(doc, {
-      startY: yPos + 10,
+      startY: 60,
       theme: 'grid',
-      head: [['Cantidad', 'Descripción']],
-      body: rows,
-      headStyles: { fillColor: primary, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-      bodyStyles: { fontSize: 10, cellPadding: 4, textColor: [0, 0, 0] },
-      margin: { left: margin, right: margin }
+      head: [['Nombre', 'Grupo', 'Fecha de recolección']],
+      body: [[nombre, grupo, fechaReco]],
+      headStyles: {
+        fillColor: primary,
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: { fontSize: 10, cellPadding: 4 },
+      margin: { left: margin, right: margin },
+      tableWidth: pageWidth - margin * 2
     });
 
-    // Pie
+    // Tabla de materiales (10 filas, 4 columnas)
+    const startY = doc.lastAutoTable.finalY + 10;
+    const items = vale.items || [];
+    const rows = [];
+    for (let i = 0; i < 10; i++) {
+      const left = items[i];
+      const right = items[i + 10];
+      rows.push([
+        left ? `${left.cantidad} ${getUnidad(left.tipo)}` : '',
+        left ? left.nombre_material : '',
+        right ? `${right.cantidad} ${getUnidad(right.tipo)}` : '',
+        right ? right.nombre_material : ''
+      ]);
+    }
+
+    autoTable(doc, {
+      startY,
+      theme: 'grid',
+       head: [['Cantidad', 'Descripción', 'Cantidad', 'Descripción']],
+      body: rows,
+     headStyles: {
+        fillColor: primary,
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: { fontSize: 10, cellPadding: 3 },
+      margin: { left: margin, right: margin },
+      tableWidth: pageWidth - margin * 2
+    });
+
+    // Sección inferior
+    const afterTableY = doc.lastAutoTable.finalY + 10;
+    const fechaDevolucion = vale.fecha_devolucion
+      ? new Date(vale.fecha_devolucion).toLocaleDateString('es-MX')
+      : '';
+    const profesor = vale.profesor || '';
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Fecha devolución:', marginLeft, afterTableY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(fechaDevolucion, marginLeft + 40, afterTableY);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Profesor:', pageWidth / 2, afterTableY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(profesor, pageWidth / 2 + 25, afterTableY);
     doc.setFontSize(8);
     doc.setTextColor(...secondary);
     doc.setFont('helvetica', 'normal');
     doc.text('Este documento es válido para el retiro de materiales del almacén.', pageWidth / 2, pageHeight - 15, { align: 'center' });
-    doc.text('Página 1 de 1', pageWidth - margin, pageHeight - 10, { align: 'right' });
+    doc.text('NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
+      pageWidth / 2,
+      afterTableY + 10,
+      { align: 'center', maxWidth: pageWidth - margin * 2 }
+    );
 
     const nombrePDF = vale.isDocenteRequest
       ? `Vale_${vale.folio}_${(vale.profesor || '').replace(/\s+/g, '')}.pdf`
