@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../lib/auth';
-  import {
-    obtenerPrestamosEntregados,
-    obtenerDetalleSolicitud,
-    registrarDevolucion
-  } from '../../lib/api';
+import {
+  obtenerPrestamosEntregados,
+  obtenerDetalleSolicitud,
+  registrarDevolucion,
+  informarPrestamoVencido
+} from '../../lib/api';rom '../../lib/api';
 
 const parseDate = (str) => {
   if (!str) return null;
@@ -29,6 +30,14 @@ const isOverdue = (str) => {
   return date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
 };
 
+const isDueSoon = (str) => {
+  const date = parseDate(str);
+  if (!date) return false;
+  const today = new Date();
+  const diff = (date - today) / (1000 * 60 * 60 * 24);
+  return diff >= 0 && diff <= 3;
+};
+
 // Función para formatear nombres de materiales
 const formatMaterialName = (name) => {
   if (!name) return '';
@@ -39,6 +48,10 @@ export default function Prestamos() {
   const { usuario } = useAuth();
   const [prestamos, setPrestamos] = useState([]);
   const [filter, setFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+  const [groupFilter, setGroupFilter] = useState('');
+  const [groups, setGroups] = useState([]);
+  const [informados, setInformados] = useState([]);
   const [selectedSolicitud, setSelectedSolicitud] = useState(null);
   const [detalle, setDetalle] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -70,12 +83,14 @@ const loadPrestamos = async () => {
             nombre_alumno: item.nombre_alumno,
              profesor: item.profesor,
             fecha_devolucion: item.fecha_devolucion,
+            grupo: item.grupo,
           };
         }
         return acc;
       }, {})
     );
     setPrestamos(grouped);
+    setGroups([...new Set(grouped.map(g => g.grupo).filter(Boolean))]);
     return grouped;
   } catch (err) {
     console.error('Error cargando préstamos:', err);
@@ -86,10 +101,20 @@ const loadPrestamos = async () => {
   }
 };
 
-  // 3) Filtrar por folio
-  const filtered = prestamos.filter(p =>
-    p.folio.toLowerCase().includes(filter.toLowerCase())
-  );
+   // 3) Filtrar
+  const filtered = prestamos
+    .filter(p =>
+      p.folio.toLowerCase().includes(filter.toLowerCase()) ||
+      (p.nombre_alumno || p.profesor || '')
+        .toLowerCase()
+        .includes(filter.toLowerCase())
+    )
+    .filter(p => (groupFilter ? p.grupo === groupFilter : true))
+    .filter(p => {
+      if (statusFilter === 'vencidas') return isOverdue(p.fecha_devolucion);
+      if (statusFilter === 'proximas') return isDueSoon(p.fecha_devolucion);
+      return true;
+    });
 
   // 4) Abrir modal y cargar detalle
   const openModal = async solicitud_id => {
@@ -115,6 +140,17 @@ const loadPrestamos = async () => {
     setSelectedSolicitud(null);
   };
 
+   const handleInformar = async (id) => {
+    try {
+      await informarPrestamoVencido(id);
+      setInformados((prev) => [...prev, id]);
+      alert('Notificación enviada');
+    } catch (err) {
+      console.error('Error al informar préstamo:', err);
+      alert('No se pudo enviar la notificación');
+    }
+  };
+  
 const handleSave = async () => {
   setSaving(true);
   try {
@@ -158,9 +194,9 @@ const handleSave = async () => {
   return (
      <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="bg-slate-600 text-white px-4 py-8 lg:px-8 lg:py-12">
+          <div className="bg-[#003579] text-white px-4 py-8 lg:px-8 lg:py-12">
         <div className="flex items-center space-x-4">
-          <div className="p-3 bg-slate-500 rounded-xl">
+        <div className="p-3 bg-[#002e63] rounded-xl">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -173,8 +209,8 @@ const handleSave = async () => {
       </div>
 
       <div className="p-8">
-        {/* Barra de búsqueda */}
-        <div className="mb-8 flex justify-center">
+       {/* Barra de búsqueda y filtros */}
+        <div className="mb-8 flex flex-col lg:flex-row items-center justify-between gap-4">
           <div className="relative w-full max-w-lg">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,11 +219,35 @@ const handleSave = async () => {
             </div>
             <input
               type="text"
-              placeholder="Buscar por folio..."
+              placeholder="Buscar por folio o nombre..."
               value={filter}
               onChange={e => setFilter(e.target.value)}
               className="w-full pl-12 pr-4 py-4 bg-white rounded-xl shadow-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
             />
+          </div>
+           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setStatusFilter(statusFilter === 'vencidas' ? '' : 'vencidas')}
+              className={`px-4 py-2 rounded-xl border ${statusFilter === 'vencidas' ? 'bg-[#003579] text-white' : 'bg-white text-[#003579]'}`}
+            >
+              Vencidas
+            </button>
+            <button
+              onClick={() => setStatusFilter(statusFilter === 'proximas' ? '' : 'proximas')}
+              className={`px-4 py-2 rounded-xl border ${statusFilter === 'proximas' ? 'bg-[#003579] text-white' : 'bg-white text-[#003579]'}`}
+            >
+              Próximas a vencer
+            </button>
+            <select
+              value={groupFilter}
+              onChange={e => setGroupFilter(e.target.value)}
+              className="border rounded-xl px-3 py-2 text-[#003579]"
+            >
+              <option value="">Todos los grupos</option>
+              {groups.map(g => (
+                <option key={g} value={g}>{g}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -212,7 +272,7 @@ const handleSave = async () => {
               >
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <div className="p-3 bg-slate-500 rounded-xl">
+                    <div className="p-3 bg-[#002e63] rounded-xl">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
@@ -236,8 +296,17 @@ const handleSave = async () => {
                     </div>
                     <div className="text-sm text-slate-600">Devolver: {formatDate(sol.fecha_devolucion)}</div>
                     {overdue && (
-                      <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                        ⚠️ Vencido
+                       <div className="flex items-center gap-2">
+                        <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                          ⚠️ Vencido
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleInformar(sol.solicitud_id); }}
+                          disabled={informados.includes(sol.solicitud_id)}
+                          className="text-xs bg-red-600 text-white px-2 py-1 rounded disabled:opacity-50"
+                        >
+                          Informar
+                        </button>
                       </div>
                     )}
                   </div>
@@ -266,10 +335,10 @@ const handleSave = async () => {
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white rounded-xl shadow-2xl w-11/12 lg:w-3/4 xl:w-2/3 max-w-4xl max-h-[85vh] overflow-hidden">
             {/* Header del Modal */}
-            <div className="bg-slate-600 text-white px-6 py-4">
+            <div className="bg-[#003579] text-white px-6 py-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-slate-500 rounded-xl">
+                 <div className="p-2 bg-[#002e63] rounded-xl">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
@@ -302,7 +371,7 @@ const handleSave = async () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div className="bg-slate-50 rounded-lg p-4">
                       <div className="flex items-center space-x-2">
-                        <div className="p-1 bg-slate-500 rounded-lg">
+                    <div className="p-1 bg-[#002e63] rounded-lg">  
                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2C7 1.44772 7.44772 1 8 1H16C16.5523 1 17 1.44772 17 2V4M7 4H5C4.44772 4 4 4.44772 4 5V19C4 19.5523 4.44772 20 5 20H19C19.5523 20 20 19.5523 20 19V5C20 4.44772 19.5523 4 19 4H17M7 4H17" />
                           </svg>
@@ -316,7 +385,7 @@ const handleSave = async () => {
 
                     <div className="bg-slate-50 rounded-lg p-4">
                       <div className="flex items-center space-x-2">
-                        <div className="p-1 bg-slate-500 rounded-lg">
+                     <div className="p-1 bg-[#002e63] rounded-lg">
                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4m-4 8a4 4 0 01-4-4V7a4 4 0 118 0v4a4 4 0 01-4 4z" />
                           </svg>
@@ -333,7 +402,7 @@ const handleSave = async () => {
                     {detalle.nombre_alumno && (
                       <div className="bg-slate-50 rounded-lg p-4">
                         <div className="flex items-center space-x-2">
-                          <div className="p-1 bg-slate-500 rounded-lg">
+                          <div className="p-1 bg-[#002e63] rounded-lg">
                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
@@ -349,7 +418,7 @@ const handleSave = async () => {
                     {detalle.profesor && (
                       <div className="bg-slate-50 rounded-lg p-4">
                         <div className="flex items-center space-x-2">
-                          <div className="p-1 bg-slate-500 rounded-lg">
+                        <div className="p-1 bg-[#002e63] rounded-lg">
                             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
                             </svg>
@@ -465,10 +534,10 @@ const handleSave = async () => {
                         Cancelar
                       </button>
                       <button
-                        type="submit"
-                        disabled={saving}
-                        className="px-5 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 text-sm"
-                      >
+                          type="submit"
+                          disabled={saving}
+                          className="px-5 py-2 bg-[#003579] text-white rounded-lg hover:bg-[#002a5e] font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 text-sm"
+                        >
                         {saving ? (
                           <>
                             <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
