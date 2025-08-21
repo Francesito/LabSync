@@ -25,7 +25,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       }
     };
     cargar();
-  }, [usuario]);
+  }, [usuario, pathname]);
 
   useEffect(() => {
     if (pathname === '/notificaciones') {
