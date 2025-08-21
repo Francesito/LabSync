@@ -1554,6 +1554,44 @@ const obtenerNotificacionesPendientes = async (req, res) => {
   }
 };
 
+// Enviar notificaciones por préstamo vencido
+const informarPrestamoVencido = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await pool.query(
+      `SELECT s.id, s.usuario_id, s.docente_id, s.profesor, s.grupo, u.nombre AS alumno
+       FROM Solicitud s
+       JOIN Usuario u ON s.usuario_id = u.id
+       WHERE s.id = ?`,
+      [id]
+    );
+    if (!rows.length) {
+      return res.status(404).json({ error: 'Solicitud no encontrada' });
+    }
+    const sol = rows[0];
+    const mensajeAlumno = `Tienes un préstamo vencido (folio ${sol.id}). Devuelve los materiales lo antes posible.`;
+    await crearNotificacion(sol.usuario_id, 'prestamo_vencido', mensajeAlumno);
+
+    const mensajeDoc = `El alumno ${sol.alumno} del grupo ${sol.grupo || ''} tiene un préstamo vencido (folio ${sol.id}).`;
+    if (sol.docente_id) {
+      await crearNotificacion(sol.docente_id, 'prestamo_vencido', mensajeDoc);
+    } else if (sol.profesor) {
+      const [doc] = await pool.query(
+        'SELECT id FROM Usuario WHERE nombre = ? AND rol_id = 2 LIMIT 1',
+        [sol.profesor]
+      );
+      if (doc.length) {
+        await crearNotificacion(doc[0].id, 'prestamo_vencido', mensajeDoc);
+      }
+    }
+
+    res.json({ mensaje: 'Notificaciones enviadas' });
+  } catch (error) {
+    console.error('Error al informar préstamo vencido:', error);
+    res.status(500).json({ error: 'Error al informar préstamo vencido' });
+  }
+};
+
 // ========================================
 // FUNCIONES DE BÚSQUEDA Y FILTROS
 // ========================================
@@ -2106,6 +2144,7 @@ crearSolicitud,
   obtenerSolicitudesAtencionRequerida,
   marcarSolicitudVista,
   obtenerNotificacionesPendientes,
+    informarPrestamoVencido,
 
   // Funciones de búsqueda y filtros
   buscarSolicitudes,
