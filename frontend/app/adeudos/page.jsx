@@ -236,10 +236,6 @@ export default function Adeudos() {
     );
   }
 
-  // Estadísticas
-  const totalAdeudos = adeudos.length;
-  const adeudosVencidos = adeudos.filter(a => isOverdue(a.fecha_devolucion)).length;
-  const adeudosProximos = adeudos.filter(a => isNearDue(a.fecha_devolucion)).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -258,47 +254,6 @@ export default function Adeudos() {
             Mantén el control total de todos tus materiales pendientes de entrega con nuestra interfaz moderna y intuitiva
           </p>
         </div>
-
-        {/* Stats Cards */}
-        {!error && adeudos.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total</p>
-                  <p className="text-3xl font-bold text-gray-900">{totalAdeudos}</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <PackageIcon />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Vencidos</p>
-                  <p className="text-3xl font-bold text-red-600">{adeudosVencidos}</p>
-                </div>
-                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                  <AlertTriangleIcon />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Próximos a vencer</p>
-                  <p className="text-3xl font-bold text-orange-600">{adeudosProximos}</p>
-                </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                  <CalendarIcon />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Error State */}
         {error && (
