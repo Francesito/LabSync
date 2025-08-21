@@ -1559,7 +1559,7 @@ const informarPrestamoVencido = async (req, res) => {
   const { id } = req.params;
   try {
     const [rows] = await pool.query(
-     `SELECT s.id, s.usuario_id, s.docente_id, s.profesor,
+     `SELECT s.id, s.usuario_id, s.docente_id, s.profesor, s.rol_id,
               g.nombre AS grupo, u.nombre AS alumno
        FROM Solicitud s
         LEFT JOIN Grupo g ON s.grupo_id = g.id
@@ -1570,9 +1570,18 @@ const informarPrestamoVencido = async (req, res) => {
     if (!rows.length) {
       return res.status(404).json({ error: 'Solicitud no encontrada' });
     }
+    
     const sol = rows[0];
+    // Si el préstamo pertenece a un docente, solo se le notifica a él
+    if (sol.rol_id === 2) {
+      const mensajeDocente = 'Tienes un préstamo vencido, haz la devolución lo antes posible.';
+      await crearNotificacion(sol.usuario_id, 'prestamo_vencido', mensajeDocente);
+      return res.json({ mensaje: 'Notificación enviada' });
+    }
+
+    // Préstamo de alumno: notificar a alumno y docente
     const mensajeAlumno = `Tienes un préstamo vencido (folio ${sol.id}). Devuelve los materiales lo antes posible.`;
-    await crearNotificacion(sol.usuario_id, 'prestamo_vencido', mensajeAlumno);
+      await crearNotificacion(sol.usuario_id, 'prestamo_vencido', mensajeAlumno);
 
     const mensajeDoc = `El alumno ${sol.alumno} del grupo ${sol.grupo || ''} tiene un préstamo vencido (folio ${sol.id}).`;
     if (sol.docente_id) {
