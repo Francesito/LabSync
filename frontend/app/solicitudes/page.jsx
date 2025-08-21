@@ -551,7 +551,15 @@ export default function SolicitudesPage() {
             const updated = { ...s, estado: ui, rawEstado: raw };
             if (accion === 'entregar') {
               const idsEntregados = items.map(i => i.item_id);
-              updated.items = (s.items || []).filter(it => idsEntregados.includes(it.item_id));
+              updated.items = (s.items || [])
+                .filter(it => idsEntregados.includes(it.item_id))
+                .map(it => {
+                  const entregado = items.find(i => i.item_id === it.item_id);
+                  return {
+                    ...it,
+                    cantidad: entregado ? entregado.cantidad_entregada : it.cantidad
+                  };
+                });
             }
             return updated;
           })
