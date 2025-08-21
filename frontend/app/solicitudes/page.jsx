@@ -69,6 +69,7 @@ const Btn = ({ children, color, onClick, disabled }) => {
   }[color] || 'bg-slate-600 hover:bg-slate-700';
   return (
     <button
+      type="button"
       className={`${palette} text-white text-sm rounded-md px-3 py-1 disabled:opacity-60 disabled:cursor-not-allowed`}
       onClick={onClick}
       disabled={disabled}
@@ -658,41 +659,27 @@ const filteredDocAprobar = applySearch(docAprobar, true);
    
   /** PDF */
   const descargarPDF = async (vale) => {
-     const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-     format: 'a4'
-    });
-   const toBase64 = async (url) => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous'; // minúscula
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imgData.data;
-        for (let i = 0; i < data.length; i += 4) {
-          const avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-          data[i] = data[i + 1] = data[i + 2] = avg;
-        }
-        ctx.putImageData(imgData, 0, 0);
-        resolve(canvas.toDataURL('image/png'));
-      } catch (error) {
-        reject(error);
-      }
-    };
-    img.onerror = () => reject(new Error('Error loading image'));
-    img.src = url;
-  });
-};
+     try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-    const logoImg = await toBase64(logoUT);
-    const encabezadoImg = await toBase64(encabezadoUT);
+ const toBase64 = async (url) => {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('No se pudo cargar la imagen');
+        const blob = await res.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
+
+      const logoImg = await toBase64(logoUT);
+      const encabezadoImg = await toBase64(encabezadoUT);
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -802,7 +789,10 @@ const filteredDocAprobar = applySearch(docAprobar, true);
       ? `Vale_${vale.folio}_${(vale.profesor || '').replace(/\s+/g, '')}.pdf`
       : `Vale_${vale.folio}_${new Date().toISOString().split('T')[0]}.pdf`;
 
-    doc.save(nombrePDF);
+     doc.save(nombrePDF);
+    } catch (err) {
+      console.error('Error al generar PDF:', err);
+    }
   };
 
   // --- RENDER POR ROL ---
