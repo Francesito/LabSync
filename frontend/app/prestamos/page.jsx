@@ -31,14 +31,6 @@ const isOverdue = (str) => {
   return date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
 };
 
-const isDueSoon = (str) => {
-  const date = parseDate(str);
-  if (!date) return false;
-  const today = new Date();
-  const diff = (date - today) / (1000 * 60 * 60 * 24);
-  return diff >= 0 && diff <= 3;
-};
-
 // Función para formatear nombres de materiales
 const formatMaterialName = (name) => {
   if (!name) return '';
@@ -84,7 +76,7 @@ const loadPrestamos = async () => {
             nombre_alumno: item.nombre_alumno,
              profesor: item.profesor,
             fecha_devolucion: item.fecha_devolucion,
-            grupo: item.grupo,
+            grupo: item.grupo_nombre,
           };
         }
         return acc;
@@ -114,7 +106,6 @@ const loadPrestamos = async () => {
     .filter(p => (groupFilter ? p.grupo === groupFilter : true))
     .filter(p => {
       if (statusFilter === 'vencidas') return isOverdue(p.fecha_devolucion);
-      if (statusFilter === 'proximas') return isDueSoon(p.fecha_devolucion);
       return true;
     });
 
@@ -122,7 +113,7 @@ const loadPrestamos = async () => {
     statusFilter === 'proximas'
       ? [...filtered].sort(
           (a, b) =>
-            new Date(a.fecha_devolucion) - new Date(b.fecha_devolucion)
+           parseDate(a.fecha_devolucion) - parseDate(b.fecha_devolucion)
         )
       : filtered;
 
