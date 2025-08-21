@@ -659,16 +659,30 @@ const filteredDocAprobar = applySearch(docAprobar, true);
   /** PDF */
   const descargarPDF = async (vale) => {
      const doc = new jsPDF({
-      orientation: 'landscape',
+      orientation: 'portrait',
       unit: 'mm',
-      format: [297, 167],
+     format: 'a4'
     });
-    const toBase64 = async (url) => {
-      const blob = await fetch(url).then(r => r.blob());
+    const toBase64 = async (url) => 
       return new Promise(res => {
-        const reader = new FileReader();
-        reader.onloadend = () => res(reader.result);
-        reader.readAsDataURL(blob);
+      const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imgData.data;
+          for (let i = 0; i < data.length; i += 4) {
+            const avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            data[i] = data[i + 1] = data[i + 2] = avg;
+          }
+          ctx.putImageData(imgData, 0, 0);
+          res(canvas.toDataURL('image/png'));
+        };
+        img.src = url;
       });
     };
 
@@ -679,15 +693,13 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 15;
     const marginLeft = margin;
-    const primary = [0, 102, 51];
+    const primary = [0, 0, 0];
     const secondary = [100, 100, 100];
 
-    // Fondo + marco
-    doc.setFillColor(245, 245, 245);
-    doc.rect(10, 10, pageWidth - 20, pageHeight - 20, 'F');
+    // Marco
     doc.setDrawColor(...primary);
     doc.setLineWidth(0.5);
-    doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
+   doc.rect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2);
 
     // Encabezado
     doc.addImage(logoImg, 'PNG', marginLeft, 12, 30, 30);
@@ -712,12 +724,13 @@ const filteredDocAprobar = applySearch(docAprobar, true);
       head: [['Nombre', 'Grupo', 'Fecha de recolección']],
       body: [[nombre, grupo, fechaReco]],
       headStyles: {
-        fillColor: primary,
-        textColor: [255, 255, 255],
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0],
         fontStyle: 'bold',
         halign: 'center'
       },
       bodyStyles: { fontSize: 10, cellPadding: 4 },
+       styles: { lineColor: primary, lineWidth: 0.2 },
       margin: { left: margin, right: margin },
       tableWidth: pageWidth - margin * 2
     });
@@ -742,13 +755,14 @@ const filteredDocAprobar = applySearch(docAprobar, true);
       theme: 'grid',
        head: [['Cantidad', 'Descripción', 'Cantidad', 'Descripción']],
       body: rows,
-     headStyles: {
-        fillColor: primary,
-        textColor: [255, 255, 255],
+      headStyles: {
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0],
         fontStyle: 'bold',
         halign: 'center'
       },
       bodyStyles: { fontSize: 10, cellPadding: 3 },
+            styles: { lineColor: primary, lineWidth: 0.2 },
       margin: { left: margin, right: margin },
       tableWidth: pageWidth - margin * 2
     });
@@ -772,7 +786,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     doc.setFontSize(8);
     doc.setTextColor(...secondary);
     doc.setFont('helvetica', 'normal');
-    doc.text('Este documento es válido para el retiro de materiales del almacén.', pageWidth / 2, pageHeight - 15, { align: 'center' });
+    doc.text('Este documento es válido para el retiro de materiales del almacén.', pageWidth / 2, pageHeight - 20, { align: 'center' });
     doc.text('NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
       pageWidth / 2,
       afterTableY + 10,
