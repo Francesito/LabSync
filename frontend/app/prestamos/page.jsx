@@ -7,7 +7,8 @@ import {
   obtenerPrestamosEntregados,
   obtenerDetalleSolicitud,
   registrarDevolucion,
-  informarPrestamoVencido
+informarPrestamoVencido,
+  obtenerGrupos
 } from '../../lib/api';
 
 const parseDate = (str) => {
@@ -90,7 +91,8 @@ const loadPrestamos = async () => {
       }, {})
     );
     setPrestamos(grouped);
-    setGroups([...new Set(grouped.map(g => g.grupo).filter(Boolean))]);
+     const gruposDB = await obtenerGrupos();
+    setGroups(gruposDB.map(g => g.nombre));
     return grouped;
   } catch (err) {
     console.error('Error cargando préstamos:', err);
@@ -115,6 +117,20 @@ const loadPrestamos = async () => {
       if (statusFilter === 'proximas') return isDueSoon(p.fecha_devolucion);
       return true;
     });
+
+    const sorted =
+    statusFilter === 'proximas'
+      ? [...filtered].sort(
+          (a, b) =>
+            new Date(a.fecha_devolucion) - new Date(b.fecha_devolucion)
+        )
+      : filtered;
+
+  const resetFilters = () => {
+    setFilter('');
+    setStatusFilter('');
+    setGroupFilter('');
+  };
 
   // 4) Abrir modal y cargar detalle
   const openModal = async solicitud_id => {
@@ -243,11 +259,17 @@ const handleSave = async () => {
               onChange={e => setGroupFilter(e.target.value)}
               className="border rounded-xl px-3 py-2 text-[#003579]"
             >
-              <option value="">Todos los grupos</option>
+              <option value="">Selecciona un grupo</option>
               {groups.map(g => (
                 <option key={g} value={g}>{g}</option>
               ))}
             </select>
+             <button
+              onClick={resetFilters}
+              className="px-4 py-2 rounded-xl border bg-white text-[#003579]"
+            >
+              Limpiar Filtros
+            </button>
           </div>
         </div>
 
@@ -260,7 +282,7 @@ const handleSave = async () => {
 
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filtered.map((sol) => {
+      {sorted.map((sol) => {
             const overdue = isOverdue(sol.fecha_devolucion);
             const nombre = sol.nombre_alumno || sol.profesor;
 
@@ -317,7 +339,7 @@ const handleSave = async () => {
         </div>
 
         {/* Empty State */}
-        {!loading && filtered.length === 0 && (
+           {!loading && sorted.length === 0 && (
           <div className="text-center py-16">
             <div className="p-4 bg-slate-100 rounded-xl w-24 h-24 mx-auto mb-6 flex items-center justify-center">
               <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
