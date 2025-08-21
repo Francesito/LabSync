@@ -77,6 +77,37 @@ const SELECT_SOLICITUDES_CON_NOMBRE = `
   /*AND_CONDITION*/
 `;
 
+/**
+ * Elimina solicitudes cuya fecha de recolección pasó hace más de un día y
+ * que no han sido marcadas como entregadas.
+ */
+const cleanupExpiredSolicitudes = async () => {
+  try {
+    await pool.query(`
+      DELETE si FROM SolicitudItem si
+      JOIN Solicitud s ON si.solicitud_id = s.id
+      WHERE s.estado <> 'entregado'
+        AND s.fecha_recoleccion IS NOT NULL
+        AND DATE_ADD(s.fecha_recoleccion, INTERVAL 1 DAY) < NOW()
+    `);
+
+    const [result] = await pool.query(`
+      DELETE FROM Solicitud
+      WHERE estado <> 'entregado'
+        AND fecha_recoleccion IS NOT NULL
+        AND DATE_ADD(fecha_recoleccion, INTERVAL 1 DAY) < NOW()
+    `);
+
+    if (result.affectedRows > 0) {
+      console.log(
+        `[MaterialController] Solicitudes expiradas eliminadas: ${result.affectedRows}`
+      );
+    }
+  } catch (error) {
+    console.error('[Error] cleanupExpiredSolicitudes:', error);
+  }
+};
+
 
 /**
  * ========================================
@@ -561,8 +592,8 @@ const crearSolicitudConAdeudo = async (req, res) => {
  * Obtener solicitudes del usuario */
 const getUserSolicitudes = async (req, res) => {
   logRequest('getUserSolicitudes');
+  await cleanupExpiredSolicitudes();
   const token = req.headers.authorization?.split(' ')[1];
-
   if (!token) return res.status(401).json({ error: 'Token requerido' });
 
   try {
@@ -582,11 +613,13 @@ const getUserSolicitudes = async (req, res) => {
   }
 };
 
+
 /**
  * Obtener solicitudes aprobadas */
 const getApprovedSolicitudes = async (req, res) => {
   logRequest('getApprovedSolicitudes');
 
+   await cleanupExpiredSolicitudes();
   try {
     // Inserta la condición AND para el estado aprobado
     const query = SELECT_SOLICITUDES_CON_NOMBRE.replace(
@@ -607,6 +640,7 @@ const getApprovedSolicitudes = async (req, res) => {
 const getPendingSolicitudes = async (req, res) => {
   logRequest('getPendingSolicitudes');
 
+   await cleanupExpiredSolicitudes();
   try {
     const query = SELECT_SOLICITUDES_CON_NOMBRE.replace(
       '/*AND_CONDITION*/',
