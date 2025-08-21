@@ -2028,7 +2028,7 @@ const eliminarSolicitudesViejas = async () => {
     const [result] = await pool.query(`
     DELETE FROM Solicitud
       WHERE fecha_solicitud < DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-    OR (estado = 'sin recoleccion' AND fecha_recoleccion < DATE_SUB(CURDATE(), INTERVAL 1 DAY))
+     OR (estado = 'sin recoleccion' AND fecha_recoleccion <= DATE_SUB(CURDATE(), INTERVAL 1 DAY))
     `);
     console.log(`🗑️ Limpieza automática: ${result.affectedRows} solicitudes eliminadas`);
   } catch (error) {
