@@ -1,6 +1,7 @@
 // backend/controllers/messageController.js
 
 const pool = require('../config/db');
+const { crearNotificacion } = require('../models/notificacion');
 
 /**
  * ==========================================================================================
@@ -97,6 +98,14 @@ exports.sendMessage = async (req, res) => {
       [result.insertId]
     );
 
+      // 5) Crear notificación para el receptor
+    try {
+      const mensajeNotif = `Nuevo mensaje de ${req.usuario.nombre}`;
+      await crearNotificacion(receptor_id, 'mensaje', mensajeNotif);
+    } catch (err) {
+      console.error('Error al crear notificación de mensaje:', err);
+    }
+    
     res.status(201).json(mensaje[0]);
   } catch (error) {
     console.error('[Error] sendMessage:', error);
