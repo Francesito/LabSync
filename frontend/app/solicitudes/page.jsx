@@ -655,233 +655,136 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     setModalEntrega(null);
   };
   
+   
   /** PDF */
-/** PDF idéntico al formato original */
-const descargarPDF = async (vale) => {
-  const doc = new jsPDF({
-    orientation: 'landscape',
-    unit: 'mm',
-    format: 'a4',
-  });
-
-  const toBase64 = async (url) => {
-    const blob = await fetch(url).then(r => r.blob());
-    return new Promise(res => {
-      const reader = new FileReader();
-      reader.onloadend = () => res(reader.result);
-      reader.readAsDataURL(blob);
+  const descargarPDF = async (vale) => {
+     const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: [297, 167],
     });
+    const toBase64 = async (url) => {
+      const blob = await fetch(url).then(r => r.blob());
+      return new Promise(res => {
+        const reader = new FileReader();
+        reader.onloadend = () => res(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    };
+
+    const logoImg = await toBase64(logoUT);
+    const encabezadoImg = await toBase64(encabezadoUT);
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    const marginLeft = margin;
+    const primary = [0, 102, 51];
+    const secondary = [100, 100, 100];
+
+    // Fondo + marco
+    doc.setFillColor(245, 245, 245);
+    doc.rect(10, 10, pageWidth - 20, pageHeight - 20, 'F');
+    doc.setDrawColor(...primary);
+    doc.setLineWidth(0.5);
+    doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
+
+    // Encabezado
+    doc.addImage(logoImg, 'PNG', marginLeft, 12, 30, 30);
+    doc.addImage(encabezadoImg, 'PNG', marginLeft + 35, 12, pageWidth - 75, 25);
+    doc.setFontSize(18);
+    doc.setTextColor(...primary);
+    doc.setFont('helvetica', 'bold');
+    doc.text('VALE DE ALMACÉN', pageWidth / 2, 50, { align: 'center' });
+    doc.setLineWidth(0.3);
+    doc.line(marginLeft, 55, pageWidth - marginLeft, 55);
+
+    // Tabla de información principal
+    const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
+    const grupo = vale.isDocenteRequest ? 'No aplica' : (vale.grupo || '');
+    const fechaReco = vale.fecha_recoleccion
+      ? new Date(vale.fecha_recoleccion).toLocaleDateString('es-MX')
+      : '';
+
+    autoTable(doc, {
+      startY: 60,
+      theme: 'grid',
+      head: [['Nombre', 'Grupo', 'Fecha de recolección']],
+      body: [[nombre, grupo, fechaReco]],
+      headStyles: {
+        fillColor: primary,
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: { fontSize: 10, cellPadding: 4 },
+      margin: { left: margin, right: margin },
+      tableWidth: pageWidth - margin * 2
+    });
+
+    // Tabla de materiales (10 filas, 4 columnas)
+    const startY = doc.lastAutoTable.finalY + 10;
+    const items = vale.items || [];
+    const rows = [];
+    for (let i = 0; i < 10; i++) {
+      const left = items[i];
+      const right = items[i + 10];
+      rows.push([
+        left ? `${left.cantidad} ${getUnidad(left.tipo)}` : '',
+        left ? left.nombre_material : '',
+        right ? `${right.cantidad} ${getUnidad(right.tipo)}` : '',
+        right ? right.nombre_material : ''
+      ]);
+    }
+
+    autoTable(doc, {
+      startY,
+      theme: 'grid',
+       head: [['Cantidad', 'Descripción', 'Cantidad', 'Descripción']],
+      body: rows,
+     headStyles: {
+        fillColor: primary,
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: { fontSize: 10, cellPadding: 3 },
+      margin: { left: margin, right: margin },
+      tableWidth: pageWidth - margin * 2
+    });
+
+    // Sección inferior
+    const afterTableY = doc.lastAutoTable.finalY + 10;
+    const fechaDevolucion = vale.fecha_devolucion
+      ? new Date(vale.fecha_devolucion).toLocaleDateString('es-MX')
+      : '';
+    const profesor = vale.profesor || '';
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Fecha devolución:', marginLeft, afterTableY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(fechaDevolucion, marginLeft + 40, afterTableY);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Profesor:', pageWidth / 2, afterTableY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(profesor, pageWidth / 2 + 25, afterTableY);
+    doc.setFontSize(8);
+    doc.setTextColor(...secondary);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Este documento es válido para el retiro de materiales del almacén.', pageWidth / 2, pageHeight - 15, { align: 'center' });
+    doc.text('NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
+      pageWidth / 2,
+      afterTableY + 10,
+      { align: 'center', maxWidth: pageWidth - margin * 2 }
+    );
+
+    const nombrePDF = vale.isDocenteRequest
+      ? `Vale_${vale.folio}_${(vale.profesor || '').replace(/\s+/g, '')}.pdf`
+      : `Vale_${vale.folio}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+    doc.save(nombrePDF);
   };
-
-  const logoImg = await toBase64(logoUT);
-  const encabezadoImg = await toBase64(encabezadoUT);
-
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-
-  // === ENCABEZADO ===
-  // Logo izquierdo
-  doc.addImage(logoImg, 'PNG', 15, 10, 25, 25);
-
-  // Texto del encabezado central
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Universidad Tecnológica de San Juan del Río', pageWidth / 2, 20, { align: 'center' });
-  doc.text('Vale Almacén R', pageWidth / 2, 28, { align: 'center' });
-
-  // Logo derecho (si tienes el logo del coyote)
-  // doc.addImage(coyoteLogo, 'PNG', pageWidth - 40, 10, 25, 25);
-
-  // === SECCIÓN SUPERIOR CON LÍNEAS ===
-  const startY = 45;
-  
-  // Línea superior con NINGUNO, BAJO, MEDIO, ALTO
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  
-  // NINGUNO
-  doc.text('NINGUNO', 20, startY);
-  doc.line(50, startY, 90, startY); // línea después de NINGUNO
-  
-  // BAJO
-  doc.text('BAJO', 100, startY);
-  doc.line(120, startY, 160, startY); // línea después de BAJO
-  
-  // MEDIO
-  doc.text('MEDIO', 170, startY);
-  doc.line(190, startY, 230, startY); // línea después de MEDIO
-  
-  // ALTO
-  doc.text('ALTO', 240, startY);
-  doc.line(260, startY, pageWidth - 20, startY); // línea después de ALTO
-
-  // === TÍTULO VALE ===
-  const valeY = startY + 15;
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text('<<< V A L E >>>', pageWidth / 2, valeY, { align: 'center' });
-
-  // === INFORMACIÓN DEL ESTUDIANTE/DOCENTE ===
-  const infoY = valeY + 15;
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-
-  const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
-  const grupo = vale.isDocenteRequest ? 'No aplica' : (vale.grupo || '');
-  const fechaReco = vale.fecha_recoleccion
-    ? new Date(vale.fecha_recoleccion).toLocaleDateString('es-MX', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      })
-    : '';
-
-  // NOMBRE
-  doc.setFont('helvetica', 'bold');
-  doc.text('NOMBRE:', 20, infoY);
-  doc.setFont('helvetica', 'normal');
-  doc.text(nombre, 60, infoY);
-
-  // GRUPO
-  doc.setFont('helvetica', 'bold');
-  doc.text('GRUPO:', pageWidth / 2, infoY);
-  doc.setFont('helvetica', 'normal');
-  doc.text(grupo, pageWidth / 2 + 35, infoY);
-
-  // FECHA
-  doc.setFont('helvetica', 'bold');
-  doc.text('FECHA:', pageWidth - 80, infoY);
-  doc.setFont('helvetica', 'normal');
-  doc.text(fechaReco, pageWidth - 50, infoY);
-
-  // Líneas debajo de cada campo
-  doc.line(60, infoY + 2, pageWidth / 2 - 20, infoY + 2); // línea NOMBRE
-  doc.line(pageWidth / 2 + 35, infoY + 2, pageWidth - 90, infoY + 2); // línea GRUPO
-  doc.line(pageWidth - 50, infoY + 2, pageWidth - 20, infoY + 2); // línea FECHA
-
-  // === TABLA DE MATERIALES ===
-  const tableStartY = infoY + 20;
-  
-  // Encabezados de la tabla
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  
-  // Columnas izquierdas
-  doc.text('CANTIDAD', 25, tableStartY);
-  doc.text('DESCRIPCIÓN', 90, tableStartY);
-  
-  // Columnas derechas
-  doc.text('CANTIDAD', pageWidth / 2 + 25, tableStartY);
-  doc.text('DESCRIPCIÓN', pageWidth / 2 + 90, tableStartY);
-
-  // Líneas de encabezado
-  doc.line(20, tableStartY + 2, pageWidth / 2 - 10, tableStartY + 2); // línea izquierda
-  doc.line(pageWidth / 2 + 20, tableStartY + 2, pageWidth - 20, tableStartY + 2); // línea derecha
-
-  // === FILAS DE LA TABLA ===
-  const items = vale.items || [];
-  const rowHeight = 12;
-  const maxRows = 10;
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-
-  // Dibujar las filas
-  for (let i = 0; i < maxRows; i++) {
-    const currentY = tableStartY + 10 + (i * rowHeight);
-    
-    // Elemento izquierdo
-    const leftItem = items[i];
-    if (leftItem) {
-      doc.text(`${leftItem.cantidad} ${getUnidad(leftItem.tipo)}`, 25, currentY);
-      doc.text(leftItem.nombre_material, 90, currentY);
-    }
-    
-    // Elemento derecho
-    const rightItem = items[i + maxRows];
-    if (rightItem) {
-      doc.text(`${rightItem.cantidad} ${getUnidad(rightItem.tipo)}`, pageWidth / 2 + 25, currentY);
-      doc.text(rightItem.nombre_material, pageWidth / 2 + 90, currentY);
-    }
-    
-    // Líneas de separación de filas
-    doc.line(20, currentY + 3, pageWidth / 2 - 10, currentY + 3); // línea izquierda
-    doc.line(pageWidth / 2 + 20, currentY + 3, pageWidth - 20, currentY + 3); // línea derecha
-  }
-
-  // === LÍNEAS VERTICALES DE LA TABLA ===
-  const tableEndY = tableStartY + 10 + (maxRows * rowHeight);
-  
-  // Líneas verticales izquierdas
-  doc.line(20, tableStartY, 20, tableEndY); // borde izquierdo
-  doc.line(80, tableStartY, 80, tableEndY); // separador cantidad/descripción
-  doc.line(pageWidth / 2 - 10, tableStartY, pageWidth / 2 - 10, tableEndY); // borde medio-izquierdo
-  
-  // Líneas verticales derechas
-  doc.line(pageWidth / 2 + 20, tableStartY, pageWidth / 2 + 20, tableEndY); // borde medio-derecho
-  doc.line(pageWidth / 2 + 80, tableStartY, pageWidth / 2 + 80, tableEndY); // separador cantidad/descripción
-  doc.line(pageWidth - 20, tableStartY, pageWidth - 20, tableEndY); // borde derecho
-
-  // === SECCIÓN INFERIOR ===
-  const bottomY = tableEndY + 15;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-
-  // FIRMA
-  doc.text('FIRMA:', 20, bottomY);
-  doc.line(50, bottomY, 120, bottomY);
-
-  // N. EXPEDIENTE
-  doc.text('N. EXPEDIENTE:', 140, bottomY);
-  const expediente = vale.folio || ''; // o usar algún número de expediente si lo tienes
-  doc.setFont('helvetica', 'normal');
-  doc.text(expediente, 200, bottomY);
-  doc.line(200, bottomY + 2, 250, bottomY + 2);
-
-  // MATERIA
-  doc.setFont('helvetica', 'bold');
-  doc.text('MATERIA:', pageWidth - 100, bottomY);
-  const materia = 'Química'; // o extraer de los datos si está disponible
-  doc.setFont('helvetica', 'normal');
-  doc.text(materia, pageWidth - 65, bottomY);
-  doc.line(pageWidth - 65, bottomY + 2, pageWidth - 20, bottomY + 2);
-
-  // HORARIO Y PROFESOR
-  const bottomY2 = bottomY + 15;
-  doc.setFont('helvetica', 'bold');
-  doc.text('HORARIO:', 20, bottomY2);
-  const horario = '7:00 AM - 12:00 PM'; // puedes extraer esto de los datos
-  doc.setFont('helvetica', 'normal');
-  doc.text(horario, 55, bottomY2);
-  doc.line(55, bottomY2 + 2, 180, bottomY2 + 2);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('PROFESOR:', 200, bottomY2);
-  const profesor = vale.profesor || '';
-  doc.setFont('helvetica', 'normal');
-  doc.text(profesor, 240, bottomY2);
-  doc.line(240, bottomY2 + 2, pageWidth - 20, bottomY2 + 2);
-
-  // === NOTA IMPORTANTE ===
-  const notaY = bottomY2 + 20;
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.text('NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS.', pageWidth / 2, notaY, { align: 'center' });
-
-  // === FIRMA DEL PROFESOR (al final) ===
-  const firmaFinalY = notaY + 20;
-  doc.line(pageWidth / 2 - 50, firmaFinalY, pageWidth / 2 + 50, firmaFinalY);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text('FIRMA DEL PROFESOR', pageWidth / 2, firmaFinalY + 8, { align: 'center' });
-
-  // === GUARDAR PDF ===
-  const nombrePDF = vale.isDocenteRequest
-    ? `Vale_${vale.folio}_${(vale.profesor || '').replace(/\s+/g, '')}.pdf`
-    : `Vale_${vale.folio}_${new Date().toISOString().split('T')[0]}.pdf`;
-
-  doc.save(nombrePDF);
-};
 
   // --- RENDER POR ROL ---
   return (
