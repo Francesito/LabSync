@@ -24,6 +24,7 @@ export default function Notificaciones() {
             {},
             { headers: { Authorization: `Bearer ${token}` } }
           );
+           setNotificaciones(prev => prev.map(n => ({ ...n, leida: 1 })));
         }
       } catch (err) {
         console.error('Error al cargar notificaciones:', err);
