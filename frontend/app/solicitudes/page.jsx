@@ -542,12 +542,20 @@ export default function SolicitudesPage() {
       );
 
       // Helpers para in-place update
-      const apply = (arrSetter) => arrSetter(prev => prev.map(s => {
-        if (s.id !== id) return s;
-        const ui = nuevoEstadoUI;
-        const raw = uiToRaw(ui);
-        return { ...s, estado: ui, rawEstado: raw };
-      }));
+      const apply = (arrSetter) =>
+        arrSetter(prev =>
+          prev.map(s => {
+            if (s.id !== id) return s;
+            const ui = nuevoEstadoUI;
+            const raw = uiToRaw(ui);
+            const updated = { ...s, estado: ui, rawEstado: raw };
+            if (accion === 'entregar') {
+              const idsEntregados = items.map(i => i.item_id);
+              updated.items = (s.items || []).filter(it => idsEntregados.includes(it.item_id));
+            }
+            return updated;
+          })
+        );
 
       const drop = (arrSetter) => arrSetter(prev => prev.filter(s => s.id !== id));
 
