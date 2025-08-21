@@ -138,17 +138,21 @@ const getSolidos = async (req, res) => {
 // Función auxiliar para obtener meses del cuatrimestre actual
 function obtenerMesesCuatri() {
   const now = new Date();
+   const start = 8; // septiembre
+  const nombres = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  // Año base del ciclo escolar (comienza en septiembre)
+  const baseYear = now.getMonth() >= start ? now.getFullYear() : now.getFullYear() - 1;
   const grupos = [
-    [8, 9, 10, 11],
-    [0, 1, 2, 3],
-    [4, 5, 6, 7],
+  [8, 9, 10, 11], // Sep-Dic
+    [0, 1, 2, 3],   // Ene-Abr
+    [4, 5, 6, 7],   // May-Ago
   ];
-  const nombres = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  let grupo;
-  if (now.getMonth() >= 8) grupo = grupos[0];
-  else if (now.getMonth() <= 3) grupo = grupos[1];
-  else grupo = grupos[2];
-  return grupo.map(i => ({ index: i, nombre: nombres[i], year: now.getFullYear() }));
+  const cuatriIndex = Math.floor(((now.getMonth() - start + 12) % 12) / 4);
+  return grupos[cuatriIndex].map(i => ({
+    index: i,
+    nombre: nombres[i],
+    year: i >= start ? baseYear : baseYear + 1,
+  }));
 }
 
 const getInventarioLiquidosReport = async (req, res) => {
@@ -171,14 +175,15 @@ const getInventarioLiquidosReport = async (req, res) => {
     const [rows] = await pool.query(query, [inicio, fin]);
     const datos = rows.map(r => {
       const consumos = {};
-      meses.forEach(m => { consumos[m.nombre] = r[m.nombre] || 0; });
-      const total = Object.values(consumos).reduce((a,b) => a + b, 0);
+     meses.forEach(m => { consumos[m.nombre] = parseFloat(r[m.nombre]) || 0; });
+      const total = Object.values(consumos).reduce((a, b) => a + b, 0);
+      const disponible = parseFloat(r.cantidad_disponible_ml) || 0;
       return {
         nombre: r.nombre,
         unidad: 'ml',
-        cantidad_inicial: r.cantidad_disponible_ml + total,
+       cantidad_inicial: disponible + total,
         consumos,
-        existencia_final: r.cantidad_disponible_ml,
+       existencia_final: disponible,
         total_consumido: total,
       };
     });
@@ -209,14 +214,15 @@ const getInventarioSolidosReport = async (req, res) => {
     const [rows] = await pool.query(query, [inicio, fin]);
     const datos = rows.map(r => {
       const consumos = {};
-      meses.forEach(m => { consumos[m.nombre] = r[m.nombre] || 0; });
-      const total = Object.values(consumos).reduce((a,b) => a + b, 0);
+meses.forEach(m => { consumos[m.nombre] = parseFloat(r[m.nombre]) || 0; });
+      const total = Object.values(consumos).reduce((a, b) => a + b, 0);
+      const disponible = parseFloat(r.cantidad_disponible_g) || 0;
       return {
         nombre: r.nombre,
         unidad: 'g',
-        cantidad_inicial: r.cantidad_disponible_g + total,
+           cantidad_inicial: disponible + total,
         consumos,
-        existencia_final: r.cantidad_disponible_g,
+          existencia_final: disponible,
         total_consumido: total,
       };
     });
