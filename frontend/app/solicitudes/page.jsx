@@ -663,7 +663,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
       unit: 'mm',
      format: 'a4'
     });
-    const toBase64 = async (url) => 
+    const toBase64 = async (url) => {
       return new Promise(res => {
       const img = new Image();
         img.crossOrigin = 'Anonymous';
