@@ -13,7 +13,7 @@ const crearNotificacion = async (usuarioId, tipo, mensaje) => {
 
 const obtenerNotificacionesPorUsuario = async (usuarioId) => {
   const [rows] = await pool.query(
-    `SELECT id, tipo, mensaje, fecha FROM Notificacion WHERE usuario_id = ? ORDER BY fecha DESC`,
+  `SELECT id, tipo, mensaje, fecha, leida FROM Notificacion WHERE usuario_id = ? ORDER BY fecha DESC`,
     [usuarioId]
   );
   return rows;
@@ -27,9 +27,14 @@ const eliminarNotificacionesUsuario = async (usuarioId) => {
   await pool.query(`DELETE FROM Notificacion WHERE usuario_id = ?`, [usuarioId]);
 };
 
+const marcarNotificacionesLeidas = async (usuarioId) => {
+  await pool.query(`UPDATE Notificacion SET leida = 1 WHERE usuario_id = ?`, [usuarioId]);
+};
+
 module.exports = {
   crearNotificacion,
   obtenerNotificacionesPorUsuario,
-    eliminarNotificacion,
-  eliminarNotificacionesUsuario
+     eliminarNotificacion,
+  eliminarNotificacionesUsuario,
+  marcarNotificacionesLeidas,
 };
