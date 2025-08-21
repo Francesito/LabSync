@@ -88,14 +88,14 @@ const cleanupExpiredSolicitudes = async () => {
       JOIN Solicitud s ON si.solicitud_id = s.id
       WHERE s.estado <> 'entregado'
         AND s.fecha_recoleccion IS NOT NULL
-        AND DATE_ADD(s.fecha_recoleccion, INTERVAL 1 DAY) < NOW()
+        AND DATE_ADD(s.fecha_recoleccion, INTERVAL 1 DAY) <= CURDATE()
     `);
 
     const [result] = await pool.query(`
       DELETE FROM Solicitud
       WHERE estado <> 'entregado'
         AND fecha_recoleccion IS NOT NULL
-        AND DATE_ADD(fecha_recoleccion, INTERVAL 1 DAY) < NOW()
+        AND DATE_ADD(fecha_recoleccion, INTERVAL 1 DAY) <= CURDATE()
     `);
 
     if (result.affectedRows > 0) {
@@ -360,6 +360,7 @@ const getLaboratorio = async (req, res) => {
 const getAllSolicitudes = async (req, res) => {
   logRequest('getAllSolicitudes');
   try {
+     await cleanupExpiredSolicitudes();
     const query = SELECT_SOLICITUDES_CON_NOMBRE.replace('/*AND_CONDITION*/', '') + ' ORDER BY s.fecha_solicitud DESC';
     const [rows] = await pool.query(query);
     res.json(rows);
@@ -592,7 +593,7 @@ const crearSolicitudConAdeudo = async (req, res) => {
  * Obtener solicitudes del usuario */
 const getUserSolicitudes = async (req, res) => {
   logRequest('getUserSolicitudes');
-  await cleanupExpiredSolicitudes();
+   await cleanupExpiredSolicitudes();
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Token requerido' });
 
@@ -619,7 +620,7 @@ const getUserSolicitudes = async (req, res) => {
 const getApprovedSolicitudes = async (req, res) => {
   logRequest('getApprovedSolicitudes');
 
-   await cleanupExpiredSolicitudes();
+    await cleanupExpiredSolicitudes();
   try {
     // Inserta la condición AND para el estado aprobado
     const query = SELECT_SOLICITUDES_CON_NOMBRE.replace(
@@ -640,7 +641,8 @@ const getApprovedSolicitudes = async (req, res) => {
 const getPendingSolicitudes = async (req, res) => {
   logRequest('getPendingSolicitudes');
 
-   await cleanupExpiredSolicitudes();
+
+    await cleanupExpiredSolicitudes();
   try {
     const query = SELECT_SOLICITUDES_CON_NOMBRE.replace(
       '/*AND_CONDITION*/',
@@ -1177,8 +1179,10 @@ const getHistorialMovimientos = async (req, res) => {
 const getHistorialSolicitudes = async (req, res) => {
   logRequest('getHistorialSolicitudes');
   try {
-    const { rol_id } = req.usuario || {}; // Usar req.usuario en lugar de decodificar JWT aquí
 
+     await cleanupExpiredSolicitudes();
+    const { rol_id } = req.usuario || {}; // Usar req.usuario en lugar de decodificar JWT aquí
+    
      // Verificar permisos - almacén (3) o administradores (4)
     if (![3, 4].includes(rol_id)) {
       return res.status(403).json({ error: 'Solo administradores o almacenistas pueden ver el historial' });
@@ -1468,6 +1472,7 @@ const getMaterialById = async (req, res) => {
 const getDeliveredSolicitudes = async (req, res) => {
   logRequest('getDeliveredSolicitudes');
   try {
+        await cleanupExpiredSolicitudes();
     const [rows] = await pool.query(`
       SELECT
         s.id AS solicitud_id,
@@ -2298,6 +2303,7 @@ const getSolicitudesParaDocenteAprobar = async (req, res) => {
   if (!token) return res.status(401).json({ error: 'Token requerido' });
 
   try {
+    await cleanupExpiredSolicitudes();
     const { id: docente_id, rol_id } = jwt.verify(token, process.env.JWT_SECRET);
     if (rol_id !== 2 && rol_id !== 4) return res.status(403).json({ error: 'Solo docentes o admin' });
 
@@ -2346,6 +2352,7 @@ const getSolicitudesDocentePropias = async (req, res) => {
   if (!token) return res.status(401).json({ error: 'Token requerido' });
 
   try {
+    await cleanupExpiredSolicitudes();
     const { id: docente_id, rol_id } = jwt.verify(token, process.env.JWT_SECRET);
     if (rol_id !== 2 && rol_id !== 4) return res.status(403).json({ error: 'Solo docentes o admin' });
 
@@ -2393,6 +2400,7 @@ const getSolicitudesParaAlmacen = async (req, res) => {
   if (!token) return res.status(401).json({ error: 'Token requerido' });
 
   try {
+    await cleanupExpiredSolicitudes();
     const { rol_id } = jwt.verify(token, process.env.JWT_SECRET);
     if (rol_id !== 3 && rol_id !== 4) {
       return res.status(403).json({ error: 'Solo almacenistas o admin' });
