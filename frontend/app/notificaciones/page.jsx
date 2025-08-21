@@ -2,29 +2,27 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useAuth } from '../../lib/auth';
 
 export default function Notificaciones() {
-  const { usuario } = useAuth();
   const [notificaciones, setNotificaciones] = useState([]);
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   useEffect(() => {
-    if (!usuario) return;
+    if (!token) return;
     const cargar = async () => {
       try {
         const { data } = await axios.get(
-         `${baseUrl}/api/notificaciones`,
-          {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-          }
+        `${baseUrl}/api/notificaciones`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setNotificaciones(data);
-          if (data.some(n => !n.leida)) {
+        
+        if (data.some(n => !n.leida)) {
           await axios.put(
             `${baseUrl}/api/notificaciones/marcar-leidas`,
             {},
-            { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            { headers: { Authorization: `Bearer ${token}` } }
           );
         }
       } catch (err) {
@@ -32,12 +30,12 @@ export default function Notificaciones() {
       }
     };
     cargar();
-  }, [usuario]);
+    }, [token]);
 
   const eliminar = async (id) => {
     try {
       await axios.delete(`${baseUrl}/api/notificaciones/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+     headers: { Authorization: `Bearer ${token}` }
       });
       setNotificaciones(prev => prev.filter(n => n.id !== id));
     } catch (err) {
@@ -45,7 +43,14 @@ export default function Notificaciones() {
     }
   };
 
-  if (!usuario) return null;
+  if (!token) {
+    return (
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Notificaciones</h1>
+        <p className="text-gray-600">Debes iniciar sesión para ver tus notificaciones.</p>
+      </div>
+    );
+  }
 
     const unread = notificaciones.filter(n => !n.leida);
   const read = notificaciones.filter(n => n.leida);
