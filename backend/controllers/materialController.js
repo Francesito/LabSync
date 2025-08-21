@@ -138,17 +138,27 @@ const getSolidos = async (req, res) => {
 // Función auxiliar para obtener meses del cuatrimestre actual
 function obtenerMesesCuatri() {
   const now = new Date();
-   const start = 8; // septiembre
-  const nombres = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-  // Año base del ciclo escolar (comienza en septiembre)
-  const baseYear = now.getMonth() >= start ? now.getFullYear() : now.getFullYear() - 1;
-  const grupos = [
-  [8, 9, 10, 11], // Sep-Dic
-    [0, 1, 2, 3],   // Ene-Abr
-    [4, 5, 6, 7],   // May-Ago
+const start = 8; // septiembre
+  const nombres = [
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre',
   ];
-  const cuatriIndex = Math.floor(((now.getMonth() - start + 12) % 12) / 4);
-  return grupos[cuatriIndex].map(i => ({
+ // Año base del ciclo escolar (comienza en septiembre)
+  const baseYear =
+    now.getMonth() >= start ? now.getFullYear() : now.getFullYear() - 1;
+  // Siempre retornar el primer cuatrimestre del ciclo (septiembre-diciembre)
+  const indices = [8, 9, 10, 11];
+  return indices.map((i) => ({
     index: i,
     nombre: nombres[i],
     year: i >= start ? baseYear : baseYear + 1,
