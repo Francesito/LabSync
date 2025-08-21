@@ -19,7 +19,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         const { data } = await axios.get(`${baseUrl}/api/notificaciones`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        setNotifCount(data.length);
+      setNotifCount(data.filter(n => !n.leida).length);
       } catch (err) {
         console.error('Error al cargar notificaciones:', err);
       }
@@ -33,21 +33,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     }
   }, [pathname]);
 
-  const clearAllNotifications = async () => {
-    try {
-      await axios.delete(`${baseUrl}/api/notificaciones`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      setNotifCount(0);
-    } catch (err) {
-      console.error('Error al eliminar notificaciones:', err);
-    }
-  };
-
-  const handleNavClick = async (href) => {
-    if (pathname === '/notificaciones' && href !== '/notificaciones') {
-      await clearAllNotifications();
-    }
+const handleNavClick = () => {
+    if (setIsOpen) setIsOpen(false);
   };
 
   const handleLogout = () => {
@@ -287,7 +274,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             <Link
               key={href}
               href={href}
-               onClick={() => handleNavClick(href)}
+               onClick={handleNavClick}
               className={`group flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-200 rounded-xl transition-all duration-300 hover:transform hover:scale-105 ${getItemColorClasses(color)}`}
             >
              <span className={`text-gray-300 transition-colors duration-300 relative ${
