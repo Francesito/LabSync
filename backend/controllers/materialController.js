@@ -83,20 +83,42 @@ const SELECT_SOLICITUDES_CON_NOMBRE = `
  */
 const cleanupExpiredSolicitudes = async () => {
   try {
+    // Obtener fecha actual en zona horaria de México
+    const hoyMexico = new Date().toLocaleDateString('en-CA', {
+      timeZone: 'America/Mexico_City'
+    });
+    
+    console.log(`[DEBUG] Fecha actual México: ${hoyMexico}`);
+    
+    // Primero obtener las solicitudes que van a ser eliminadas para debug
+    const [solicitudesAEliminar] = await pool.query(`
+      SELECT s.id, s.folio, s.fecha_recoleccion, s.estado, s.nombre_alumno
+      FROM Solicitud s
+      WHERE s.estado <> 'entregado'
+        AND s.fecha_recoleccion IS NOT NULL
+        AND s.fecha_recoleccion < ?
+    `, [hoyMexico]);
+    
+    if (solicitudesAEliminar.length > 0) {
+      console.log(`[DEBUG] Solicitudes a eliminar:`, solicitudesAEliminar);
+    }
+
+    // Eliminar SolicitudItem primero (por integridad referencial)
     await pool.query(`
       DELETE si FROM SolicitudItem si
       JOIN Solicitud s ON si.solicitud_id = s.id
       WHERE s.estado <> 'entregado'
         AND s.fecha_recoleccion IS NOT NULL
-        AND DATE_ADD(s.fecha_recoleccion, INTERVAL 1 DAY) <= CURDATE()
-    `);
+        AND s.fecha_recoleccion < ?
+    `, [hoyMexico]);
 
+    // Eliminar las solicitudes
     const [result] = await pool.query(`
       DELETE FROM Solicitud
       WHERE estado <> 'entregado'
         AND fecha_recoleccion IS NOT NULL
-        AND DATE_ADD(fecha_recoleccion, INTERVAL 1 DAY) <= CURDATE()
-    `);
+        AND fecha_recoleccion < ?
+    `, [hoyMexico]);
 
     if (result.affectedRows > 0) {
       console.log(
