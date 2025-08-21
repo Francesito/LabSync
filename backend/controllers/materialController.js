@@ -972,9 +972,10 @@ const deliverSolicitud = async (req, res) => {
     // Eliminar los items que no fueron entregados
     const entregadosIds = items.map(it => it.solicitud_item_id);
     if (entregadosIds.length > 0) {
+      const placeholders = entregadosIds.map(() => '?').join(',');
       await pool.query(
-        'DELETE FROM SolicitudItem WHERE solicitud_id = ? AND id NOT IN (?)',
-        [id, entregadosIds]
+        `DELETE FROM SolicitudItem WHERE solicitud_id = ? AND id NOT IN (${placeholders})`,
+        [id, ...entregadosIds]
       );
     } else {
       await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
