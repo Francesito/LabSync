@@ -1559,8 +1559,10 @@ const informarPrestamoVencido = async (req, res) => {
   const { id } = req.params;
   try {
     const [rows] = await pool.query(
-      `SELECT s.id, s.usuario_id, s.docente_id, s.profesor, s.grupo, u.nombre AS alumno
+     `SELECT s.id, s.usuario_id, s.docente_id, s.profesor,
+              g.nombre AS grupo, u.nombre AS alumno
        FROM Solicitud s
+        LEFT JOIN Grupo g ON s.grupo_id = g.id
        JOIN Usuario u ON s.usuario_id = u.id
        WHERE s.id = ?`,
       [id]
