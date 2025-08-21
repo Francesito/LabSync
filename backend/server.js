@@ -194,9 +194,14 @@ const initializeNotificacionTable = async () => {
       );
     `);
       // Asegura que la columna 'leida' exista en instalaciones previas
-    await pool.query(
-      `ALTER TABLE Notificacion ADD COLUMN IF NOT EXISTS leida TINYINT(1) DEFAULT 0`
+   const [columns] = await pool.query(
+      "SHOW COLUMNS FROM Notificacion LIKE 'leida'"
     );
+    if (columns.length === 0) {
+      await pool.query(
+        "ALTER TABLE Notificacion ADD COLUMN leida TINYINT(1) DEFAULT 0"
+      );
+    }
     console.log('✅ Tabla Notificacion inicializada correctamente');
   } catch (error) {
     console.error('❌ Error inicializando tabla Notificacion:', error);
