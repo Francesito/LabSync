@@ -371,6 +371,14 @@ router.get(
   solicitudController.obtenerNotificacionesPendientes
 );
 
+// Informar préstamo vencido
+router.post(
+  '/:id/informar-vencido',
+  verificarToken,
+  verificarRol([3]),
+  solicitudController.informarPrestamoVencido
+);
+
 /**
  * ========================================
  * RUTAS DE BÚSQUEDA Y FILTROS
