@@ -78,8 +78,9 @@ const SELECT_SOLICITUDES_CON_NOMBRE = `
 `;
 
 /**
- * Elimina solicitudes cuya fecha de recolección pasó hace más de un día y
+ * Elimina solicitudes cuya fecha de recolección ya pasó y
  * que no han sido marcadas como entregadas.
+ * Solo elimina solicitudes de ALUMNOS (nombre_alumno IS NOT NULL)
  */
 const cleanupExpiredSolicitudes = async () => {
   try {
@@ -94,20 +95,41 @@ const cleanupExpiredSolicitudes = async () => {
     const [solicitudesAEliminar] = await pool.query(`
       SELECT s.id, s.folio, s.fecha_recoleccion, s.estado, s.nombre_alumno
       FROM Solicitud s
-      WHERE s.estado <> 'entregado'
+      WHERE s.estado = 'aprobada'
+        AND s.nombre_alumno IS NOT NULL
         AND s.fecha_recoleccion IS NOT NULL
         AND s.fecha_recoleccion < ?
     `, [hoyMexico]);
     
     if (solicitudesAEliminar.length > 0) {
       console.log(`[DEBUG] Solicitudes a eliminar:`, solicitudesAEliminar);
+      
+      // Antes de eliminar, restaurar el stock que fue descontado
+      for (const sol of solicitudesAEliminar) {
+        const [items] = await pool.query(
+          'SELECT material_id, tipo, cantidad FROM SolicitudItem WHERE solicitud_id = ?',
+          [sol.id]
+        );
+        
+        for (const it of items) {
+          const meta = detectTableAndField(it.tipo);
+          if (meta) {
+            await pool.query(
+              `UPDATE ${meta.table} SET ${meta.field} = ${meta.field} + ? WHERE id = ?`,
+              [it.cantidad, it.material_id]
+            );
+            console.log(`[DEBUG] Stock restaurado: ${it.cantidad} de material ${it.material_id} tipo ${it.tipo}`);
+          }
+        }
+      }
     }
 
     // Eliminar SolicitudItem primero (por integridad referencial)
     await pool.query(`
       DELETE si FROM SolicitudItem si
       JOIN Solicitud s ON si.solicitud_id = s.id
-      WHERE s.estado <> 'entregado'
+      WHERE s.estado = 'aprobada'
+        AND s.nombre_alumno IS NOT NULL
         AND s.fecha_recoleccion IS NOT NULL
         AND s.fecha_recoleccion < ?
     `, [hoyMexico]);
@@ -115,7 +137,8 @@ const cleanupExpiredSolicitudes = async () => {
     // Eliminar las solicitudes
     const [result] = await pool.query(`
       DELETE FROM Solicitud
-      WHERE estado <> 'entregado'
+      WHERE estado = 'aprobada'
+        AND nombre_alumno IS NOT NULL
         AND fecha_recoleccion IS NOT NULL
         AND fecha_recoleccion < ?
     `, [hoyMexico]);
