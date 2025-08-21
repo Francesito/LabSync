@@ -2,7 +2,8 @@ const {
   crearNotificacion,
   obtenerNotificacionesPorUsuario,
   eliminarNotificacion,
-  eliminarNotificacionesUsuario
+eliminarNotificacionesUsuario,
+  marcarNotificacionesLeidas
 } = require('../models/notificacion');
 
 const obtenerNotificaciones = async (req, res) => {
@@ -36,9 +37,20 @@ const eliminarTodas = async (req, res) => {
   }
 };
 
+const marcarLeidas = async (req, res) => {
+  try {
+    await marcarNotificacionesLeidas(req.usuario.id);
+    res.json({ mensaje: 'Notificaciones marcadas como leídas' });
+  } catch (error) {
+    console.error('Error al marcar notificaciones como leídas:', error);
+    res.status(500).json({ error: 'Error al marcar notificaciones como leídas' });
+  }
+};
+
 module.exports = {
   crearNotificacion,
   obtenerNotificaciones,
   eliminar,
-  eliminarTodas
+  eliminarTodas,
+  marcarLeidas
 };
