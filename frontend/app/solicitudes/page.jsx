@@ -692,7 +692,9 @@ const filteredDocAprobar = applySearch(docAprobar, true);
    doc.rect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2);
 
     // Encabezado
-     doc.addImage(encabezadoImg, 'JPG', marginLeft, 12, pageWidth - margin * 2, 26);
+     const headerWidth = 350; // ancho fijo solicitado
+    const headerHeight = 95; // alto fijo solicitado
+    doc.addImage(encabezadoImg, 'JPG', marginLeft, 12, headerWidth, headerHeight);
     doc.setFontSize(18);
     doc.setTextColor(...primary);
     doc.setFont('helvetica', 'bold');
