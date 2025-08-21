@@ -139,6 +139,17 @@ export async function registrarDevolucion(solicitudId, itemsDevueltos) {
   return data;
 }
 
+export async function informarPrestamoVencido(solicitudId) {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No hay token de autenticación');
+  const { data } = await API.post(
+    `/solicitudes/${solicitudId}/informar-vencido`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return data;
+}
+
 
 // --- Generación de reportes en PDF (admin) ---
 export async function generarReporte(tipoReporte) {
