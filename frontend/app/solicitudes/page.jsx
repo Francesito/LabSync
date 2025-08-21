@@ -8,8 +8,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useAuth } from '../../lib/auth';
 
-const logoUT = '/logoUtsjr.png';
-const encabezadoUT = '/universidad.png';
+const encabezadoUT = '/universidad.jpg';
 
 /** Badge de estado */
 const EstadoBadge = ({ estado }) => {
@@ -678,7 +677,6 @@ const filteredDocAprobar = applySearch(docAprobar, true);
         });
       };
 
-      const logoImg = await toBase64(logoUT);
       const encabezadoImg = await toBase64(encabezadoUT);
 
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -694,15 +692,14 @@ const filteredDocAprobar = applySearch(docAprobar, true);
    doc.rect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2);
 
     // Encabezado
-    doc.addImage(logoImg, 'PNG', marginLeft, 12, 30, 30);
-    doc.addImage(encabezadoImg, 'PNG', marginLeft + 35, 12, pageWidth - 75, 25);
+     doc.addImage(encabezadoImg, 'JPG', marginLeft, 12, pageWidth - margin * 2, 26);
     doc.setFontSize(18);
     doc.setTextColor(...primary);
     doc.setFont('helvetica', 'bold');
-    doc.text('VALE DE ALMACÉN', pageWidth / 2, 50, { align: 'center' });
+    doc.text('VALE DE ALMACÉN', pageWidth / 2, 45, { align: 'center' });
     doc.setLineWidth(0.3);
-    doc.line(marginLeft, 55, pageWidth - marginLeft, 55);
-
+    doc.line(marginLeft, 48, pageWidth - marginLeft, 48);
+       
     // Tabla de información principal
     const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
     const grupo = vale.isDocenteRequest ? 'No aplica' : (vale.grupo || '');
@@ -711,7 +708,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
       : '';
 
     autoTable(doc, {
-      startY: 60,
+       startY: 52,
       theme: 'grid',
       head: [['Nombre', 'Grupo', 'Fecha de recolección']],
       body: [[nombre, grupo, fechaReco]],
@@ -721,14 +718,14 @@ const filteredDocAprobar = applySearch(docAprobar, true);
         fontStyle: 'bold',
         halign: 'center'
       },
-      bodyStyles: { fontSize: 10, cellPadding: 4 },
-       styles: { lineColor: primary, lineWidth: 0.2 },
-      margin: { left: margin, right: margin },
+      bodyStyles: { fontSize: 11, cellPadding: 2 },
+      styles: { lineColor: primary, lineWidth: 0.2 },
+      margin: { top: 0, bottom: 0, left: margin, right: margin },
       tableWidth: pageWidth - margin * 2
     });
 
     // Tabla de materiales (10 filas, 4 columnas)
-    const startY = doc.lastAutoTable.finalY + 10;
+    const startY = doc.lastAutoTable.finalY;
     const items = vale.items || [];
     const rows = [];
     for (let i = 0; i < 10; i++) {
@@ -753,14 +750,14 @@ const filteredDocAprobar = applySearch(docAprobar, true);
         fontStyle: 'bold',
         halign: 'center'
       },
-      bodyStyles: { fontSize: 10, cellPadding: 3 },
-            styles: { lineColor: primary, lineWidth: 0.2 },
-      margin: { left: margin, right: margin },
+      bodyStyles: { fontSize: 10, cellPadding: 2 },
+      styles: { lineColor: primary, lineWidth: 0.2 },
+      margin: { top: 0, bottom: 0, left: margin, right: margin },
       tableWidth: pageWidth - margin * 2
     });
 
     // Sección inferior
-    const afterTableY = doc.lastAutoTable.finalY + 10;
+   const afterTableY = doc.lastAutoTable.finalY + 4;
      const fechaDev = vale.fecha_devolucion || vale.fecha_recoleccion;
     const fechaDevolucion = fechaDev
       ? new Date(fechaDev).toLocaleDateString('es-MX')
@@ -785,7 +782,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
      doc.text(
       'NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
       pageWidth / 2,
-      afterTableY + 10,
+     afterTableY + 6,
       { align: 'center', maxWidth: pageWidth - margin * 2 }
     );
 
