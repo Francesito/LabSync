@@ -320,6 +320,19 @@ const startLowStockAlertJob = () => {
   }, 6 * 60 * 60 * 1000); // Cada 6 horas
 };
 
+// Limpiar notificaciones antiguas (3 días)
+const startNotificationCleanupJob = () => {
+  setInterval(async () => {
+    try {
+      await pool.query(
+        'DELETE FROM Notificacion WHERE fecha < DATE_SUB(NOW(), INTERVAL 3 DAY)'
+      );
+    } catch (err) {
+      console.error('❌ Error limpiando notificaciones:', err);
+    }
+  }, 24 * 60 * 60 * 1000); // Cada 24 horas
+};
+
 app.get('/api/grupos', obtenerGrupos);
 
 // ==================== MANEJO DE ERRORES 404 ====================
@@ -395,6 +408,7 @@ app.listen(PORT, '0.0.0.0', async () => {
   startSolicitudAutoCancelJob();
   startReturnReminderJob();
   startLowStockAlertJob();
+  startNotificationCleanupJob();
   
   console.log('✅ Sistema LabSync inicializado');
   console.log('🔐 Funcionalidades de permisos:');
