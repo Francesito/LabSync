@@ -657,27 +657,27 @@ const filteredDocAprobar = applySearch(docAprobar, true);
   
    
   /** PDF */
-  const descargarPDF = async (vale) => {
-     try {
-      const doc = new jsPDF({
-     orientation: 'landscape',
-        unit: 'mm',
-       format: [297, 167] // 16:9
+const descargarPDF = async (vale) => {
+  try {
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: [297, 167] // 16:9
+    });
+
+    const toBase64 = async (url) => {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('No se pudo cargar la imagen');
+      const blob = await res.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
       });
+    };
 
- const toBase64 = async (url) => {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('No se pudo cargar la imagen');
-        const blob = await res.blob();
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      };
-
-      const encabezadoImg = await toBase64(encabezadoUT);
+    const encabezadoImg = await toBase64(encabezadoUT);
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -689,18 +689,44 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     // Marco
     doc.setDrawColor(...primary);
     doc.setLineWidth(0.5);
-   doc.rect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2);
+    doc.rect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2);
 
-    // Encabezado
-     const headerWidth = 350; // ancho fijo solicitado
-    const headerHeight = 95; // alto fijo solicitado
-    doc.addImage(encabezadoImg, 'JPG', marginLeft, 12, headerWidth, headerHeight);
+    // Encabezado - Imagen adaptada y más pequeña
+    // Calculamos dimensiones más pequeñas manteniendo proporción
+    const maxHeaderWidth = (pageWidth - margin * 2) * 0.4; // 40% del ancho disponible
+    const maxHeaderHeight = 40; // altura máxima reducida
+    
+    // Proporción original aproximada (ajusta según tu imagen real)
+    const originalRatio = 3.5; // ancho/alto aproximado
+    
+    let headerWidth, headerHeight;
+    
+    // Calculamos el tamaño manteniendo proporción y límites
+    if (maxHeaderWidth / originalRatio <= maxHeaderHeight) {
+      headerWidth = maxHeaderWidth;
+      headerHeight = maxHeaderWidth / originalRatio;
+    } else {
+      headerHeight = maxHeaderHeight;
+      headerWidth = maxHeaderHeight * originalRatio;
+    }
+    
+    // Centramos la imagen horizontalmente
+    const imageX = (pageWidth - headerWidth) / 2;
+    const imageY = 18; // posición Y fija
+    
+    doc.addImage(encabezadoImg, 'JPG', imageX, imageY, headerWidth, headerHeight);
+    
+    // Título centrado debajo de la imagen
+    const titleY = imageY + headerHeight + 8;
     doc.setFontSize(18);
     doc.setTextColor(...primary);
     doc.setFont('helvetica', 'bold');
-    doc.text('VALE DE ALMACÉN', pageWidth / 2, 45, { align: 'center' });
+    doc.text('VALE DE ALMACÉN', pageWidth / 2, titleY, { align: 'center' });
+    
+    // Línea separadora
+    const lineY = titleY + 3;
     doc.setLineWidth(0.3);
-    doc.line(marginLeft, 48, pageWidth - marginLeft, 48);
+    doc.line(marginLeft, lineY, pageWidth - marginLeft, lineY);
        
     // Tabla de información principal
     const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
@@ -710,7 +736,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
       : '';
 
     autoTable(doc, {
-       startY: 52,
+      startY: lineY + 5,
       theme: 'grid',
       head: [['Nombre', 'Grupo', 'Fecha de recolección']],
       body: [[nombre, grupo, fechaReco]],
@@ -744,7 +770,7 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     autoTable(doc, {
       startY,
       theme: 'grid',
-       head: [['Cantidad', 'Descripción', 'Cantidad', 'Descripción']],
+      head: [['Cantidad', 'Descripción', 'Cantidad', 'Descripción']],
       body: rows,
       headStyles: {
         fillColor: [255, 255, 255],
@@ -759,14 +785,14 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     });
 
     // Sección inferior
-   const afterTableY = doc.lastAutoTable.finalY + 4;
-     const fechaDev = vale.fecha_devolucion || vale.fecha_recoleccion;
+    const afterTableY = doc.lastAutoTable.finalY + 4;
+    const fechaDev = vale.fecha_devolucion || vale.fecha_recoleccion;
     const fechaDevolucion = fechaDev
       ? new Date(fechaDev).toLocaleDateString('es-MX')
       : '';
     const profesor = vale.profesor || '';
 
-       doc.setFontSize(10);
+    doc.setFontSize(10);
     doc.setTextColor(...primary);
     doc.setFont('helvetica', 'bold');
     doc.text('Fecha devolución:', marginLeft, afterTableY);
@@ -780,10 +806,10 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     doc.setFontSize(8);
     doc.setTextColor(...secondary);
     doc.setFont('helvetica', 'normal');
-     doc.text(
+    doc.text(
       'NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
       pageWidth / 2,
-     afterTableY + 6,
+      afterTableY + 6,
       { align: 'center', maxWidth: pageWidth - margin * 2 }
     );
 
@@ -791,11 +817,11 @@ const filteredDocAprobar = applySearch(docAprobar, true);
       ? `Vale_${vale.folio}_${(vale.profesor || '').replace(/\s+/g, '')}.pdf`
       : `Vale_${vale.folio}_${new Date().toISOString().split('T')[0]}.pdf`;
 
-     doc.save(nombrePDF);
-    } catch (err) {
-      console.error('Error al generar PDF:', err);
-    }
-  };
+    doc.save(nombrePDF);
+  } catch (err) {
+    console.error('Error al generar PDF:', err);
+  }
+};
 
   // --- RENDER POR ROL ---
   return (
