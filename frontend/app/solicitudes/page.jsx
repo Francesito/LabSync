@@ -661,9 +661,9 @@ const filteredDocAprobar = applySearch(docAprobar, true);
   const descargarPDF = async (vale) => {
      try {
       const doc = new jsPDF({
-        orientation: 'portrait',
+     orientation: 'landscape',
         unit: 'mm',
-        format: 'a4'
+       format: [297, 167] // 16:9
       });
 
  const toBase64 = async (url) => {
@@ -761,11 +761,14 @@ const filteredDocAprobar = applySearch(docAprobar, true);
 
     // Sección inferior
     const afterTableY = doc.lastAutoTable.finalY + 10;
-    const fechaDevolucion = vale.fecha_devolucion
-      ? new Date(vale.fecha_devolucion).toLocaleDateString('es-MX')
+     const fechaDev = vale.fecha_devolucion || vale.fecha_recoleccion;
+    const fechaDevolucion = fechaDev
+      ? new Date(fechaDev).toLocaleDateString('es-MX')
       : '';
     const profesor = vale.profesor || '';
 
+       doc.setFontSize(10);
+    doc.setTextColor(...primary);
     doc.setFont('helvetica', 'bold');
     doc.text('Fecha devolución:', marginLeft, afterTableY);
     doc.setFont('helvetica', 'normal');
@@ -779,7 +782,8 @@ const filteredDocAprobar = applySearch(docAprobar, true);
     doc.setTextColor(...secondary);
     doc.setFont('helvetica', 'normal');
     doc.text('Este documento es válido para el retiro de materiales del almacén.', pageWidth / 2, pageHeight - 20, { align: 'center' });
-    doc.text('NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
+     doc.text(
+      'NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
       pageWidth / 2,
       afterTableY + 10,
       { align: 'center', maxWidth: pageWidth - margin * 2 }
