@@ -42,14 +42,10 @@ export default function Login() {
   }
 
   return (
-    <div
-      className="min-vh-100 d-flex font-sans position-relative auth-bg"
-      style={{
-        backgroundImage: isLargeScreen
-          ? "url('/background.jpg')"
-          : "linear-gradient(135deg, #dbeafe 0%, #fbcfe8 100%)",
-      }}
-    >
+   <div
+  className={`min-vh-100 d-flex font-sans position-relative auth-bg ${isLargeScreen ? 'bg-image' : 'bg-gradient'}`}
+>
+
       
       <div className="row w-100 m-0 position-relative" style={{ zIndex: 2 }}>
 
@@ -152,33 +148,42 @@ export default function Login() {
       </div>
 
       <style jsx>{`
-      .auth-bg {
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-        }
+  .auth-bg {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
 
-        .form-control:focus {
-          background-color: rgba(255,255,255,0.9) !important;
-          border-color: rgba(0,0,0,0.5) !important;
-          color: black !important;
-          box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.25) !important;
-        }
+  .bg-image {
+    background-image: url('/background.jpg');
+  }
 
-        .form-control::placeholder {
-          color: rgba(0,0,0,0.5) !important;
-        }
-        
-        .form-check-input:checked {
-         background-color: #003579 !important;
-          border-color: #003579 !important;
-        }
-        
-        .form-check-input:focus {
-          border-color: rgba(255,255,255,0.5) !important;
-          box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.25) !important;
-        }
-      `}</style>
+  .bg-gradient {
+    background-image: linear-gradient(135deg, #dbeafe 0%, #fbcfe8 100%);
+  }
+
+  .form-control:focus {
+    background-color: rgba(255,255,255,0.9) !important;
+    border-color: rgba(0,0,0,0.5) !important;
+    color: black !important;
+    box-shadow: 0 0 0 0.2rem rgba(0,0,0,0.25) !important;
+  }
+
+  .form-control::placeholder {
+    color: rgba(0,0,0,0.5) !important;
+  }
+  
+  .form-check-input:checked {
+    background-color: #003579 !important;
+    border-color: #003579 !important;
+  }
+  
+  .form-check-input:focus {
+    border-color: rgba(255,255,255,0.5) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.25) !important;
+  }
+`}</style>
+
     </div>
   );
 }
