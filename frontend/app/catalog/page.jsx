@@ -58,9 +58,30 @@ export default function Catalog() {
   });
   const [permissionsLoading, setPermissionsLoading] = useState(true);
   const [permissionsError, setPermissionsError] = useState('');
-
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [showCart, setShowCart] = useState(true);
+  
   const LOW_STOCK_THRESHOLD = 50;
   const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'tu-cloud-name';
+
+    useEffect(() => {
+    const checkScreen = () => {
+      const small =
+        window.innerWidth <= 920 && window.innerHeight <= 920;
+      setIsSmallScreen(small);
+    };
+    checkScreen();
+    window.addEventListener('resize', checkScreen);
+    return () => window.removeEventListener('resize', checkScreen);
+  }, []);
+
+  useEffect(() => {
+    if (isSmallScreen) {
+      setShowCart(false);
+    } else {
+      setShowCart(true);
+    }
+  }, [isSmallScreen]);
 
     const getFormattedDate = (d) => d.toISOString().split('T')[0];
 
@@ -495,6 +516,64 @@ export default function Catalog() {
   };
 
   const totalItems = selectedCart.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+
+    const cartContent = (
+    <div className="cart-container">
+      <div className="cart-header">
+        <h4>Carrito de Solicitud</h4>
+        <small>
+          {totalItems} {totalItems === 1 ? 'material' : 'materiales'} seleccionados
+        </small>
+      </div>
+      <div className="cart-body">
+        {selectedCart.length === 0 ? (
+          <div className="empty-cart">
+            <div className="empty-cart-icon">🛒</div>
+            <p>Carrito vacío</p>
+            <small>Selecciona materiales para crear un vale</small>
+          </div>
+        ) : (
+          <>
+            {selectedCart.map((item) => (
+              <div key={`${item.tipo}-${item.id}`} className="cart-item">
+                <div>
+                  <div className="cart-item-name">{formatName(item.nombre)}</div>
+                  <div className="cart-item-quantity">
+                    {item.cantidad} {getUnidad(item.tipo)} ({item.tipo})
+                  </div>
+                </div>
+                <button
+                  className="btn-remove"
+                  onClick={() => removeFromCart(item.id, item.tipo)}
+                  disabled={!canMakeRequests()}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+      {selectedCart.length > 0 && (
+        <div className="p-4">
+          <button
+            className="btn-create-vale"
+            onClick={() => setShowRequestModal(true)}
+            disabled={selectedCart.length === 0 || totalItems === 0 || !canMakeRequests()}
+          >
+            Crear Vale
+          </button>
+          <button
+            className="btn-clear mt-3"
+            onClick={vaciarSeleccion}
+            disabled={selectedCart.length === 0 || !canMakeRequests()}
+          >
+            Vaciar Selección
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   const handleSubmitRequest = async () => {
         if (isSubmittingRequest) return;
@@ -989,63 +1068,21 @@ export default function Catalog() {
         </div>
 
      {(userPermissions.rol === 'alumno' || userPermissions.rol === 'docente') && (
-  <div className="cart-sticky">
-    <div className="cart-container">
-      <div className="cart-header">
-        <h4>Carrito de Solicitud</h4>
-        <small>
-          {totalItems} {totalItems === 1 ? 'material' : 'materiales'} seleccionados
-        </small>
-      </div>
-      <div className="cart-body">
-        {selectedCart.length === 0 ? (
-          <div className="empty-cart">
-            <div className="empty-cart-icon">🛒</div>
-            <p>Carrito vacío</p>
-            <small>Selecciona materiales para crear un vale</small>
-          </div>
-        ) : (
-          <>
-            {selectedCart.map((item) => (
-              <div key={`${item.tipo}-${item.id}`} className="cart-item">
-                <div>
-                  <div className="cart-item-name">{formatName(item.nombre)}</div>
-                  <div className="cart-item-quantity">
-                    {item.cantidad} {getUnidad(item.tipo)} ({item.tipo})
-                  </div>
-                </div>
-                <button
-                  className="btn-remove"
-                  onClick={() => removeFromCart(item.id, item.tipo)}
-                  disabled={!canMakeRequests()}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </>
-        )}
-      </div>
-      {selectedCart.length > 0 && (
-        <div className="p-4">
-          <button
-            className="btn-create-vale"
-            onClick={() => setShowRequestModal(true)}
-            disabled={selectedCart.length === 0 || totalItems === 0 || !canMakeRequests()}
-          >
-            Crear Vale
-          </button>
-          <button
-            className="btn-clear mt-3"
-            onClick={vaciarSeleccion}
-            disabled={selectedCart.length === 0 || !canMakeRequests()}
-          >
-            Vaciar Selección
-          </button>
-        </div>
-      )}
-    </div>
-  </div>
+ <>
+    {isSmallScreen ? (
+      <>
+        <button
+          className="cart-toggle"
+          onClick={() => setShowCart((prev) => !prev)}
+        >
+          Carrito de solicitudes
+        </button>
+        {showCart && <div className="cart-overlay">{cartContent}</div>}
+      </>
+    ) : (
+      <div className="cart-sticky">{cartContent}</div>
+    )}
+  </>
 )}
 
       </div>
