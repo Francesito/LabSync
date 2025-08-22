@@ -7,8 +7,9 @@ import {
   obtenerPrestamosEntregados,
   obtenerDetalleSolicitud,
   registrarDevolucion,
-informarPrestamoVencido,
-  obtenerGrupos
+  informarPrestamoVencido,
+  obtenerGrupos,
+  marcarMaterialDanado,
 } from '../../lib/api';
 
 const parseDate = (str) => {
@@ -161,33 +162,60 @@ const loadPrestamos = async () => {
 const handleSave = async () => {
   setSaving(true);
   try {
-  const esAlumno = !!detalle.nombre_alumno;
-   const devoluciones = detalle.items
-     .filter(item => esAlumno ? item.devolver > 0 : item.entregado)
+const esAlumno = !!detalle.nombre_alumno;
+    const devoluciones = detalle.items
+      .filter(item => (esAlumno ? item.devolver > 0 : item.entregado))
       .map(item => ({
         item_id: item.item_id,
-        cantidad_devuelta: esAlumno ? item.devolver : item.cantidad
+       cantidad_devuelta: esAlumno ? item.devolver : item.cantidad,
       }));
 
-   if (devoluciones.length === 0) {
+  const estados = detalle.items
+      .filter(item => item.estado?.tipo && item.estado?.numero)
+      .map(item => ({
+        item_id: item.item_id,
+        cantidad_danada: 1,
+        descripcion:
+          item.estado.tipo === 'danado'
+            ? `Dañado ${item.estado.numero}`
+            : `Extraviado ${item.estado.numero}`,
+      }));
+
+    if (devoluciones.length === 0 && estados.length === 0) {
       setSaving(false);
       return;
     }
 
-    await registrarDevolucion(selectedSolicitud, devoluciones);
+    if (devoluciones.length > 0) {
+      await registrarDevolucion(selectedSolicitud, devoluciones);
+    }
 
-    // recarga la lista y comprueba si el préstamo sigue existiendo
+    for (const est of estados) {
+      await marcarMaterialDanado(selectedSolicitud, est);
+    }
+
+    const estadoMap = detalle.items.reduce((acc, it) => {
+      if (it.estado?.tipo && it.estado?.numero) {
+        acc[it.item_id] = it.estado;
+      }
+      return acc;
+    }, {});
+
     const grouped = await loadPrestamos();
     if (!grouped.some(g => g.solicitud_id === selectedSolicitud)) {
       return closeModal();
     }
 
-    // si aún existe, recarga detalle; y si ya no hay ítems, cierra también
     const nuevoDetalle = await obtenerDetalleSolicitud(selectedSolicitud);
-      nuevoDetalle.items = nuevoDetalle.items.map(i => ({ ...i, devolver: 0, entregado: false, estado: {} }));
-      if (nuevoDetalle.items.length === 0) {
-        return closeModal();
-      }
+     nuevoDetalle.items = nuevoDetalle.items.map(i => ({
+      ...i,
+      devolver: 0,
+      entregado: false,
+      estado: estadoMap[i.item_id] || {},
+    }));
+    if (nuevoDetalle.items.length === 0) {
+      return closeModal();
+    }
     setDetalle(nuevoDetalle);
 
   } catch (err) {
