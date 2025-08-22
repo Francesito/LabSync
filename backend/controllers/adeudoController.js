@@ -20,7 +20,7 @@ async function getUsuarioAdeudos(req, res) {
       `SELECT
          a.id,
          a.solicitud_id,
-      a.solicitud_item_id,
+     a.solicitud_item_id,
          COALESCE(ml.nombre, ms.nombre, me.nombre) AS nombre_material,
          a.cantidad_pendiente AS cantidad,
          CASE a.tipo WHEN 'liquido' THEN 'ml'
@@ -109,15 +109,15 @@ async function getAllAdeudos(req, res) {
          s.folio,
          s.nombre_alumno,
          s.profesor,
-          g.nombre AS grupo,
-         DATE_FORMAT(s.fecha_entrega, '%Y-%m-%d') AS fecha_entrega
+         g.nombre AS grupo,
+         DATE_FORMAT(a.fecha_entrega, '%Y-%m-%d') AS fecha_entrega
        FROM Adeudo a
        JOIN Solicitud s       ON a.solicitud_id       = s.id
        LEFT JOIN Grupo g      ON s.grupo_id = g.id
         LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND si.material_id=ml.id
        LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND si.material_id=ms.id
        LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND si.material_id=me.id
-       ORDER BY s.fecha_entrega DESC`
+    ORDER BY a.fecha_entrega DESC`
     );
     res.json(rows);
   } catch (error) {
