@@ -8,7 +8,6 @@ export default function PrestamoTable({ prestamos, onDevolver, rol }) {
           <th className="text-left p-2">Material</th>
           <th className="text-left p-2">Fecha Préstamo</th>
           <th className="text-left p-2">Fecha Devolución</th>
-          <th className="text-left p-2">Estado</th>
           {rol === 3 && <th className="text-left p-2">Acciones</th>}
         </tr>
       </thead>
@@ -21,13 +20,11 @@ export default function PrestamoTable({ prestamos, onDevolver, rol }) {
             <td className="p-2">
               {prestamo.fecha_devolucion ? new Date(prestamo.fecha_devolucion).toLocaleDateString() : '-'}
             </td>
-            <td className="p-2">{prestamo.estado}</td>
             {rol === 3 && (
               <td className="p-2">
                 <button
                   onClick={() => onDevolver(prestamo.id)}
                   className="btn-primary"
-                  disabled={prestamo.estado !== 'activo'}
                 >
                   Devolver
                 </button>
