@@ -272,7 +272,7 @@ export default function Adeudos() {
           <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-lg border border-white/20 p-16 text-center">
             <CheckCircleIcon />
             <h3 className="text-3xl font-bold text-gray-900 mb-4 mt-6">
-              ¡Excelente trabajo!
+              ¡Bien Hecho!
             </h3>
             <p className="text-xl text-gray-600 mb-8 max-w-md mx-auto">
               No tienes adeudos pendientes en este momento. Mantén esta buena práctica.
