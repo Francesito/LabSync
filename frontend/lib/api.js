@@ -126,7 +126,10 @@ export async function obtenerDetalleSolicitud(solicitudId) {
 export async function registrarDevolucion(solicitudId, itemsDevueltos) {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('No hay token de autenticación');
- const { data } = await API.put(
+
+  // Permite incluir etiquetas en cada item sin generar nuevos adeudos
+  // el backend ignorará "estado" si no requiere procesarlo aún
+  const { data } = await API.put(
     `/solicitudes/recibir-devolucion/${solicitudId}`,
     { items_devueltos: itemsDevueltos },
     {
@@ -134,22 +137,6 @@ export async function registrarDevolucion(solicitudId, itemsDevueltos) {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
-    }
-  );
-  return data;
-}
-
-export async function marcarMaterialDanado(solicitudId, payload) {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No hay token de autenticación');
-  const { data } = await API.put(
-    `/solicitudes/marcar-danado/${solicitudId}`,
-    payload,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     }
   );
   return data;
