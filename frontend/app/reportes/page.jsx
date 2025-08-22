@@ -23,7 +23,7 @@ export default function ReportesPage() {
   const [grupos, setGrupos] = useState([]);
   const [showGruposModal, setShowGruposModal] = useState(false);
   const [grupoDetalle, setGrupoDetalle] = useState(null);
-    const [showGrupoAdeudosModal, setShowGrupoAdeudosModal] = useState(false);
+  const [showGrupoAdeudosModal, setShowGrupoAdeudosModal] = useState(false);
   
   const [inventarioLiquidos, setInventarioLiquidos] = useState({ meses: [], datos: [] });
   const [showLiquidosModal, setShowLiquidosModal] = useState(false);
@@ -47,7 +47,7 @@ export default function ReportesPage() {
       })
       .catch(() => setHistorial([]));
 
-        Promise.allSettled([obtenerGrupos(), obtenerAdeudosGlobal()])
+    Promise.allSettled([obtenerGrupos(), obtenerAdeudosGlobal()])
       .then(([grRes, adeRes]) => {
         const listaGrupos = grRes.status === 'fulfilled' ? grRes.value : [];
         const adeudos = adeRes.status === 'fulfilled' ? adeRes.value : [];
@@ -56,10 +56,10 @@ export default function ReportesPage() {
           const g = a.grupo || 'Sin grupo';
           if (!grouped[g]) grouped[g] = [];
           grouped[g].push({
-           nombre_material: a.nombre_material || a.material || '',
+            nombre_material: a.nombre_material || a.material || '',
             cantidad: a.cantidad,
             unidad: a.unidad,
-             solicitante: a.solicitante,
+            solicitante: a.solicitante,
           });
         });
         const all = (Array.isArray(listaGrupos) ? listaGrupos : []).map((g) => ({
@@ -72,7 +72,7 @@ export default function ReportesPage() {
           }
         });
         setGrupos(all);
-       });
+      });
 
     obtenerInventarioLiquidos()
       .then((data) => {
@@ -81,16 +81,16 @@ export default function ReportesPage() {
           datos: Array.isArray(data.datos) ? data.datos : [],
         });
       })
-    .catch(() => setInventarioLiquidos({ meses: [], datos: [] }));
+      .catch(() => setInventarioLiquidos({ meses: [], datos: [] }));
 
-     obtenerInventarioSolidos()
+    obtenerInventarioSolidos()
       .then((data) => {
         setInventarioSolidos({
           meses: data.meses || [],
           datos: Array.isArray(data.datos) ? data.datos : [],
         });
       })
-       .catch(() => setInventarioSolidos({ meses: [], datos: [] }));
+      .catch(() => setInventarioSolidos({ meses: [], datos: [] }));
   }, []);
 
   const downloadHistorialCSV = (registros, nombre) => {
@@ -125,7 +125,7 @@ export default function ReportesPage() {
         <i className="bi bi-bar-chart-line-fill me-3 text-primary"></i>Reportes
       </h1>
 
-       {/* Primera fila: Historial de Residuos y Grupos con Adeudos */}
+      {/* Primera fila: Historial de Residuos y Grupos con Adeudos */}
       <div className="row g-4 mb-5">
         {/* Historial de Residuos */}
         <div className="col-md-4 col-12">
@@ -149,8 +149,8 @@ export default function ReportesPage() {
                     <tbody>
                       {historial.slice(0, 5).map((h, idx) => (
                         <tr key={idx} className="animate-row">
-                          <td className="py-2 align-top">{h.nombre}</td>
-                          <td className="py-2 align-top">{h.grupo}</td>
+                          <td className="py-2 align-top text-truncate">{h.nombre}</td>
+                          <td className="py-2 align-top text-truncate">{h.grupo}</td>
                           <td className="py-2 text-center align-top">
                             <button
                               onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
@@ -184,7 +184,7 @@ export default function ReportesPage() {
         </div>
 
         {/* Grupos con Adeudos */}
-       <div className="col-md-8 col-12">
+        <div className="col-md-8 col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
             <h2 className="card-title h5 mb-3 text-teal">
               <i className="bi bi-people-fill me-2 text-teal"></i>Grupos con Adeudos
@@ -192,7 +192,7 @@ export default function ReportesPage() {
             {grupos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay grupos.</p>
             ) : (
-            <div className="d-flex h-100">
+              <div className="d-flex h-100">
                 <div className="me-3 pe-3 border-end flex-shrink-0">
                   <div className="table-responsive">
                     <table className="table table-sm table-hover table-bordered w-auto mb-0">
@@ -208,7 +208,7 @@ export default function ReportesPage() {
                             className="animate-row cursor-pointer"
                             onClick={() => setGrupoDetalle(g)}
                           >
-                            <td className="py-2">{g.nombre}</td>
+                            <td className="py-2 text-truncate">{g.nombre}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -231,7 +231,7 @@ export default function ReportesPage() {
                       ) : (
                         <>
                           <div className="table-responsive">
-                          <table className="table table-sm table-hover table-bordered mb-0">
+                            <table className="table table-sm table-hover table-bordered mb-0">
                               <thead className="table-teal">
                                 <tr>
                                   <th>Cantidad</th>
@@ -242,9 +242,9 @@ export default function ReportesPage() {
                               <tbody>
                                 {grupoDetalle.adeudos.slice(0, 5).map((a, idx) => (
                                   <tr key={idx} className="animate-row">
-                                    <td className="py-2">{a.cantidad} {a.unidad}</td>
-                                <td className="py-2">{a.nombre_material || a.material}</td>
-                                    <td className="py-2">{a.solicitante}</td>
+                                    <td className="py-2 text-truncate">{a.cantidad} {a.unidad}</td>
+                                    <td className="py-2 text-truncate">{a.nombre_material || a.material}</td>
+                                    <td className="py-2 text-truncate">{a.solicitante}</td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -265,7 +265,7 @@ export default function ReportesPage() {
                     <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Selecciona un grupo para ver los adeudos que se tienen</p>
                   )}
                 </div>
-             </div>
+              </div>
             )}
           </div>
         </div>
@@ -409,8 +409,8 @@ export default function ReportesPage() {
                 <tbody>
                   {historial.map((h, idx) => (
                     <tr key={idx} className="animate-row">
-                      <td className="py-2 align-top">{h.nombre}</td>
-                      <td className="py-2 align-top">{h.grupo}</td>
+                      <td className="py-2 align-top text-truncate">{h.nombre}</td>
+                      <td className="py-2 align-top text-truncate">{h.grupo}</td>
                       <td className="py-2 text-center align-top">
                         <button
                           onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
@@ -462,7 +462,7 @@ export default function ReportesPage() {
                         setShowGruposModal(false);
                       }}
                     >
-                      <td className="py-2">{g.nombre}</td>
+                      <td className="py-2 text-truncate">{g.nombre}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -473,43 +473,43 @@ export default function ReportesPage() {
       )}
 
       {showGrupoAdeudosModal && grupoDetalle && (
-  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
-    <div className="bg-white max-h-[80vh] w-full max-w-md p-5 overflow-y-auto rounded-lg shadow-2xl bg-opacity-95">
-      <div className="flex justify-between mb-3">
-        <h3 className="font-semibold text-lg text-teal">
-          <i className="bi bi-people-fill me-2 text-teal"></i>{grupoDetalle.nombre}
-        </h3>
-        <button
-          onClick={() => setShowGrupoAdeudosModal(false)}
-          className="btn btn-outline-danger btn-sm animate-button"
-        >
-          <i className="bi bi-x-lg"></i> Cerrar
-        </button>
-      </div>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
+          <div className="bg-white max-h-[80vh] w-full max-w-md p-5 overflow-y-auto rounded-lg shadow-2xl bg-opacity-95">
+            <div className="flex justify-between mb-3">
+              <h3 className="font-semibold text-lg text-teal">
+                <i className="bi bi-people-fill me-2 text-teal"></i>{grupoDetalle.nombre}
+              </h3>
+              <button
+                onClick={() => setShowGrupoAdeudosModal(false)}
+                className="btn btn-outline-danger btn-sm animate-button"
+              >
+                <i className="bi bi-x-lg"></i> Cerrar
+              </button>
+            </div>
 
-      <div className="table-responsive">
-        <table className="table table-sm table-hover table-bordered">
-          <thead className="table-teal">
-            <tr>
-              <th>Cantidad</th>
-              <th>Material</th>
-              <th>Solicitante</th>
-            </tr>
-          </thead>
-          <tbody>
-            {grupoDetalle.adeudos.map((a, idx) => (
-              <tr key={idx} className="animate-row">
-                <td className="py-2">{a.cantidad} {a.unidad}</td>
-             <td className="py-2">{a.nombre_material || a.material}</td>
-                <td className="py-2">{a.solicitante}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="table-responsive">
+              <table className="table table-sm table-hover table-bordered">
+                <thead className="table-teal">
+                  <tr>
+                    <th>Cantidad</th>
+                    <th>Material</th>
+                    <th>Solicitante</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {grupoDetalle.adeudos.map((a, idx) => (
+                    <tr key={idx} className="animate-row">
+                      <td className="py-2 text-truncate">{a.cantidad} {a.unidad}</td>
+                      <td className="py-2 text-truncate">{a.nombre_material || a.material}</td>
+                      <td className="py-2 text-truncate">{a.solicitante}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {showLiquidosModal && (
