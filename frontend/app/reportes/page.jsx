@@ -55,8 +55,17 @@ export default function ReportesPage() {
         (Array.isArray(adeudos) ? adeudos : []).forEach((a) => {
           const g = a.grupo || 'Sin grupo';
           if (!grouped[g]) grouped[g] = [];
+          const rawNombre =
+            a.nombre_material ??
+            a.nombreMaterial ??
+            a.material_nombre ??
+            a.materialNombre ??
+            a.material ??
+            a.nombre ??
+            '';
+          const nombre = String(rawNombre).trim().replace(/_/g, ' ');
           grouped[g].push({
-            nombre_material: a.nombre_material || a.material || '',
+           nombre_material: nombre,
             cantidad: a.cantidad,
             unidad: a.unidad,
             solicitante: a.solicitante,
@@ -243,7 +252,7 @@ export default function ReportesPage() {
                                 {grupoDetalle.adeudos.slice(0, 5).map((a, idx) => (
                                   <tr key={idx} className="animate-row">
                                     <td className="py-2 text-truncate">{a.cantidad} {a.unidad}</td>
-                                    <td className="py-2 text-truncate">{a.nombre_material || a.material}</td>
+                                  <td className="py-2">{a.nombre_material}</td>
                                     <td className="py-2 text-truncate">{a.solicitante}</td>
                                   </tr>
                                 ))}
@@ -500,7 +509,7 @@ export default function ReportesPage() {
                   {grupoDetalle.adeudos.map((a, idx) => (
                     <tr key={idx} className="animate-row">
                       <td className="py-2 text-truncate">{a.cantidad} {a.unidad}</td>
-                      <td className="py-2 text-truncate">{a.nombre_material || a.material}</td>
+                     <td className="py-2">{a.nombre_material}</td>
                       <td className="py-2 text-truncate">{a.solicitante}</td>
                     </tr>
                   ))}
