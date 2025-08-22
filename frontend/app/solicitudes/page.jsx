@@ -27,8 +27,8 @@ const EstadoBadge = ({ estado }) => {
   const safe = (estado || '').toLowerCase().trim();
   const { bg, text, icon } = config[safe] || config.pendiente;
   return (
-    <span className={`${bg} ${text} inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium`}>
-      <span>{icon}</span>
+    <span className={`${bg} ${text} inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium shadow-sm transition-all duration-200 hover:scale-105`}>
+      <span className="animate-pulse">{icon}</span>
       <span className="capitalize">{estado}</span>
     </span>
   );
@@ -38,41 +38,48 @@ const SkeletonRow = ({ colCount }) => (
   <tr className="animate-pulse">
     {Array.from({ length: colCount }).map((_, i) => (
       <td key={i} className="px-6 py-4">
-        <div className="h-4 bg-gray-200 rounded w-24" />
+        <div className="h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-24 animate-shimmer" />
       </td>
     ))}
   </tr>
 );
 
-const Th = ({ children }) => (
-  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-    {children}
+const Th = ({ children, icon }) => (
+  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-[#003579] first:rounded-tl-lg last:rounded-tr-lg transition-colors duration-200">
+    <div className="flex items-center gap-2">
+      {icon && <span className="text-sm">{icon}</span>}
+      {children}
+    </div>
   </th>
 );
 
 const Td = ({ children, bold = false }) => (
-  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-    <div className={`${bold ? 'font-semibold' : ''}`}>
+  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50">
+    <div className={`${bold ? 'font-semibold' : ''} transition-all duration-200`}>
       {children}
     </div>
   </td>
 );
 
-const Btn = ({ children, color, onClick, disabled }) => {
+const Btn = ({ children, color, onClick, disabled, icon }) => {
   const palette = {
-    green:  'bg-green-600 hover:bg-green-700',
-    red:    'bg-red-600 hover:bg-red-700',
-    blue:   'bg-blue-600 hover:bg-blue-700',
-    gray:   'bg-gray-600 hover:bg-gray-700',
-    purple: 'bg-purple-600 hover:bg-purple-700'
-  }[color] || 'bg-slate-600 hover:bg-slate-700';
+    green:  'bg-green-600 hover:bg-green-700 focus:ring-green-500',
+    red:    'bg-red-600 hover:bg-red-700 focus:ring-red-500',
+    blue:   'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+    gray:   'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500',
+    purple: 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
+  }[color] || 'bg-slate-600 hover:bg-slate-700 focus:ring-slate-500';
+  
   return (
     <button
       type="button"
-      className={`${palette} text-white text-sm rounded-md px-3 py-1 disabled:opacity-60 disabled:cursor-not-allowed`}
+      className={`${palette} text-white text-sm rounded-lg px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed 
+        transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-1
+        shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2`}
       onClick={onClick}
       disabled={disabled}
     >
+      {icon && <span className="text-sm">{icon}</span>}
       {children}
     </button>
   );
@@ -122,24 +129,29 @@ function TablaSolicitudes({
   const tomorrowStr = toLocalDateStr(tomorrow);
   
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
-      <div className="px-6 py-4 border-b border-gray-200 bg-[#003579] text-white flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{titulo}</h2>
-        <span className="text-sm">{data?.length || 0} registros</span>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 transition-all duration-300 hover:shadow-xl">
+      <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-[#003579] to-[#0056b3] text-white flex items-center justify-between">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <span className="text-xl">📋</span>
+          {titulo}
+        </h2>
+        <span className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+          {data?.length || 0} registros
+        </span>
       </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-      <thead className="bg-[#003579] text-white">
+          <thead className="bg-gradient-to-r from-[#003579] to-[#0056b3]">
             <tr>
-              {columnas.folio && <Th>Folio</Th>}
-              {columnas.solicitante && <Th>Solicitante</Th>}
-              {columnas.encargado && <Th>Encargado</Th>}
-              {columnas.materiales && <Th>Materiales</Th>}
-              {columnas.fecha && <Th>Fecha</Th>}
-              {columnas.grupo && <Th>Grupo</Th>}
-              {columnas.estado && <Th>Estado</Th>}
-              {columnas.acciones && <Th>Acciones</Th>}
+              {columnas.folio && <Th icon="🏷️">Folio</Th>}
+              {columnas.solicitante && <Th icon="👤">Solicitante</Th>}
+              {columnas.encargado && <Th icon="👨‍🏫">Encargado</Th>}
+              {columnas.materiales && <Th icon="📦">Materiales</Th>}
+              {columnas.fecha && <Th icon="📅">Fecha</Th>}
+              {columnas.grupo && <Th icon="👥">Grupo</Th>}
+              {columnas.estado && <Th icon="📊">Estado</Th>}
+              {columnas.acciones && <Th icon="⚡">Acciones</Th>}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -148,7 +160,10 @@ function TablaSolicitudes({
             ) : data.length === 0 ? (
               <tr>
                 <td className="px-6 py-10 text-center text-gray-500" colSpan={colCount}>
-                  No hay solicitudes para mostrar.
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-4xl opacity-50">📭</span>
+                    <span>No hay solicitudes para mostrar.</span>
+                  </div>
                 </td>
               </tr>
             ) : (
@@ -164,7 +179,7 @@ function TablaSolicitudes({
                   recoDateStr > todayStr &&
                   recoDateStr !== todayStr;
                 return (
-                  <tr key={s.id} className={`hover:bg-gray-50 ${isOverdue ? 'border-2 border-red-500' : ''}`}>
+                  <tr key={s.id} className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ${isOverdue ? 'border-2 border-red-500 bg-red-50' : ''}`}>
                     {columnas.folio && <Td bold>{s.folio}</Td>}
 
                     {columnas.solicitante && (
@@ -175,13 +190,13 @@ function TablaSolicitudes({
 
                     {columnas.materiales && (
                       <td className="px-6 py-4">
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           {(s.items || []).map((m) => (
-                            <div key={m.item_id} className="text-sm flex items-center gap-2">
-                              <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium">
+                            <div key={m.item_id} className="text-sm flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                              <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm">
                                 {m.cantidad} {getUnidad(m.tipo)}
                               </span>
-                              <span>{m.nombre_material}</span>
+                              <span className="flex-1">{m.nombre_material}</span>
                             </div>
                           ))}
                         </div>
@@ -190,18 +205,23 @@ function TablaSolicitudes({
 
                     {columnas.fecha && (
                       <Td>
-                        {dateStr
-                          ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
-                          : ''}
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">📅</span>
+                          <span>
+                            {dateStr
+                              ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
+                              : ''}
+                          </span>
+                        </div>
                         {isOverdue && (
-                          <div className="text-xs text-red-600">
-                            Ha pasado la fecha.<br />
+                          <div className="text-xs text-red-600 mt-1 p-2 bg-red-100 rounded-lg border-l-4 border-red-500 animate-pulse">
+                            ⚠️ Ha pasado la fecha.<br />
                             Se eliminará la solicitud dentro de 1 día por falta de recolección
                           </div>
                         )}
                         {showMsg && (
-                          <div className="text-xs text-orange-600">
-                            {recoDateStr === tomorrowStr
+                          <div className="text-xs text-orange-600 mt-1 p-2 bg-orange-100 rounded-lg border-l-4 border-orange-500">
+                            🕒 {recoDateStr === tomorrowStr
                               ? 'Entrega para mañana'
                               : 'Entrega para otro día'}
                           </div>
@@ -227,6 +247,7 @@ function TablaSolicitudes({
                               <>
                                 <Btn
                                   color="green"
+                                  icon="✅"
                                   onClick={() => onAccion(s.id, 'aprobar', 'entrega pendiente')}
                                   disabled={procesandoId === s.id}
                                 >
@@ -234,6 +255,7 @@ function TablaSolicitudes({
                                 </Btn>
                                 <Btn
                                   color="red"
+                                  icon="❌"
                                   onClick={() => onAccion(s.id, 'rechazar', 'rechazada')}
                                   disabled={procesandoId === s.id}
                                 >
@@ -248,7 +270,8 @@ function TablaSolicitudes({
                             (s.fecha_recoleccion || '').split('T')[0] === toLocalDateStr(new Date()) && (
                               <Btn
                                 color="blue"
-                           onClick={() =>
+                                icon="🚚"
+                                onClick={() =>
                                   onEntregar ? onEntregar(s) : onAccion(s.id, 'entregar', 'entregada')
                                 }
                                 disabled={procesandoId === s.id}
@@ -262,6 +285,7 @@ function TablaSolicitudes({
                             (s.estado === 'aprobación pendiente') && (
                               <Btn
                                 color="gray"
+                                icon="🚫"
                                 onClick={() => onAccion(s.id, 'cancelar', 'cancelado')}
                                 disabled={procesandoId === s.id}
                               >
@@ -271,6 +295,7 @@ function TablaSolicitudes({
 
                           <Btn
                             color="purple"
+                            icon="📄"
                             onClick={() => onPDF(s)}
                             disabled={procesandoId === s.id}
                           >
@@ -307,7 +332,7 @@ export default function SolicitudesPage() {
   const [minFilterDate, setMinFilterDate] = useState('');
   const [maxFilterDate, setMaxFilterDate] = useState('');
   const [notice, setNotice] = useState('');
-   const [activeTab, setActiveTab] = useState('alumnos');
+  const [activeTab, setActiveTab] = useState('alumnos');
   const [search, setSearch] = useState('');
   const [modalEntrega, setModalEntrega] = useState(null); // {id, items}
   const [selectedItems, setSelectedItems] = useState([]);
@@ -530,14 +555,14 @@ export default function SolicitudesPage() {
   }
 
   /** Acciones aprobar/rechazar/entregar/cancelar */
- const actualizarEstado = async (id, accion, nuevoEstadoUI, items = []) => {
+  const actualizarEstado = async (id, accion, nuevoEstadoUI, items = []) => {
     if (procesando) return;
     setProcesando(id);
     const token = localStorage.getItem('token');
     try {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitud/${id}/${accion}`,
-       accion === 'entregar' ? { items_entregados: items } : {},
+        accion === 'entregar' ? { items_entregados: items } : {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -608,7 +633,7 @@ export default function SolicitudesPage() {
   const filteredAlmAlumnos = filterByDate(almAlumnos);
   const filteredAlmDocentes = filterByDate(almDocentes);
 
-    const applySearch = (arr, includeGrupo = false) => {
+  const applySearch = (arr, includeGrupo = false) => {
     const term = search.toLowerCase();
     if (!term) return arr;
     return arr.filter(s =>
@@ -619,7 +644,7 @@ export default function SolicitudesPage() {
     );
   };
 
-const filteredDocAprobar = applySearch(docAprobar, true);
+  const filteredDocAprobar = applySearch(docAprobar, true);
   const filteredDocMias = applySearch(docMias);
   const searchedAlmAlumnos = applySearch(filteredAlmAlumnos, true);
   const searchedAlmDocentes = applySearch(filteredAlmDocentes);
@@ -828,35 +853,44 @@ const descargarPDF = async (vale) => {
 
   // --- RENDER POR ROL ---
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen font-sans">
-     <div className="mb-8">
-       <Image
-  src="/Solicitudes.png"
-  alt="Solicitudes de préstamo"
-  width={1200}
-  height={150}
-  className="w-full h-[150px] object-contain rounded bg-white"
-  priority
-/>
-         </div>
+    <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 min-h-screen font-sans">
+      {/* Nuevo encabezado con lobo */}
+      <div className="mb-8 text-center">
+        <div className="inline-flex items-center gap-4 bg-white rounded-2xl shadow-lg px-8 py-6 border border-gray-200">
+          <div className="text-6xl animate-bounce">
+            🐺
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold text-gray-800 tracking-tight">
+              Solicitudes de Préstamos
+            </h1>
+            <p className="text-gray-600 mt-2">Gestiona tus solicitudes de materiales</p>
+          </div>
+        </div>
+      </div>
 
-      {/* Error */}
+      {/* Error con mejor styling */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl shadow-md animate-shake">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-medium text-red-800">Error</h3>
+                <h3 className="font-semibold text-red-800 flex items-center gap-2">
+                  <span>⚠️</span> Error
+                </h3>
                 <p className="text-red-700 text-sm">{error}</p>
               </div>
             </div>
-            <button onClick={() => setError('')} className="text-red-500 hover:text-red-700">
+            <button 
+              onClick={() => setError('')} 
+              className="text-red-500 hover:text-red-700 transition-colors duration-200 hover:scale-110 transform"
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M6 18L18 6M6 6l12 12" />
@@ -866,9 +900,11 @@ const descargarPDF = async (vale) => {
         </div>
       )}
 
+      {/* Notice con mejor styling */}
       {usuario?.rol !== 'almacen' && notice && (
         <div className="mb-4 flex justify-end">
-          <div className="px-3 py-1 text-xs bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
+          <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse flex items-center gap-2">
+            <span>🔔</span>
             {notice}
           </div>
         </div>
@@ -894,38 +930,59 @@ const descargarPDF = async (vale) => {
       {/* DOCENTE */}
       {usuario?.rol === 'docente' && (
         <>
-         <div className="mb-4 flex items-center gap-2">
-            <div className="relative flex">
+          <div className="mb-6 flex items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200">
+            <div className="relative flex rounded-lg overflow-hidden shadow-sm">
               <div className="relative">
                 {pendientesDocAlumnos > 0 && (
-                  <span className="absolute -top-2 right-0 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
                     {pendientesDocAlumnos}
                   </span>
                 )}
                 <button
-               className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#003579] text-white' : 'bg-white'}`}
+                  className={`px-6 py-3 transition-all duration-200 font-medium ${
+                    activeTab === 'alumnos' 
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  } border-r border-gray-300`}
                   onClick={() => setActiveTab('alumnos')}
                 >
-                  Solicitudes de Alumnos
+                  <div className="flex items-center gap-2">
+                    <span>🎓</span>
+                    Solicitudes de Alumnos
+                  </div>
                 </button>
               </div>
-              <div className="relative -ml-px">
+              <div className="relative">
                 <button
-                  className={`px-4 py-2 rounded-r border ${activeTab === 'mias' ? 'bg-[#003579] text-white' : 'bg-white'}`}
+                  className={`px-6 py-3 transition-all duration-200 font-medium ${
+                    activeTab === 'mias' 
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
                   onClick={() => setActiveTab('mias')}
                 >
-                  Mis Solicitudes como Docente
+                  <div className="flex items-center gap-2">
+                    <span>👨‍🏫</span>
+                    Mis Solicitudes como Docente
+                  </div>
                 </button>
               </div>
             </div>
-            <input
-              type="text"
-           placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo' : 'Buscar por nombre o folio'}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-               className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
+            
+            <div className="flex-1 relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span className="text-gray-400">🔍</span>
+              </div>
+              <input
+                type="text"
+                placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+              />
+            </div>
           </div>
+          
           {activeTab === 'alumnos' ? (
             <TablaSolicitudes
               titulo="Solicitudes de alumnos para aprobar"
@@ -961,44 +1018,68 @@ const descargarPDF = async (vale) => {
       {/* ALMACÉN */}
       {usuario?.rol === 'almacen' && (
         <>
-    <div className="mb-4 flex flex-wrap items-center gap-2">
-            <div className="relative flex">
+          <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200">
+            <div className="relative flex rounded-lg overflow-hidden shadow-sm">
               <div className="relative">
                 {pendientesAlmAlumnos > 0 && (
-                  <span className="absolute -top-2 right-0 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
                     {pendientesAlmAlumnos}
                   </span>
                 )}
                 <button
-                 className={`px-4 py-2 rounded-l border ${activeTab === 'alumnos' ? 'bg-[#003579] text-white' : 'bg-white'}`}
+                  className={`px-6 py-3 transition-all duration-200 font-medium ${
+                    activeTab === 'alumnos' 
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  } border-r border-gray-300`}
                   onClick={() => setActiveTab('alumnos')}
                 >
-                  Solicitudes de Alumnos
+                  <div className="flex items-center gap-2">
+                    <span>🎓</span>
+                    Solicitudes de Alumnos
+                  </div>
                 </button>
               </div>
-              <div className="relative -ml-px">
+              <div className="relative">
                 {pendientesAlmDocentes > 0 && (
-                  <span className="absolute -top-2 right-0 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
                     {pendientesAlmDocentes}
                   </span>
                 )}
                 <button
-               className={`px-4 py-2 rounded-r border ${activeTab === 'docentes' ? 'bg-[#003579] text-white' : 'bg-white'}`}
+                  className={`px-6 py-3 transition-all duration-200 font-medium ${
+                    activeTab === 'docentes' 
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
                   onClick={() => setActiveTab('docentes')}
                 >
-                  Solicitudes de Docentes
+                  <div className="flex items-center gap-2">
+                    <span>👨‍🏫</span>
+                    Solicitudes de Docentes
+                  </div>
                 </button>
               </div>
             </div>
-            <input
-              type="text"
-              placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo' : 'Buscar por nombre o folio'}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">Filtrar por fecha:</label>
+            
+            <div className="flex-1 relative min-w-[200px]">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span className="text-gray-400">🔍</span>
+              </div>
+              <input
+                type="text"
+                placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+              />
+            </div>
+            
+            <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+              <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <span>📅</span>
+                Filtrar por fecha:
+              </label>
               <input
                 type="date"
                 value={filterDate}
@@ -1014,25 +1095,28 @@ const descargarPDF = async (vale) => {
                     setFilterDate(v);
                   }
                 }}
-                className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
               />
               {filterDate && (
                 <button
                   onClick={() => setFilterDate('')}
-                  className="text-xs text-blue-600 hover:underline"
+                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center gap-1"
                 >
+                  <span>✖️</span>
                   Limpiar
                 </button>
               )}
             </div>
+            
             {notice && (
               <div className="ml-auto">
-                <div className="px-4 py-2 text-sm bg-yellow-100 border border-yellow-200 text-yellow-800 rounded">
+                <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse flex items-center gap-2">
+                  <span>🔔</span>
                   {notice}
                 </div>
               </div>
             )}
-         </div>
+          </div>
 
           {activeTab === 'alumnos' ? (
             <TablaSolicitudes
@@ -1068,38 +1152,115 @@ const descargarPDF = async (vale) => {
         </>
       )}
 
-       {modalEntrega && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-4">Entregar materiales</h3>
-            <div className="space-y-2 mb-4">
+      {/* Modal de entrega con mejor styling */}
+      {modalEntrega && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform animate-slideUp border border-gray-200">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-2xl">🚚</span>
+              <h3 className="text-xl font-bold text-gray-800">Entregar materiales</h3>
+            </div>
+            
+            <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
               {modalEntrega.items.map(item => (
-                <label key={item.item_id} className="flex items-center gap-2">
+                <label key={item.item_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={selectedItems.includes(item.item_id)}
                     onChange={() => toggleItem(item.item_id)}
+                    className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <span>{item.cantidad} {getUnidad(item.tipo)} {item.nombre_material}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                        {item.cantidad} {getUnidad(item.tipo)}
+                      </span>
+                      <span className="font-medium text-gray-800">{item.nombre_material}</span>
+                    </div>
+                  </div>
                 </label>
               ))}
             </div>
-            <div className="flex justify-between mb-4">
-              <button onClick={seleccionarTodos} className="text-sm text-blue-600">
+            
+            <div className="flex justify-between mb-6">
+              <button 
+                onClick={seleccionarTodos} 
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 flex items-center gap-1"
+              >
+                <span>✅</span>
                 Seleccionar todo
               </button>
+              <span className="text-sm text-gray-500">
+                {selectedItems.length} de {modalEntrega.items.length} seleccionados
+              </span>
             </div>
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setModalEntrega(null)} className="px-3 py-1 text-sm">
+            
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setModalEntrega(null)} 
+                className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium"
+              >
                 Cancelar
               </button>
-              <button onClick={confirmarEntrega} className="px-3 py-1 bg-blue-600 text-white rounded">
-                Entregar
+              <button 
+                onClick={confirmarEntrega} 
+                disabled={selectedItems.length === 0}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <span>🚚</span>
+                Entregar ({selectedItems.length})
               </button>
             </div>
           </div>
         </div>
       )}
+      
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+          from { 
+            opacity: 0; 
+            transform: translateY(20px); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0); 
+          }
+        }
+        
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        
+        @keyframes shimmer {
+          0% { background-position: -200px 0; }
+          100% { background-position: calc(200px + 100%) 0; }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out;
+        }
+        
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+        
+        .animate-shimmer {
+          background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+          background-size: 200px 100%;
+          animation: shimmer 1.5s infinite;
+        }
+      `}</style>
     </div>
   );
 }
