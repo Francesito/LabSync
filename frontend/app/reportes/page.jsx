@@ -56,7 +56,7 @@ export default function ReportesPage() {
           const g = a.grupo || 'Sin grupo';
           if (!grouped[g]) grouped[g] = [];
           grouped[g].push({
-            material: a.nombre_material,
+           nombre_material: a.nombre_material || a.material || '',
             cantidad: a.cantidad,
             unidad: a.unidad,
              solicitante: a.solicitante,
@@ -193,56 +193,14 @@ export default function ReportesPage() {
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay grupos.</p>
             ) : (
               <div className="row h-100">
-                <div className="col-md-8 col-12 border-end">
-                  {grupoDetalle ? (
-                    <>
-                      {grupoDetalle.adeudos.length === 0 ? (
-                        <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Sin adeudos</p>
-                      ) : (
-                        <>
-                          <div className="table-responsive">
-                            <table className="table table-sm table-hover table-bordered">
-                              <thead className="table-teal">
-                                <tr>
-                                  <th>Cantidad</th>
-                                  <th>Material</th>
-                                  <th>Solicitante</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {grupoDetalle.adeudos.slice(0, 5).map((a, idx) => (
-                                  <tr key={idx} className="animate-row">
-                                    <td className="py-2">{a.cantidad} {a.unidad}</td>
-                                    <td className="py-2">{a.material}</td>
-                                    <td className="py-2">{a.solicitante}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                          {grupoDetalle.adeudos.length > 5 && (
-                            <button
-                              className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
-                              onClick={() => setShowGrupoAdeudosModal(true)}
-                            >
-                              <i className="bi bi-chevron-double-down me-1"></i>Ver más
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Selecciona un grupo para ver los adeudos que se tienen</p>
-                  )}
-                </div>
-              <div className="col-md-4 col-12">
+               <div className="col-12 col-md-auto border-end mb-3 mb-md-0">
                   <div className="table-responsive">
-                    <table className="table table-sm table-hover table-bordered">
+                    <table className="table table-sm table-hover table-bordered w-auto">
                       <thead className="table-teal">
                         <tr>
                           <th className="text-start">Nombre</th>
                         </tr>
-                    </thead>
+                      </thead>
                       <tbody>
                         {grupos.slice(0, 5).map((g, idx) => (
                           <tr
@@ -265,7 +223,49 @@ export default function ReportesPage() {
                     </button>
                   )}
                 </div>
+                <div className="col-12 col-md">
+                  {grupoDetalle ? (
+                    <>
+                      {grupoDetalle.adeudos.length === 0 ? (
+                        <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Sin adeudos</p>
+                      ) : (
+                        <>
+                          <div className="table-responsive">
+                            <table className="table table-sm table-hover table-bordered">
+                              <thead className="table-teal">
+                                <tr>
+                                  <th>Cantidad</th>
+                                  <th>Material</th>
+                                  <th>Solicitante</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {grupoDetalle.adeudos.slice(0, 5).map((a, idx) => (
+                                  <tr key={idx} className="animate-row">
+                                    <td className="py-2">{a.cantidad} {a.unidad}</td>
+                                  <td className="py-2">{a.nombre_material}</td>
+                                    <td className="py-2">{a.solicitante}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          {grupoDetalle.adeudos.length > 5 && (
+                            <button
+                              className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                              onClick={() => setShowGrupoAdeudosModal(true)}
+                            >
+                              <i className="bi bi-chevron-double-down me-1"></i>Ver más
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Selecciona un grupo para ver los adeudos que se tienen</p>
+                  )}
                 </div>
+             </div>
             )}
           </div>
         </div>
@@ -500,7 +500,7 @@ export default function ReportesPage() {
             {grupoDetalle.adeudos.map((a, idx) => (
               <tr key={idx} className="animate-row">
                 <td className="py-2">{a.cantidad} {a.unidad}</td>
-                <td className="py-2">{a.material}</td>
+             <td className="py-2">{a.nombre_material}</td>
                 <td className="py-2">{a.solicitante}</td>
               </tr>
             ))}
