@@ -30,9 +30,9 @@ async function getUsuarioAdeudos(req, res) {
        FROM Adeudo a
        JOIN SolicitudItem si ON a.solicitud_item_id = si.id
        JOIN Solicitud s       ON a.solicitud_id       = s.id
-       LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND a.material_id=ml.id
-       LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND a.material_id=ms.id
-       LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND a.material_id=me.id
+       LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND si.material_id=ml.id
+       LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND si.material_id=ms.id
+       LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND si.material_id=me.id
        WHERE a.usuario_id = ?`,
       [usuarioId]
     );
@@ -116,9 +116,9 @@ async function getAllAdeudos(req, res) {
        JOIN SolicitudItem si ON a.solicitud_item_id = si.id
        JOIN Solicitud s       ON a.solicitud_id       = s.id
        LEFT JOIN Grupo g      ON s.grupo_id = g.id
-       LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND a.material_id=ml.id
-       LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND a.material_id=ms.id
-       LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND a.material_id=me.id
+        LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND si.material_id=ml.id
+       LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND si.material_id=ms.id
+       LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND si.material_id=me.id
        ORDER BY s.fecha_entrega DESC`
     );
     res.json(rows);
