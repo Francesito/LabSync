@@ -20,8 +20,8 @@ async function getUsuarioAdeudos(req, res) {
       `SELECT
          a.id,
          a.solicitud_id,
-     a.solicitud_item_id,
-         COALESCE(ml.nombre, ms.nombre, me.nombre) AS nombre_material,
+    a.solicitud_item_id,
+         COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) AS nombre_material,
          a.cantidad_pendiente AS cantidad,
          CASE a.tipo WHEN 'liquido' THEN 'ml'
                      WHEN 'solido'  THEN 'g'
@@ -32,6 +32,7 @@ async function getUsuarioAdeudos(req, res) {
        LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND a.material_id = ml.id
        LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND a.material_id = ms.id
        LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND a.material_id = me.id
+        LEFT JOIN MaterialLaboratorio mlab ON a.tipo='laboratorio' AND a.material_id = mlab.id
        WHERE a.usuario_id = ?`,
       [usuarioId]
     );
@@ -103,7 +104,7 @@ async function getAllAdeudos(req, res) {
          a.id,
          a.solicitud_id,
          a.solicitud_item_id,
-         COALESCE(ml.nombre, ms.nombre, me.nombre) AS nombre_material,
+         COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) AS nombre_material,
          a.cantidad_pendiente AS cantidad,
          CASE a.tipo WHEN 'liquido' THEN 'ml' WHEN 'solido' THEN 'g' ELSE 'u' END AS unidad,
          s.folio,
@@ -117,6 +118,7 @@ async function getAllAdeudos(req, res) {
         LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND a.material_id = ml.id
        LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND a.material_id = ms.id
        LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND a.material_id = me.id
+        LEFT JOIN MaterialLaboratorio mlab ON a.tipo='laboratorio' AND a.material_id = mlab.id
       ORDER BY a.fecha_entrega DESC`
     );
     res.json(rows);
