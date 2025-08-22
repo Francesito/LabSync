@@ -139,6 +139,22 @@ export async function registrarDevolucion(solicitudId, itemsDevueltos) {
   return data;
 }
 
+export async function marcarMaterialDanado(solicitudId, payload) {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No hay token de autenticación');
+  const { data } = await API.put(
+    `/solicitudes/marcar-danado/${solicitudId}`,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+  return data;
+}
+
 export async function informarPrestamoVencido(solicitudId) {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('No hay token de autenticación');
