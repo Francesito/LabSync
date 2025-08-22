@@ -473,49 +473,44 @@ export default function ReportesPage() {
       )}
 
       {showGrupoAdeudosModal && grupoDetalle && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
-          <div className="bg-white max-h-[80vh] w-full max-w-md p-5 overflow-y-auto rounded-lg shadow-2xl bg-opacity-95">
-            <div className="flex justify-between mb-3">
-              <h3 className="font-semibold text-lg text-teal">
-                <i className="bi bi-people-fill me-2 text-teal"></i>{grupoDetalle.nombre}
-              </h3>
-                <button onClick={() => setShowGrupoAdeudosModal(false)} className="btn btn-outline-danger btn-sm animate-button">
-                <i className="bi bi-x-lg"></i> Cerrar
-              </button>
-            </div>
-            <div className="table-responsive">
-              <table className="table table-sm table-hover table-bordered">
-              <thead className="table-teal">
-                  <tr>
-                    <th>Cantidad</th>
-                    <th>Material</th>
-                    <th>Solicitante</th>
-                  </tr>
-                </thead>
-                <tbody>
-                   {grupoDetalle.adeudos.map((a, idx) => (
-                    <tr key={idx} className="animate-row">
-                      <td className="py-2">{a.cantidad} {a.unidad}</td>
-                      <td className="py-2">{a.material}</td>
-                      <td className="py-2">{a.solicitante}</td>
-                  {solicitudesFiltradas.map((s) => (
-                    <tr key={s.id} className="animate-row">
-                      <td className="py-2 whitespace-pre-line">
-                        {s.materiales
-                          .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
-                          .join('\n')}
-                      </td>
-                      <td className="py-2">{s.docente}</td>
-                      <td className="py-2">{s.grupo}</td>
-                      <td className="py-2">{s.fecha}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
+    <div className="bg-white max-h-[80vh] w-full max-w-md p-5 overflow-y-auto rounded-lg shadow-2xl bg-opacity-95">
+      <div className="flex justify-between mb-3">
+        <h3 className="font-semibold text-lg text-teal">
+          <i className="bi bi-people-fill me-2 text-teal"></i>{grupoDetalle.nombre}
+        </h3>
+        <button
+          onClick={() => setShowGrupoAdeudosModal(false)}
+          className="btn btn-outline-danger btn-sm animate-button"
+        >
+          <i className="bi bi-x-lg"></i> Cerrar
+        </button>
+      </div>
+
+      <div className="table-responsive">
+        <table className="table table-sm table-hover table-bordered">
+          <thead className="table-teal">
+            <tr>
+              <th>Cantidad</th>
+              <th>Material</th>
+              <th>Solicitante</th>
+            </tr>
+          </thead>
+          <tbody>
+            {grupoDetalle.adeudos.map((a, idx) => (
+              <tr key={idx} className="animate-row">
+                <td className="py-2">{a.cantidad} {a.unidad}</td>
+                <td className="py-2">{a.material}</td>
+                <td className="py-2">{a.solicitante}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {showLiquidosModal && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
