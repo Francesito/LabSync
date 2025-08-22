@@ -709,6 +709,9 @@ const descargarPDF = async (vale) => {
       headerHeight = maxHeaderHeight;
       headerWidth = maxHeaderHeight * originalRatio;
     }
+
+    // Reducir la imagen a la mitad del tamaño calculado
+    headerHeight /= 2;
     
     // Centramos la imagen horizontalmente
     const imageX = (pageWidth - headerWidth) / 2;
