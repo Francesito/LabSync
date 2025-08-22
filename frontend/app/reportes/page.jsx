@@ -6,7 +6,6 @@ import {
   obtenerResiduos,
   obtenerAdeudosGlobal,
   obtenerGrupos,
-  obtenerSolicitudesAprobadas,
   obtenerInventarioLiquidos,
   obtenerInventarioSolidos,
 } from '../../lib/api';
@@ -24,11 +23,8 @@ export default function ReportesPage() {
   const [grupos, setGrupos] = useState([]);
   const [showGruposModal, setShowGruposModal] = useState(false);
   const [grupoDetalle, setGrupoDetalle] = useState(null);
-
-  const [solicitudes, setSolicitudes] = useState([]);
-  const [showSolicitudesModal, setShowSolicitudesModal] = useState(false);
-  const [filtro, setFiltro] = useState('');
-
+    const [showGrupoAdeudosModal, setShowGrupoAdeudosModal] = useState(false);
+  
   const [inventarioLiquidos, setInventarioLiquidos] = useState({ meses: [], datos: [] });
   const [showLiquidosModal, setShowLiquidosModal] = useState(false);
   
@@ -51,8 +47,10 @@ export default function ReportesPage() {
       })
       .catch(() => setHistorial([]));
 
-      Promise.all([obtenerGrupos(), obtenerAdeudosGlobal()])
-      .then(([listaGrupos, adeudos]) => {
+        Promise.allSettled([obtenerGrupos(), obtenerAdeudosGlobal()])
+      .then(([grRes, adeRes]) => {
+        const listaGrupos = grRes.status === 'fulfilled' ? grRes.value : [];
+        const adeudos = adeRes.status === 'fulfilled' ? adeRes.value : [];
         const grouped = {};
         (Array.isArray(adeudos) ? adeudos : []).forEach((a) => {
           const g = a.grupo || 'Sin grupo';
@@ -61,6 +59,7 @@ export default function ReportesPage() {
             material: a.nombre_material,
             cantidad: a.cantidad,
             unidad: a.unidad,
+             solicitante: a.solicitante,
           });
         });
         const all = (Array.isArray(listaGrupos) ? listaGrupos : []).map((g) => ({
@@ -73,33 +72,7 @@ export default function ReportesPage() {
           }
         });
         setGrupos(all);
-      })
-      .catch(() => setGrupos([]));
-
-    obtenerSolicitudesAprobadas()
-      .then((data) => {
-        const grouped = {};
-        (Array.isArray(data) ? data : []).forEach((s) => {
-          const id = s.solicitud_id;
-          if (!grouped[id]) {
-            grouped[id] = {
-              id,
-              materiales: [],
-              docente: s.profesor || '',
-              grupo: s.grupo_nombre || '',
-              fecha: s.fecha_solicitud ? s.fecha_solicitud.split('T')[0] : '',
-            };
-          }
-          const unidad = s.tipo === 'liquido' ? 'ml' : s.tipo === 'solido' ? 'g' : 'u';
-          grouped[id].materiales.push({
-            nombre: s.nombre_material,
-            cantidad: s.cantidad,
-            unidad,
-          });
-        });
-        setSolicitudes(Object.values(grouped));
-      })
-      .catch(() => setSolicitudes([]));
+       });
 
     obtenerInventarioLiquidos()
       .then((data) => {
@@ -140,28 +113,11 @@ export default function ReportesPage() {
     doc.save(`${nombre}_residuos.pdf`);
   };
 
-  const downloadGrupoPDF = (grupo) => {
-    const doc = new jsPDF();
-    autoTable(doc, {
-      head: [['Cantidad', 'Material']],
-      body: grupo.adeudos.map((a) => [`${a.cantidad} ${a.unidad}`, a.material]),
-    });
-    doc.save(`${grupo.nombre}_adeudos.pdf`);
-  };
-
   if (![3, 4].includes(usuario?.rol_id)) return (
     <div className="container py-4 bg-danger text-white rounded text-center">
       <p className="fs-4"><i className="bi bi-exclamation-triangle me-2"></i>Acceso denegado</p>
     </div>
   );
-
-  const solicitudesFiltradas = solicitudes.filter((s) => {
-    const term = filtro.toLowerCase();
-    return (
-      s.grupo.toLowerCase().includes(term) ||
-      s.docente.toLowerCase().includes(term)
-    );
-  });
 
   return (
     <div className="container-fluid py-5 bg-gradient">
@@ -169,7 +125,7 @@ export default function ReportesPage() {
         <i className="bi bi-bar-chart-line-fill me-3 text-primary"></i>Reportes
       </h1>
 
-      {/* Primera fila: Historial de Residuos, Grupos con Adeudos, Solicitudes Aprobadas */}
+       {/* Primera fila: Historial de Residuos y Grupos con Adeudos */}
       <div className="row g-4 mb-5">
         {/* Historial de Residuos */}
         <div className="col-md-4 col-12">
@@ -228,7 +184,7 @@ export default function ReportesPage() {
         </div>
 
         {/* Grupos con Adeudos */}
-        <div className="col-md-4 col-12">
+       <div className="col-md-8 col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
             <h2 className="card-title h5 mb-3 text-teal">
               <i className="bi bi-people-fill me-2 text-teal"></i>Grupos con Adeudos
@@ -236,85 +192,80 @@ export default function ReportesPage() {
             {grupos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay grupos.</p>
             ) : (
-              <>
-                <div className="table-responsive">
-                  <table className="table table-sm table-hover table-bordered">
-                    <thead className="table-teal">
-                      <tr>
-                        <th className="text-start">Nombre</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {grupos.slice(0, 5).map((g, idx) => (
-                        <tr
-                          key={idx}
-                          className="animate-row cursor-pointer"
-                          onClick={() => setGrupoDetalle(g)}
-                        >
-                          <td className="py-2">{g.nombre}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <div className="row h-100">
+                <div className="col-md-8 col-12 border-end">
+                  {grupoDetalle ? (
+                    <>
+                      {grupoDetalle.adeudos.length === 0 ? (
+                        <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Sin adeudos</p>
+                      ) : (
+                        <>
+                          <div className="table-responsive">
+                            <table className="table table-sm table-hover table-bordered">
+                              <thead className="table-teal">
+                                <tr>
+                                  <th>Cantidad</th>
+                                  <th>Material</th>
+                                  <th>Solicitante</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {grupoDetalle.adeudos.slice(0, 5).map((a, idx) => (
+                                  <tr key={idx} className="animate-row">
+                                    <td className="py-2">{a.cantidad} {a.unidad}</td>
+                                    <td className="py-2">{a.material}</td>
+                                    <td className="py-2">{a.solicitante}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          {grupoDetalle.adeudos.length > 5 && (
+                            <button
+                              className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                              onClick={() => setShowGrupoAdeudosModal(true)}
+                            >
+                              <i className="bi bi-chevron-double-down me-1"></i>Ver más
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Selecciona un grupo para ver los adeudos que se tienen</p>
+                  )}
                 </div>
-                {grupos.length > 5 && (
-                  <button
-                    className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
-                    onClick={() => setShowGruposModal(true)}
-                  >
-                    <i className="bi bi-chevron-double-down me-1"></i>Mostrar más
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Solicitudes Aprobadas */}
-        <div className="col-md-4 col-12">
-          <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
-            <h2 className="card-title h5 mb-3 text-success">
-              <i className="bi bi-check-circle-fill me-2 text-success"></i>Solicitudes Aprobadas
-            </h2>
-            {solicitudes.length === 0 ? (
-              <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay solicitudes.</p>
-            ) : (
-              <>
-                <div className="table-responsive">
-                  <table className="table table-sm table-hover table-bordered">
-                    <thead className="table-success">
-                      <tr>
-                        <th>Materiales</th>
-                        <th>Docente</th>
-                        <th>Grupo</th>
-                        <th>Fecha</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {solicitudes.slice(0, 5).map((s) => (
-                        <tr key={s.id} className="animate-row">
-                          <td className="py-2 whitespace-pre-line">
-                            {s.materiales
-                              .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
-                              .join('\n')}
-                          </td>
-                          <td className="py-2">{s.docente}</td>
-                          <td className="py-2">{s.grupo}</td>
-                          <td className="py-2">{s.fecha}</td>
+              <div className="col-md-4 col-12">
+                  <div className="table-responsive">
+                    <table className="table table-sm table-hover table-bordered">
+                      <thead className="table-teal">
+                        <tr>
+                          <th className="text-start">Nombre</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                    </thead>
+                      <tbody>
+                        {grupos.slice(0, 5).map((g, idx) => (
+                          <tr
+                            key={idx}
+                            className="animate-row cursor-pointer"
+                            onClick={() => setGrupoDetalle(g)}
+                          >
+                            <td className="py-2">{g.nombre}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {grupos.length > 5 && (
+                    <button
+                      className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                      onClick={() => setShowGruposModal(true)}
+                    >
+                      <i className="bi bi-chevron-double-down me-1"></i>Mostrar más
+                    </button>
+                  )}
                 </div>
-                {solicitudes.length > 5 && (
-                  <button
-                    className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
-                    onClick={() => setShowSolicitudesModal(true)}
-                  >
-                    <i className="bi bi-chevron-double-down me-1"></i>Mostrar más
-                  </button>
-                )}
-              </>
+                </div>
             )}
           </div>
         </div>
@@ -521,69 +472,32 @@ export default function ReportesPage() {
         </div>
       )}
 
-      {grupoDetalle && (
+      {showGrupoAdeudosModal && grupoDetalle && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
           <div className="bg-white max-h-[80vh] w-full max-w-md p-5 overflow-y-auto rounded-lg shadow-2xl bg-opacity-95">
             <div className="flex justify-between mb-3">
               <h3 className="font-semibold text-lg text-teal">
                 <i className="bi bi-people-fill me-2 text-teal"></i>{grupoDetalle.nombre}
               </h3>
-              <button onClick={() => setGrupoDetalle(null)} className="btn btn-outline-danger btn-sm animate-button">
+                <button onClick={() => setShowGrupoAdeudosModal(false)} className="btn btn-outline-danger btn-sm animate-button">
                 <i className="bi bi-x-lg"></i> Cerrar
               </button>
             </div>
-            <div className="space-y-2">
-              {grupoDetalle.adeudos.length === 0 ? (
-                <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Sin adeudos</p>
-              ) : (
-                grupoDetalle.adeudos.map((a, idx) => (
-                  <div key={idx} className="border-b py-2 animate-row">
-                    <i className="bi bi-box-seam me-2 text-muted"></i>
-                    {`${a.cantidad} ${a.unidad} ${a.material}`}
-                  </div>
-                ))
-              )}
-            </div>
-            <button
-              className="btn btn-link text-decoration-underline text-primary mt-3 animate-button"
-              onClick={() => downloadGrupoPDF(grupoDetalle)}
-            >
-              <i className="bi bi-file-earmark-pdf-fill me-1"></i>Descargar PDF
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showSolicitudesModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
-          <div className="bg-white w-full max-w-4xl p-5 max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl bg-opacity-95">
-            <div className="sticky top-0 bg-white pb-3 mb-3 flex items-center justify-between">
-              <h3 className="font-semibold text-lg text-success">
-                <i className="bi bi-check-circle-fill me-2 text-success"></i>Solicitudes Aprobadas
-              </h3>
-              <div className="d-flex align-items-center">
-                <input
-                  value={filtro}
-                  onChange={(e) => setFiltro(e.target.value)}
-                  placeholder="Filtrar grupo o docente"
-                  className="form-control form-control-sm mx-2 animate-input"
-                />
-                <button onClick={() => setShowSolicitudesModal(false)} className="btn btn-outline-danger btn-sm animate-button">
-                  <i className="bi bi-x-lg"></i> Cerrar
-                </button>
-              </div>
-            </div>
             <div className="table-responsive">
               <table className="table table-sm table-hover table-bordered">
-                <thead className="table-success">
+              <thead className="table-teal">
                   <tr>
-                    <th>Materiales</th>
-                    <th>Docente</th>
-                    <th>Grupo</th>
-                    <th>Fecha</th>
+                    <th>Cantidad</th>
+                    <th>Material</th>
+                    <th>Solicitante</th>
                   </tr>
                 </thead>
                 <tbody>
+                   {grupoDetalle.adeudos.map((a, idx) => (
+                    <tr key={idx} className="animate-row">
+                      <td className="py-2">{a.cantidad} {a.unidad}</td>
+                      <td className="py-2">{a.material}</td>
+                      <td className="py-2">{a.solicitante}</td>
                   {solicitudesFiltradas.map((s) => (
                     <tr key={s.id} className="animate-row">
                       <td className="py-2 whitespace-pre-line">
