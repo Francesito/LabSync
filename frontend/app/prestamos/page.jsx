@@ -9,7 +9,6 @@ import {
   registrarDevolucion,
   informarPrestamoVencido,
   obtenerGrupos,
-  marcarMaterialDanado,
 } from '../../lib/api';
 
 const parseDate = (str) => {
@@ -164,35 +163,27 @@ const handleSave = async () => {
   try {
 const esAlumno = !!detalle.nombre_alumno;
     const devoluciones = detalle.items
-      .filter(item => (esAlumno ? item.devolver > 0 : item.entregado))
+   .filter(item =>
+        esAlumno
+          ? item.devolver > 0 || (item.estado?.tipo && item.estado?.numero)
+          : item.entregado || (item.estado?.tipo && item.estado?.numero)
+      )
       .map(item => ({
         item_id: item.item_id,
-       cantidad_devuelta: esAlumno ? item.devolver : item.cantidad,
+       cantidad_devuelta: esAlumno
+          ? item.devolver
+          : item.entregado
+            ? item.cantidad
+            : 0,
+        ...(item.estado?.tipo && item.estado?.numero ? { estado: item.estado } : {}),
       }));
 
-  const estados = detalle.items
-      .filter(item => item.estado?.tipo && item.estado?.numero)
-      .map(item => ({
-        item_id: item.item_id,
-        cantidad_danada: 1,
-        descripcion:
-          item.estado.tipo === 'danado'
-            ? `Dañado ${item.estado.numero}`
-            : `Extraviado ${item.estado.numero}`,
-      }));
-
-    if (devoluciones.length === 0 && estados.length === 0) {
+ if (devoluciones.length === 0) {
       setSaving(false);
       return;
     }
 
-    if (devoluciones.length > 0) {
       await registrarDevolucion(selectedSolicitud, devoluciones);
-    }
-
-    for (const est of estados) {
-      await marcarMaterialDanado(selectedSolicitud, est);
-    }
 
     const estadoMap = detalle.items.reduce((acc, it) => {
       if (it.estado?.tipo && it.estado?.numero) {
