@@ -63,9 +63,9 @@ export default function ReportesPage() {
             a.material ??
             a.nombre ??
             '';
-          const nombre = String(rawNombre).trim().replace(/_/g, ' ');
+         const nombre = String(rawNombre || '').trim().replace(/_/g, ' ');
           grouped[g].push({
-           nombre_material: nombre,
+            nombre_material: nombre || '(Sin nombre)',
             cantidad: a.cantidad,
             unidad: a.unidad,
             solicitante: a.solicitante,
@@ -195,7 +195,7 @@ export default function ReportesPage() {
         </div>
 
         {/* Grupos con Adeudos */}
-        <div className="col-md-8 col-12">
+        <div className="col-md-4 col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
             <h2 className="card-title h5 mb-3 text-teal">
               <i className="bi bi-people-fill me-2 text-teal"></i>Grupos con Adeudos
@@ -203,87 +203,88 @@ export default function ReportesPage() {
             {grupos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay grupos.</p>
             ) : (
-              <div className="row h-100">
-                <div className="col-md-6">
+            <>
+                <div className="table-responsive">
+                  <table className="table table-sm table-hover table-bordered">
+                    <thead className="table-teal">
+                      <tr>
+                        <th className="text-start">Nombre</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grupos.slice(0, 5).map((g, idx) => (
+                        <tr
+                          key={idx}
+                          className={`animate-row cursor-pointer ${grupoDetalle?.nombre === g.nombre ? 'table-active' : ''}`}
+                          onClick={() => setGrupoDetalle(g)}
+                        >
+                          <td className="py-2 text-truncate">{g.nombre}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {grupos.length > 5 && (
+                  <button
+                    className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                    onClick={() => setShowGruposModal(true)}
+                  >
+                    <i className="bi bi-chevron-double-down me-1"></i>Mostrar más
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Adeudos del Grupo Seleccionado */}
+        <div className="col-md-4 col-12">
+          <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
+            <h2 className="card-title h5 mb-3 text-teal">
+              <i className="bi bi-list-check me-2 text-teal"></i>
+              {grupoDetalle ? `Adeudos de ${grupoDetalle.nombre}` : 'Adeudos del Grupo Seleccionado'}
+            </h2>
+            {grupoDetalle ? (
+              grupoDetalle.adeudos.length === 0 ? (
+                <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Sin adeudos</p>
+              ) : (
+                <>
                   <div className="table-responsive">
-                    <table className="table table-sm table-hover table-bordered">
+                    <table className="table table-sm table-hover table-bordered mb-0">
                       <thead className="table-teal">
                         <tr>
-                          <th className="text-start">Nombre</th>
+                         <th>Cantidad</th>
+                          <th>Material</th>
+                          <th>Solicitante</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {grupos.slice(0, 5).map((g, idx) => (
-                          <tr
-                            key={idx}
-                            className={`animate-row cursor-pointer ${grupoDetalle?.nombre === g.nombre ? 'table-active' : ''}`}
-                            onClick={() => setGrupoDetalle(g)}
-                          >
-                            <td className="py-2 text-truncate">{g.nombre}</td>
+                       {grupoDetalle.adeudos.slice(0, 5).map((a, idx) => (
+                          <tr key={idx} className="animate-row">
+                            <td className="py-2 text-truncate">{a.cantidad} {a.unidad}</td>
+                            <td className="py-2">{a.nombre_material}</td>
+                            <td className="py-2 text-truncate">{a.solicitante}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  {grupos.length > 5 && (
+                  {grupoDetalle.adeudos.length > 5 && (
                     <button
                       className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
-                      onClick={() => setShowGruposModal(true)}
+                     onClick={() => setShowGrupoAdeudosModal(true)}
                     >
-                      <i className="bi bi-chevron-double-down me-1"></i>Mostrar más
+                       <i className="bi bi-chevron-double-down me-1"></i>Ver más
                     </button>
                   )}
-                </div>
-                <div className="col-md-6">
-                  {grupoDetalle ? (
-                    <>
-                      <h6 className="text-teal mb-2">
-                        <i className="bi bi-arrow-right me-1"></i>Adeudos de {grupoDetalle.nombre}
-                      </h6>
-                      {grupoDetalle.adeudos.length === 0 ? (
-                        <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Sin adeudos</p>
-                      ) : (
-                        <>
-                          <div className="table-responsive">
-                            <table className="table table-sm table-hover table-bordered mb-0">
-                              <thead className="table-teal">
-                                <tr>
-                                  <th>Cantidad</th>
-                                  <th>Material</th>
-                                  <th>Solicitante</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {grupoDetalle.adeudos.slice(0, 5).map((a, idx) => (
-                                  <tr key={idx} className="animate-row">
-                                    <td className="py-2 text-truncate">{a.cantidad} {a.unidad}</td>
-                                    <td className="py-2">{a.nombre_material}</td>
-                                    <td className="py-2 text-truncate">{a.solicitante}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                          {grupoDetalle.adeudos.length > 5 && (
-                            <button
-                              className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
-                              onClick={() => setShowGrupoAdeudosModal(true)}
-                            >
-                              <i className="bi bi-chevron-double-down me-1"></i>Ver más
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-center h-100">
-                      <p className="text-muted text-center">
-                        <i className="bi bi-info-circle me-2"></i>
-                        Selecciona un grupo para ver los adeudos que se tienen
-                      </p>
-                    </div>
-                  )}
-                </div>
+             </>
+              )
+            ) : (
+              <div className="d-flex align-items-center justify-content-center h-100">
+                <p className="text-muted text-center">
+                  <i className="bi bi-info-circle me-2"></i>
+                  Selecciona un grupo para ver los adeudos que se tienen
+                </p>
               </div>
             )}
           </div>
