@@ -231,7 +231,7 @@ export default function ReportesPage() {
                       ) : (
                         <>
                           <div className="table-responsive">
-                           <table className="table table-sm table-hover table-bordered mb-0">
+                          <table className="table table-sm table-hover table-bordered mb-0">
                               <thead className="table-teal">
                                 <tr>
                                   <th>Cantidad</th>
@@ -243,7 +243,7 @@ export default function ReportesPage() {
                                 {grupoDetalle.adeudos.slice(0, 5).map((a, idx) => (
                                   <tr key={idx} className="animate-row">
                                     <td className="py-2">{a.cantidad} {a.unidad}</td>
-                                 <table className="table table-sm table-hover table-bordered mb-0">
+                                <td className="py-2">{a.nombre_material || a.material}</td>
                                     <td className="py-2">{a.solicitante}</td>
                                   </tr>
                                 ))}
