@@ -1656,3 +1656,33 @@ flex-direction: row;
 .tag-remove:hover {
   color: #0c4a6e;
 }
+
+/* Responsive toggle for cart on small screens */
+@media (max-width: 920px), (max-height: 920px) {
+  .cart-toggle {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: #003579;
+    color: #fff;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    z-index: 1001;
+  }
+
+  .cart-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: flex-end;
+    z-index: 1000;
+  }
+
+  .cart-overlay .cart-container {
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+}
