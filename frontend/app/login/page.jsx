@@ -166,9 +166,9 @@ export default function Login() {
     background-image: url('/background.jpg');
   }
 
-  .bg-gradient {
-    background-image: linear-gradient(135deg, #dbeafe 0%, #fbcfe8 100%);
-  }
+ .bg-gradient {
+  background-image: linear-gradient(135deg, #e6f7ec 0%, #ffffff 100%);
+}
 
   .form-control:focus {
     background-color: rgba(255,255,255,0.9) !important;
