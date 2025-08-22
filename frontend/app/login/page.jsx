@@ -13,13 +13,21 @@ export default function Login() {
    const [isLargeScreen, setIsLargeScreen] = useState(false);
   const router = useRouter();
 
-    useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 1320px) and (min-height: 915px)');
-    const updateScreen = () => setIsLargeScreen(mediaQuery.matches);
-    updateScreen();
+  useEffect(() => {
+  const mediaQuery = window.matchMedia('(min-width: 1320px) and (min-height: 750px)');
+  const updateScreen = () => setIsLargeScreen(mediaQuery.matches);
+  updateScreen();
+
+  // Compatibilidad con navegadores que aún usan addListener/removeListener
+  if (mediaQuery.addEventListener) {
     mediaQuery.addEventListener('change', updateScreen);
     return () => mediaQuery.removeEventListener('change', updateScreen);
-  }, []);
+  } else {
+    mediaQuery.addListener(updateScreen);
+    return () => mediaQuery.removeListener(updateScreen);
+  }
+}, []);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,10 +55,10 @@ export default function Login() {
 >
 
       
-      <div className="row w-100 m-0 position-relative" style={{ zIndex: 2 }}>
+      <div className="row w-100 m-0 position-relative min-vh-100 align-items-center" style={{ zIndex: 2 }}>
 
         {/* Sección derecha - Formulario */}
-       <div className={`col-12 col-md-6 ${isLargeScreen ? 'offset-md-6' : 'mx-auto'} d-flex flex-column justify-content-center p-4 p-md-5`}>
+     <div className={`col-12 col-md-6 ${isLargeScreen ? 'offset-lg-6' : 'mx-auto'} d-flex flex-column justify-content-center p-4 p-md-5`}>
           <div className="w-100" style={{ maxWidth: '500px', margin: '0 auto' }}>
             <div className="mb-4">
               <h2 className="fw-bold text-dark mb-1">Inicia Sesión</h2>
