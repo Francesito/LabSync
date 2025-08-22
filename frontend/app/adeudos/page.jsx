@@ -242,9 +242,6 @@ export default function Adeudos() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header moderno */}
         <div className="mb-12 text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg mb-6">
-            <FileTextIcon />
-          </div>
           
           <h1 className="text-5xl font-black text-gray-900 mb-4 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
             Adeudos Pendientes
