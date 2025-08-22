@@ -14,38 +14,38 @@ const encabezadoUT = '/universidad.jpg';
 const EstadoBadge = ({ estado }) => {
   const config = {
     'aprobación pendiente': { bg: 'bg-amber-100', text: 'text-amber-800', icon: '⏳' },
-    'aprobacion pendiente': { bg: 'bg-amber-100', text: 'text-amber-800', icon: '⏳' }, // fallback sin tilde
+    'aprobacion pendiente': { bg: 'bg-amber-100', text: 'text-amber-800', icon: '⏳' },
     'entrega pendiente':    { bg: 'bg-blue-100',  text: 'text-blue-800',  icon: '📦' },
     'entregada':            { bg: 'bg-green-100', text: 'text-green-800', icon: '✓'  },
     'rechazada':            { bg: 'bg-red-100',   text: 'text-red-800',   icon: '✗'  },
     'cancelado':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
     'cancelada':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
     'eliminación automática por falta de recolección': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' },
-    'eliminacion automatica por falta de recoleccion': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' }, // fallback sin tildes
-    'pendiente':            { bg: 'bg-yellow-100',text: 'text-yellow-800',icon: '⏳' } // fallback
+    'eliminacion automatica por falta de recoleccion': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' },
+    'pendiente':            { bg: 'bg-yellow-100',text: 'text-yellow-800',icon: '⏳' }
   };
   const safe = (estado || '').toLowerCase().trim();
   const { bg, text, icon } = config[safe] || config.pendiente;
   return (
-    <span className={`${bg} ${text} inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md`}>
-      <span className="animate-pulse">{icon}</span>
+    <span className={`${bg} ${text} inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs sm:text-sm font-medium shadow-sm transition-colors duration-200 hover:bg-opacity-80`}>
+      <span>{icon}</span>
       <span className="capitalize">{estado}</span>
     </span>
   );
 };
 
 const SkeletonRow = ({ colCount }) => (
-  <tr className="animate-pulse">
+  <tr>
     {Array.from({ length: colCount }).map((_, i) => (
-      <td key={i} className="px-6 py-4">
-        <div className="h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-24 animate-shimmer" />
+      <td key={i} className="px-4 py-3 sm:px-6 sm:py-4">
+        <div className="h-4 bg-gray-200 rounded w-20 sm:w-24" />
       </td>
     ))}
   </tr>
 );
 
 const Th = ({ children, icon }) => (
-  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-[#003579] first:rounded-tl-lg last:rounded-tr-lg transition-colors duration-200 hover:bg-[#0056b3]">
+  <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-[#003579] first:rounded-tl-lg last:rounded-tr-lg transition-colors duration-200 hover:bg-[#0056b3]">
     <div className="flex items-center gap-2">
       {icon && <span className="text-sm">{icon}</span>}
       {children}
@@ -54,8 +54,8 @@ const Th = ({ children, icon }) => (
 );
 
 const Td = ({ children, bold = false }) => (
-  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50">
-    <div className={`${bold ? 'font-semibold' : ''} transition-all duration-200`}>
+  <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50">
+    <div className={`${bold ? 'font-semibold' : ''} transition-colors duration-200`}>
       {children}
     </div>
   </td>
@@ -73,9 +73,7 @@ const Btn = ({ children, color, onClick, disabled, icon }) => {
   return (
     <button
       type="button"
-      className={`${palette} text-white text-sm rounded-lg px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed 
-        transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-1
-        shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2`}
+      className={`${palette} text-white text-xs sm:text-sm rounded-lg px-2 py-1 sm:px-3 sm:py-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 shadow-sm hover:shadow-md flex items-center gap-2`}
       onClick={onClick}
       disabled={disabled}
     >
@@ -129,18 +127,18 @@ function TablaSolicitudes({
   const tomorrowStr = toLocalDateStr(tomorrow);
   
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 transition-all duration-300 hover:shadow-xl hover:border-blue-300">
-      <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-[#003579] to-[#0056b3] text-white flex items-center justify-between">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <span className="text-xl animate-spin-slow">📋</span>
+    <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-6 sm:mb-8 transition-colors duration-200 hover:border-blue-300">
+      <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200 bg-gradient-to-r from-[#003579] to-[#0056b3] text-white flex flex-col sm:flex-row items-start sm:items-center justify-between">
+        <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+          <span className="text-lg sm:text-xl">📋</span>
           {titulo}
         </h2>
-        <span className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200">
+        <span className="text-xs sm:text-sm bg-white/20 px-2 py-1 sm:px-3 sm:py-1 rounded-full backdrop-blur-sm mt-2 sm:mt-0">
           {data?.length || 0} registros
         </span>
       </div>
 
-      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200">
+      <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-[#003579] to-[#0056b3]">
             <tr>
@@ -159,9 +157,9 @@ function TablaSolicitudes({
               [...Array(5)].map((_, i) => <SkeletonRow key={i} colCount={colCount} />)
             ) : data.length === 0 ? (
               <tr>
-                <td className="px-6 py-10 text-center text-gray-500" colSpan={colCount}>
+                <td className="px-4 py-8 sm:px-6 sm:py-10 text-center text-gray-500" colSpan={colCount}>
                   <div className="flex flex-col items-center gap-2">
-                    <span className="text-4xl opacity-50 animate-bounce">📭</span>
+                    <span className="text-3xl sm:text-4xl opacity-50">📭</span>
                     <span>No hay solicitudes para mostrar.</span>
                   </div>
                 </td>
@@ -179,7 +177,7 @@ function TablaSolicitudes({
                   recoDateStr > todayStr &&
                   recoDateStr !== todayStr;
                 return (
-                  <tr key={s.id} className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ${isOverdue ? 'border-2 border-red-500 bg-red-50' : ''}`}>
+                  <tr key={s.id} className={`hover:bg-gray-50 transition-colors duration-200 ${isOverdue ? 'border-2 border-red-500 bg-red-50' : ''}`}>
                     {columnas.folio && <Td bold>{s.folio}</Td>}
 
                     {columnas.solicitante && (
@@ -189,10 +187,10 @@ function TablaSolicitudes({
                     {columnas.encargado && <Td>{s.profesor || ''}</Td>}
 
                     {columnas.materiales && (
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3 sm:px-6 sm:py-4">
                         <div className="space-y-2">
                           {(s.items || []).map((m) => (
-                            <div key={m.item_id} className="text-sm flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 shadow-sm hover:shadow-md">
+                            <div key={m.item_id} className="text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-gray-50 rounded-lg transition-colors duration-200 hover:bg-gray-100">
                               <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm">
                                 {m.cantidad} {getUnidad(m.tipo)}
                               </span>
@@ -205,8 +203,8 @@ function TablaSolicitudes({
 
                     {columnas.fecha && (
                       <Td>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm animate-pulse">📅</span>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                          <span className="text-sm">📅</span>
                           <span>
                             {dateStr
                               ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
@@ -214,7 +212,7 @@ function TablaSolicitudes({
                           </span>
                         </div>
                         {isOverdue && (
-                          <div className="text-xs text-red-600 mt-1 p-2 bg-red-100 rounded-lg border-l-4 border-red-500 animate-pulse shadow-sm">
+                          <div className="text-xs text-red-600 mt-1 p-2 bg-red-100 rounded-lg border-l-4 border-red-500 shadow-sm">
                             ⚠️ Ha pasado la fecha.<br />
                             Se eliminará la solicitud dentro de 1 día por falta de recolección
                           </div>
@@ -232,15 +230,14 @@ function TablaSolicitudes({
                     {columnas.grupo && <Td>{s.grupo || ''}</Td>}
 
                     {columnas.estado && (
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
                         <EstadoBadge estado={isOverdue ? 'cancelada' : s.estado} />
                       </td>
                     )}
 
                     {columnas.acciones && (
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          {/* Docente: aprobar / rechazar */}
+                      <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
+                        <div className="flex flex-wrap items-center gap-2">
                           {usuario?.rol === 'docente' &&
                             !s.isDocenteRequest &&
                             (s.estado === 'aprobación pendiente') && (
@@ -264,7 +261,6 @@ function TablaSolicitudes({
                               </>
                             )}
 
-                          {/* Almacén: Entregar cuando UI = entrega pendiente */}
                           {usuario?.rol === 'almacen' &&
                             s.estado === 'entrega pendiente' &&
                             (s.fecha_recoleccion || '').split('T')[0] === toLocalDateStr(new Date()) && (
@@ -280,7 +276,6 @@ function TablaSolicitudes({
                               </Btn>
                             )}
 
-                          {/* Alumno: cancelar si está en aprobación pendiente */}
                           {usuario?.rol === 'alumno' &&
                             (s.estado === 'aprobación pendiente') && (
                               <Btn
@@ -322,11 +317,11 @@ export default function SolicitudesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [grupos, setGrupos] = useState({});
-  const [alumnoData, setAlumnoData] = useState([]); // alumno
-  const [docAprobar, setDocAprobar] = useState([]); // docente: tabla 1
-  const [docMias, setDocMias] = useState([]);       // docente: tabla 2
-  const [almAlumnos, setAlmAlumnos] = useState([]); // almacén: tabla 1
-  const [almDocentes, setAlmDocentes] = useState([]); // almacén: tabla 2
+  const [alumnoData, setAlumnoData] = useState([]);
+  const [docAprobar, setDocAprobar] = useState([]);
+  const [docMias, setDocMias] = useState([]);
+  const [almAlumnos, setAlmAlumnos] = useState([]);
+  const [almDocentes, setAlmDocentes] = useState([]);
   const [procesando, setProcesando] = useState(null);
   const [filterDate, setFilterDate] = useState('');
   const [minFilterDate, setMinFilterDate] = useState('');
@@ -334,7 +329,7 @@ export default function SolicitudesPage() {
   const [notice, setNotice] = useState('');
   const [activeTab, setActiveTab] = useState('alumnos');
   const [search, setSearch] = useState('');
-  const [modalEntrega, setModalEntrega] = useState(null); // {id, items}
+  const [modalEntrega, setModalEntrega] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
 
   useEffect(() => {
@@ -372,7 +367,6 @@ export default function SolicitudesPage() {
       try {
         setLoading(true);
 
-        // Grupos
         try {
           const g = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/grupos`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -387,7 +381,6 @@ export default function SolicitudesPage() {
         let almAlumnosArr = [];
         let almDocentesArr = [];
         
-        // Alumno
         if (usuario.rol === 'alumno') {
           const { data } = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL}/api/materials/usuario/solicitudes`,
@@ -397,7 +390,6 @@ export default function SolicitudesPage() {
           setAlumnoData(alumnoArr);
         }
 
-        // Docente
         if (usuario.rol === 'docente') {
           const [aprobarRes, miasRes] = await Promise.all([
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/docente/aprobar`,
@@ -411,7 +403,6 @@ export default function SolicitudesPage() {
           setDocMias(docMiasArr);
         }
 
-        // Almacén (sin filtrar en cliente; solo mapeo de estado especial)
         if (usuario.rol === 'almacen') {
           const { data } = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/almacen`,
@@ -463,14 +454,13 @@ export default function SolicitudesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario]);
 
-  /** Agrupa por solicitud y mapea estados UI; para ALMACÉN lo no entregado/rechazado/cancelado = "entrega pendiente". */
   function agrupar(rows, rolVista, gruposMap) {
     const by = {};
     for (const item of rows) {
       const key = item.solicitud_id ?? item.id;
       if (!key) continue;
 
-      const isDocenteReq = !item.nombre_alumno; // solicitudes de docente no traen nombre_alumno
+      const isDocenteReq = !item.nombre_alumno;
 
       if (!by[key]) {
         const rawEstado = String(item.estado || '').toLowerCase().trim();
@@ -496,14 +486,13 @@ export default function SolicitudesPage() {
       const nombreMaterialRaw =
         item?.nombre_material ??
         item?.nombreMaterial ??
-        item?.material_nombre ??     // ← alias común en otros endpoints
-        item?.materialNombre ??      // ← camelCase
-        item?.material ??            // ← a veces solo "material"
-        item?.nombre ??              // ← último recurso si el backend lo nombra así
+        item?.material_nombre ??
+        item?.materialNombre ??
+        item?.material ??
+        item?.nombre ??
         '';
 
       if (!nombreMaterialRaw) {
-        // Debug temporal para ver qué trae esa fila del endpoint "para aprobar"
         console.debug('Fila sin nombre_material:', item);
       }
 
@@ -521,21 +510,17 @@ export default function SolicitudesPage() {
     );
   }
 
-  /** Mapeo de estados con sensibilidad al rol que visualiza */
   function mapEstadoPorRol(estadoSQL, isDocenteReq, rolVista) {
     const e = (estadoSQL || '').toLowerCase().trim();
 
-    // Vista de ALMACÉN: regla estricta para evitar "aprobación pendiente" allí
     if (rolVista === 'almacen') {
       if (e === 'entregado') return 'entregada';
       if (e === 'rechazada') return 'rechazada';
       if (e === 'cancelado') return 'cancelado';
       if (e === 'sin recoleccion') return 'eliminación automática por falta de recolección';
-      // Cualquier otro (incluido 'aprobada' y un posible 'pendiente') se ve como entrega pendiente
       return 'entrega pendiente';
     }
 
-    // Otras vistas (alumno/docente)
     switch (e) {
       case 'pendiente':
         return isDocenteReq ? 'pendiente' : 'aprobación pendiente';
@@ -554,7 +539,6 @@ export default function SolicitudesPage() {
     }
   }
 
-  /** Acciones aprobar/rechazar/entregar/cancelar */
   const actualizarEstado = async (id, accion, nuevoEstadoUI, items = []) => {
     if (procesando) return;
     setProcesando(id);
@@ -566,7 +550,6 @@ export default function SolicitudesPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Helpers para in-place update
       const apply = (arrSetter) =>
         arrSetter(prev =>
           prev.map(s => {
@@ -613,7 +596,6 @@ export default function SolicitudesPage() {
     }
   };
 
-  // Mapea estado UI -> estado SQL crudo
   function uiToRaw(estadoUI) {
     const e = (estadoUI || '').toLowerCase().trim();
     if (e === 'entrega pendiente')        return 'aprobada';
@@ -680,598 +662,524 @@ export default function SolicitudesPage() {
     setModalEntrega(null);
   };
   
-   
-  /** PDF */
-const descargarPDF = async (vale) => {
-  try {
-    const doc = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: [297, 167] // 16:9
-    });
-
-    const toBase64 = async (url) => {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('No se pudo cargar la imagen');
-      const blob = await res.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
+  const descargarPDF = async (vale) => {
+    try {
+      const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: [297, 167]
       });
-    };
 
-    const encabezadoImg = await toBase64(encabezadoUT);
+      const toBase64 = async (url) => {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('No se pudo cargar la imagen');
+        const blob = await res.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
 
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 15;
-    const marginLeft = margin;
-    const primary = [0, 0, 0];
-    const secondary = [100, 100, 100];
+      const encabezadoImg = await toBase64(encabezadoUT);
 
-    // Marco
-    doc.setDrawColor(...primary);
-    doc.setLineWidth(0.5);
-    doc.rect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2);
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 15;
+      const marginLeft = margin;
+      const primary = [0, 0, 0];
+      const secondary = [100, 100, 100];
 
-    // Encabezado - Imagen adaptada y más pequeña
-    // Calculamos dimensiones más pequeñas manteniendo proporción
-    const maxHeaderWidth = (pageWidth - margin * 2) * 0.4; // 40% del ancho disponible
-    const maxHeaderHeight = 40; // altura máxima reducida
-    
-    // Proporción original aproximada (ajusta según tu imagen real)
-    const originalRatio = 3.5; // ancho/alto aproximado
-    
-    let headerWidth, headerHeight;
-    
-    // Calculamos el tamaño manteniendo proporción y límites
-    if (maxHeaderWidth / originalRatio <= maxHeaderHeight) {
-      headerWidth = maxHeaderWidth;
-      headerHeight = maxHeaderWidth / originalRatio;
-    } else {
-      headerHeight = maxHeaderHeight;
-      headerWidth = maxHeaderHeight * originalRatio;
-    }
+      doc.setDrawColor(...primary);
+      doc.setLineWidth(0.5);
+      doc.rect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2);
 
-    // Reducir la imagen a la mitad del tamaño calculado
-    headerHeight /= 2;
-    
-    // Centramos la imagen horizontalmente
-    const imageX = (pageWidth - headerWidth) / 2;
-    const imageY = 18; // posición Y fija
-    
-    doc.addImage(encabezadoImg, 'JPG', imageX, imageY, headerWidth, headerHeight);
-    
-    // Título centrado debajo de la imagen
-    const titleY = imageY + headerHeight + 8;
-    doc.setFontSize(18);
-    doc.setTextColor(...primary);
-    doc.setFont('helvetica', 'bold');
-    doc.text('VALE DE ALMACÉN', pageWidth / 2, titleY, { align: 'center' });
-    
-    // Línea separadora
-    const lineY = titleY + 3;
-    doc.setLineWidth(0.3);
-    doc.line(marginLeft, lineY, pageWidth - marginLeft, lineY);
+      const maxHeaderWidth = (pageWidth - margin * 2) * 0.4;
+      const maxHeaderHeight = 40;
+      const originalRatio = 3.5;
+      
+      let headerWidth, headerHeight;
+      
+      if (maxHeaderWidth / originalRatio <= maxHeaderHeight) {
+        headerWidth = maxHeaderWidth;
+        headerHeight = maxHeaderWidth / originalRatio;
+      } else {
+        headerHeight = maxHeaderHeight;
+        headerWidth = maxHeaderHeight * originalRatio;
+      }
+
+      headerHeight /= 2;
+      
+      const imageX = (pageWidth - headerWidth) / 2;
+      const imageY = 18;
+      
+      doc.addImage(encabezadoImg, 'JPG', imageX, imageY, headerWidth, headerHeight);
+      
+      const titleY = imageY + headerHeight + 8;
+      doc.setFontSize(18);
+      doc.setTextColor(...primary);
+      doc.setFont('helvetica', 'bold');
+      doc.text('VALE DE ALMACÉN', pageWidth / 2, titleY, { align: 'center' });
+      
+      const lineY = titleY + 3;
+      doc.setLineWidth(0.3);
+      doc.line(marginLeft, lineY, pageWidth - marginLeft, lineY);
        
-    // Tabla de información principal
-    const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
-    const grupo = vale.isDocenteRequest ? 'No aplica' : (vale.grupo || '');
-    const fechaReco = vale.fecha_recoleccion
-      ? new Date(vale.fecha_recoleccion).toLocaleDateString('es-MX')
-      : '';
+      const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
+      const grupo = vale.isDocenteRequest ? 'No aplica' : (vale.grupo || '');
+      const fechaReco = vale.fecha_recoleccion
+        ? new Date(vale.fecha_recoleccion).toLocaleDateString('es-MX')
+        : '';
 
-    autoTable(doc, {
-      startY: lineY + 5,
-      theme: 'grid',
-      head: [['Nombre', 'Grupo', 'Fecha de recolección']],
-      body: [[nombre, grupo, fechaReco]],
-      headStyles: {
-        fillColor: [255, 255, 255],
-        textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        halign: 'center'
-      },
-      bodyStyles: { fontSize: 11, cellPadding: 2 },
-      styles: { lineColor: primary, lineWidth: 0.2 },
-      margin: { top: 0, bottom: 0, left: margin, right: margin },
-      tableWidth: pageWidth - margin * 2
-    });
+      autoTable(doc, {
+        startY: lineY + 5,
+        theme: 'grid',
+        head: [['Nombre', 'Grupo', 'Fecha de recolección']],
+        body: [[nombre, grupo, fechaReco]],
+        headStyles: {
+          fillColor: [255, 255, 255],
+          textColor: [0, 0, 0],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        bodyStyles: { fontSize: 11, cellPadding: 2 },
+        styles: { lineColor: primary, lineWidth: 0.2 },
+        margin: { top: 0, bottom: 0, left: margin, right: margin },
+        tableWidth: pageWidth - margin * 2
+      });
 
-    // Tabla de materiales (10 filas, 4 columnas)
-    const startY = doc.lastAutoTable.finalY;
-    const items = vale.items || [];
-    const rows = [];
-    for (let i = 0; i < 10; i++) {
-      const left = items[i];
-      const right = items[i + 10];
-      rows.push([
-        left ? `${left.cantidad} ${getUnidad(left.tipo)}` : '',
-        left ? left.nombre_material : '',
-        right ? `${right.cantidad} ${getUnidad(right.tipo)}` : '',
-        right ? right.nombre_material : ''
-      ]);
+      const startY = doc.lastAutoTable.finalY;
+      const items = vale.items || [];
+      const rows = [];
+      for (let i = 0; i < 10; i++) {
+        const left = items[i];
+        const right = items[i + 10];
+        rows.push([
+          left ? `${left.cantidad} ${getUnidad(left.tipo)}` : '',
+          left ? left.nombre_material : '',
+          right ? `${right.cantidad} ${getUnidad(right.tipo)}` : '',
+          right ? right.nombre_material : ''
+        ]);
+      }
+
+      autoTable(doc, {
+        startY,
+        theme: 'grid',
+        head: [['Cantidad', 'Descripción', 'Cantidad', 'Descripción']],
+        body: rows,
+        headStyles: {
+          fillColor: [255, 255, 255],
+          textColor: [0, 0, 0],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        bodyStyles: { fontSize: 10, cellPadding: 2 },
+        styles: { lineColor: primary, lineWidth: 0.2 },
+        margin: { top: 0, bottom: 0, left: margin, right: margin },
+        tableWidth: pageWidth - margin * 2
+      });
+
+      const afterTableY = doc.lastAutoTable.finalY + 4;
+      const fechaDev = vale.fecha_devolucion || vale.fecha_recoleccion;
+      const fechaDevolucion = fechaDev
+        ? new Date(fechaDev).toLocaleDateString('es-MX')
+        : '';
+      const profesor = vale.profesor || '';
+
+      doc.setFontSize(10);
+      doc.setTextColor(...primary);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Fecha devolución:', marginLeft, afterTableY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(fechaDevolucion, marginLeft + 40, afterTableY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Profesor:', pageWidth / 2, afterTableY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(profesor, pageWidth / 2 + 25, afterTableY);
+      doc.setFontSize(8);
+      doc.setTextColor(...secondary);
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        'NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
+        pageWidth / 2,
+        afterTableY + 6,
+        { align: 'center', maxWidth: pageWidth - margin * 2 }
+      );
+
+      const nombrePDF = vale.isDocenteRequest
+        ? `Vale_${vale.folio}_${(vale.profesor || '').replace(/\s+/g, '')}.pdf`
+        : `Vale_${vale.folio}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+      doc.save(nombrePDF);
+    } catch (err) {
+      console.error('Error al generar PDF:', err);
     }
+  };
 
-    autoTable(doc, {
-      startY,
-      theme: 'grid',
-      head: [['Cantidad', 'Descripción', 'Cantidad', 'Descripción']],
-      body: rows,
-      headStyles: {
-        fillColor: [255, 255, 255],
-        textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        halign: 'center'
-      },
-      bodyStyles: { fontSize: 10, cellPadding: 2 },
-      styles: { lineColor: primary, lineWidth: 0.2 },
-      margin: { top: 0, bottom: 0, left: margin, right: margin },
-      tableWidth: pageWidth - margin * 2
-    });
-
-    // Sección inferior
-    const afterTableY = doc.lastAutoTable.finalY + 4;
-    const fechaDev = vale.fecha_devolucion || vale.fecha_recoleccion;
-    const fechaDevolucion = fechaDev
-      ? new Date(fechaDev).toLocaleDateString('es-MX')
-      : '';
-    const profesor = vale.profesor || '';
-
-    doc.setFontSize(10);
-    doc.setTextColor(...primary);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Fecha devolución:', marginLeft, afterTableY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(fechaDevolucion, marginLeft + 40, afterTableY);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('Profesor:', pageWidth / 2, afterTableY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(profesor, pageWidth / 2 + 25, afterTableY);
-    doc.setFontSize(8);
-    doc.setTextColor(...secondary);
-    doc.setFont('helvetica', 'normal');
-    doc.text(
-      'NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
-      pageWidth / 2,
-      afterTableY + 6,
-      { align: 'center', maxWidth: pageWidth - margin * 2 }
-    );
-
-    const nombrePDF = vale.isDocenteRequest
-      ? `Vale_${vale.folio}_${(vale.profesor || '').replace(/\s+/g, '')}.pdf`
-      : `Vale_${vale.folio}_${new Date().toISOString().split('T')[0]}.pdf`;
-
-    doc.save(nombrePDF);
-  } catch (err) {
-    console.error('Error al generar PDF:', err);
-  }
-};
-
-  // --- RENDER POR ROL ---
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 min-h-screen font-sans">
-      {/* Nuevo encabezado con lobo */}
-      <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-4 bg-white rounded-2xl shadow-lg px-8 py-6 border border-gray-200 hover:shadow-2xl transition-shadow duration-300">
-          <div className="text-6xl animate-bounce">
-            🐺
-          </div>
-          <div>
-            <h1 className="text-4xl font-bold text-gray-800 tracking-tight hover:text-blue-600 transition-colors duration-200">
-              Solicitudes de Préstamos
-            </h1>
-            <p className="text-gray-600 mt-2 hover:text-gray-800 transition-colors duration-200">Gestiona tus solicitudes de materiales</p>
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-100 min-h-screen font-sans">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-6 text-center">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-3 bg-white rounded-xl shadow-md px-6 py-4 border border-gray-200">
+            <div className="text-4xl sm:text-5xl">🐺</div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Solicitudes de Préstamos</h1>
+              <p className="text-gray-600 text-sm sm:text-base mt-1">Gestiona tus solicitudes de materiales</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Error con mejor styling */}
-      {error && (
-        <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl shadow-md animate-shake hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-red-800 flex items-center gap-2">
-                  <span>⚠️</span> Error
-                </h3>
-                <p className="text-red-700 text-sm">{error}</p>
-              </div>
-            </div>
-            <button 
-              onClick={() => setError('')} 
-              className="text-red-500 hover:text-red-700 transition-colors duration-200 hover:scale-110 transform"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Notice con mejor styling */}
-      {usuario?.rol !== 'almacen' && notice && (
-        <div className="mb-4 flex justify-end">
-          <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse hover:shadow-md transition-shadow duration-200 flex items-center gap-2">
-            <span>🔔</span>
-            {notice}
-          </div>
-        </div>
-      )}
-  
-      {/* ALUMNO */}
-      {usuario?.rol === 'alumno' && (
-        <TablaSolicitudes
-          titulo="Mis solicitudes"
-          data={alumnoData}
-          loading={loading}
-          showSolicitante
-          showEncargado={false}
-          showGrupo={false} 
-          columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
-          usuario={usuario}
-          onAccion={actualizarEstado}
-          onPDF={descargarPDF}
-          procesandoId={procesando}
-        />
-      )}
-
-      {/* DOCENTE */}
-      {usuario?.rol === 'docente' && (
-        <>
-          <div className="mb-6 flex items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
-            <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="relative">
-                {pendientesDocAlumnos > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
-                    {pendientesDocAlumnos}
-                  </span>
-                )}
-                <button
-                  className={`px-6 py-3 transition-all duration-200 font-medium ${
-                    activeTab === 'alumnos' 
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } border-r border-gray-300 hover:shadow-inner`}
-                  onClick={() => setActiveTab('alumnos')}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>🎓</span>
-                    Solicitudes de Alumnos
-                  </div>
-                </button>
-              </div>
-              <div className="relative">
-                <button
-                  className={`px-6 py-3 transition-all duration-200 font-medium ${
-                    activeTab === 'mias' 
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } hover:shadow-inner`}
-                  onClick={() => setActiveTab('mias')}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>👨‍🏫</span>
-                    Mis Solicitudes como Docente
-                  </div>
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400 animate-pulse">🔍</span>
-              </div>
-              <input
-                type="text"
-                placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
-              />
-            </div>
-          </div>
-          
-          {activeTab === 'alumnos' ? (
-            <TablaSolicitudes
-              titulo="Solicitudes de alumnos para aprobar"
-              data={filteredDocAprobar}
-              loading={loading}
-              showSolicitante
-              showEncargado={false}
-              showGrupo
-              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-              usuario={usuario}
-              onAccion={actualizarEstado}
-              onPDF={descargarPDF}
-              procesandoId={procesando}
-            />
-          ) : (
-            <TablaSolicitudes
-              titulo="Mis solicitudes como docente"
-              data={filteredDocMias}
-              loading={loading}
-              showSolicitante={false}
-              showEncargado={false}
-              showGrupo={false}
-              columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
-              usuario={usuario}
-              onAccion={actualizarEstado}
-              onPDF={descargarPDF}
-              procesandoId={procesando}
-            />
-          )}
-        </>
-      )}
-
-      {/* ALMACÉN */}
-      {usuario?.rol === 'almacen' && (
-        <>
-          <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
-            <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="relative">
-                {pendientesAlmAlumnos > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
-                    {pendientesAlmAlumnos}
-                  </span>
-                )}
-                <button
-                  className={`px-6 py-3 transition-all duration-200 font-medium ${
-                    activeTab === 'alumnos' 
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } border-r border-gray-300 hover:shadow-inner`}
-                  onClick={() => setActiveTab('alumnos')}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>🎓</span>
-                    Solicitudes de Alumnos
-                  </div>
-                </button>
-              </div>
-              <div className="relative">
-                {pendientesAlmDocentes > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
-                    {pendientesAlmDocentes}
-                  </span>
-                )}
-                <button
-                  className={`px-6 py-3 transition-all duration-200 font-medium ${
-                    activeTab === 'docentes' 
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } hover:shadow-inner`}
-                  onClick={() => setActiveTab('docentes')}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>👨‍🏫</span>
-                    Solicitudes de Docentes
-                  </div>
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex-1 relative min-w-[200px]">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400 animate-pulse">🔍</span>
-              </div>
-              <input
-                type="text"
-                placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
-              />
-            </div>
-            
-            <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 hover:shadow-md transition-shadow duration-200">
-              <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <span>📅</span>
-                Filtrar por fecha:
-              </label>
-              <input
-                type="date"
-                value={filterDate}
-                min={minFilterDate}
-                max={maxFilterDate}
-                onChange={e => {
-                  const v = e.target.value;
-                  if (!v) { setFilterDate(''); return; }
-                  const d = new Date(v);
-                  const day = d.getDay();
-                  if (day === 0 || day === 6) return; // evitar fines de semana
-                  if (v >= minFilterDate && v <= maxFilterDate) {
-                    setFilterDate(v);
-                  }
-                }}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 hover:shadow-sm"
-              />
-              {filterDate && (
-                <button
-                  onClick={() => setFilterDate('')}
-                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center gap-1"
-                >
-                  <span>✖️</span>
-                  Limpiar
-                </button>
-              )}
-            </div>
-            
-            {notice && (
-              <div className="ml-auto">
-                <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse hover:shadow-md transition-shadow duration-200 flex items-center gap-2">
-                  <span>🔔</span>
-                  {notice}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl shadow-md">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-red-800">Error</h3>
+                  <p className="text-red-700 text-sm">{error}</p>
                 </div>
               </div>
-            )}
-          </div>
-
-          {activeTab === 'alumnos' ? (
-            <TablaSolicitudes
-              titulo="Solicitudes de alumnos"
-              data={searchedAlmAlumnos}
-              loading={loading}
-              showSolicitante
-              showEncargado
-              showGrupo
-              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-              usuario={usuario}
-              onAccion={actualizarEstado}
-              onEntregar={abrirEntrega}
-              onPDF={descargarPDF}
-              procesandoId={procesando}
-            />
-          ) : (
-            <TablaSolicitudes
-              titulo="Solicitudes de docentes"
-              data={searchedAlmDocentes}
-              loading={loading}
-              showSolicitante
-              showEncargado={false}
-              showGrupo={false}
-              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-              usuario={usuario}
-              onAccion={actualizarEstado}
-              onEntregar={abrirEntrega}
-              onPDF={descargarPDF}
-              procesandoId={procesando}
-            />
-          )}
-        </>
-      )}
-
-      {/* Modal de entrega con mejor styling */}
-      {modalEntrega && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform animate-slideUp border border-gray-200 hover:shadow-3xl transition-shadow duration-300">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl animate-spin-slow">🚚</span>
-              <h3 className="text-xl font-bold text-gray-800">Entregar materiales</h3>
+              <button
+                onClick={() => setError('')}
+                className="text-red-500 hover:text-red-700 transition-colors duration-200"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            
-            <div className="space-y-3 mb-6 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200">
-              {modalEntrega.items.map(item => (
-                <label key={item.item_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer shadow-sm hover:shadow-md">
-                  <input
-                    type="checkbox"
-                    checked={selectedItems.includes(item.item_id)}
-                    onChange={() => toggleItem(item.item_id)}
-                    className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 hover:scale-110 transition-transform duration-200"
-                  />
-                  <div className="flex-1">
+          </div>
+        )}
+
+        {usuario?.rol !== 'almacen' && notice && (
+          <div className="mb-4 flex justify-end">
+            <div className="px-4 py-2 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm text-xs sm:text-sm flex items-center gap-2">
+              <span>🔔</span>
+              {notice}
+            </div>
+          </div>
+        )}
+
+        {usuario?.rol === 'alumno' && (
+          <TablaSolicitudes
+            titulo="Mis solicitudes"
+            data={alumnoData}
+            loading={loading}
+            showSolicitante
+            showEncargado={false}
+            showGrupo={false}
+            columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
+            usuario={usuario}
+            onAccion={actualizarEstado}
+            onPDF={descargarPDF}
+            procesandoId={procesando}
+          />
+        )}
+
+        {usuario?.rol === 'docente' && (
+          <>
+            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-white rounded-xl p-4 shadow-md border border-gray-200">
+              <div className="flex rounded-lg overflow-hidden shadow-sm">
+                <div className="relative">
+                  {pendientesDocAlumnos > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1 shadow-md">
+                      {pendientesDocAlumnos}
+                    </span>
+                  )}
+                  <button
+                    className={`px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-medium transition-colors duration-200 ${
+                      activeTab === 'alumnos'
+                        ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    } border-r border-gray-300`}
+                    onClick={() => setActiveTab('alumnos')}
+                  >
                     <div className="flex items-center gap-2">
-                      <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow duration-200">
-                        {item.cantidad} {getUnidad(item.tipo)}
-                      </span>
-                      <span className="font-medium text-gray-800 hover:text-blue-600 transition-colors duration-200">{item.nombre_material}</span>
+                      <span>🎓</span>
+                      Solicitudes de Alumnos
                     </div>
-                  </div>
+                  </button>
+                </div>
+                <div className="relative">
+                  <button
+                    className={`px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-medium transition-colors duration-200 ${
+                      activeTab === 'mias'
+                        ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                    onClick={() => setActiveTab('mias')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>👨‍🏫</span>
+                      Mis Solicitudes como Docente
+                    </div>
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 relative mt-3 sm:mt-0">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">🔍</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors duration-200 bg-gray-50 hover:bg-white"
+                />
+              </div>
+            </div>
+            
+            {activeTab === 'alumnos' ? (
+              <TablaSolicitudes
+                titulo="Solicitudes de alumnos para aprobar"
+                data={filteredDocAprobar}
+                loading={loading}
+                showSolicitante
+                showEncargado={false}
+                showGrupo
+                columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+                usuario={usuario}
+                onAccion={actualizarEstado}
+                onPDF={descargarPDF}
+                procesandoId={procesando}
+              />
+            ) : (
+              <TablaSolicitudes
+                titulo="Mis solicitudes como docente"
+                data={filteredDocMias}
+                loading={loading}
+                showSolicitante={false}
+                showEncargado={false}
+                showGrupo={false}
+                columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
+                usuario={usuario}
+                onAccion={actualizarEstado}
+                onPDF={descargarPDF}
+                procesandoId={procesando}
+              />
+            )}
+          </>
+        )}
+
+        {usuario?.rol === 'almacen' && (
+          <>
+            <div className="mb-6 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 bg-white rounded-xl p-4 shadow-md border border-gray-200">
+              <div className="flex rounded-lg overflow-hidden shadow-sm">
+                <div className="relative">
+                  {pendientesAlmAlumnos > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1 shadow-md">
+                      {pendientesAlmAlumnos}
+                    </span>
+                  )}
+                  <button
+                   className={`px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-medium transition-colors duration-200 ${
+                      activeTab === 'alumnos'
+                        ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    } border-r border-gray-300`}
+                    onClick={() => setActiveTab('alumnos')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>🎓</span>
+                      Solicitudes de Alumnos
+                    </div>
+                  </button>
+                </div>
+                <div className="relative">
+                  {pendientesAlmDocentes > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2 py-1 shadow-md">
+                      {pendientesAlmDocentes}
+                    </span>
+                  )}
+                  <button
+                    className={`px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm font-medium transition-colors duration-200 ${
+                      activeTab === 'docentes'
+                        ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                    onClick={() => setActiveTab('docentes')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>👨‍🏫</span>
+                      Solicitudes de Docentes
+                    </div>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex-1 relative min-w-[200px] mt-3 sm:mt-0">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">🔍</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-colors duration-200 bg-gray-50 hover:bg-white"
+                />
+              </div>
+              
+              <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 mt-3 sm:mt-0">
+                <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <span>📅</span>
+                  Filtrar por fecha:
                 </label>
-              ))}
+                <input
+                  type="date"
+                  value={filterDate}
+                  min={minFilterDate}
+                  max={maxFilterDate}
+                  onChange={e => {
+                    const v = e.target.value;
+                    if (!v) { setFilterDate(''); return; }
+                    const d = new Date(v);
+                    const day = d.getDay();
+                    if (day === 0 || day === 6) return;
+                    if (v >= minFilterDate && v <= maxFilterDate) {
+                      setFilterDate(v);
+                    }
+                  }}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors duration-200"
+                />
+                {filterDate && (
+                  <button
+                    onClick={() => setFilterDate('')}
+                    className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 flex items-center gap-1"
+                  >
+                    <span>✖️</span>
+                    Limpiar
+                  </button>
+                )}
+              </div>
+              
+              {notice && (
+                <div className="ml-auto mt-3 sm:mt-0">
+                  <div className="px-4 py-2 text-xs sm:text-sm bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm flex items-center gap-2">
+                    <span>🔔</span>
+                    {notice}
+                  </div>
+                </div>
+              )}
             </div>
-            
-            <div className="flex justify-between mb-6">
-              <button 
-                onClick={seleccionarTodos} 
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 flex items-center gap-1 hover:underline"
-              >
-                <span>✅</span>
-                Seleccionar todo
-              </button>
-              <span className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
-                {selectedItems.length} de {modalEntrega.items.length} seleccionados
-              </span>
-            </div>
-            
-            <div className="flex justify-end gap-3">
-              <button 
-                onClick={() => setModalEntrega(null)} 
-                className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
-              >
-                Cancelar
-              </button>
-              <button 
-                onClick={confirmarEntrega} 
-                disabled={selectedItems.length === 0}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105 transform"
-              >
-                <span>🚚</span>
-                Entregar ({selectedItems.length})
-              </button>
+
+            {activeTab === 'alumnos' ? (
+              <TablaSolicitudes
+                titulo="Solicitudes de alumnos"
+                data={searchedAlmAlumnos}
+                loading={loading}
+                showSolicitante
+                showEncargado
+                showGrupo
+                columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+                usuario={usuario}
+                onAccion={actualizarEstado}
+                onEntregar={abrirEntrega}
+                onPDF={descargarPDF}
+                procesandoId={procesando}
+              />
+            ) : (
+              <TablaSolicitudes
+                titulo="Solicitudes de docentes"
+                data={searchedAlmDocentes}
+                loading={loading}
+                showSolicitante
+                showEncargado={false}
+                showGrupo={false}
+                columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+                usuario={usuario}
+                onAccion={actualizarEstado}
+                onEntregar={abrirEntrega}
+                onPDF={descargarPDF}
+                procesandoId={procesando}
+              />
+            )}
+          </>
+        )}
+
+        {modalEntrega && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 sm:p-8 rounded-xl shadow-xl max-w-md w-full mx-4 border border-gray-200">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-xl sm:text-2xl">🚚</span>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800">Entregar materiales</h3>
+              </div>
+              
+              <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
+                {modalEntrega.items.map(item => (
+                  <label key={item.item_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.includes(item.item_id)}
+                      onChange={() => toggleItem(item.item_id)}
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                          {item.cantidad} {getUnidad(item.tipo)}
+                        </span>
+                        <span className="font-medium text-gray-800 text-xs sm:text-sm">{item.nombre_material}</span>
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              
+              <div className="flex justify-between mb-6">
+                <button
+                  onClick={seleccionarTodos}
+                  className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 flex items-center gap-1"
+                >
+                  <span>✅</span>
+                  Seleccionar todo
+                </button>
+                <span className="text-xs sm:text-sm text-gray-500">
+                  {selectedItems.length} de {modalEntrega.items.length} seleccionados
+                </span>
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setModalEntrega(null)}
+                  className="px-4 sm:px-6 py-2 sm:py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium text-xs sm:text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmarEntrega}
+                  disabled={selectedItems.length === 0}
+                  className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-colors duration-200 font-medium text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <span>🚚</span>
+                  Entregar ({selectedItems.length})
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-      
+        )}
+      </div>
       <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+        .min-h-screen {
+          min-height: 100vh;
         }
-        
-        @keyframes slideUp {
-          from { 
-            opacity: 0; 
-            transform: translateY(20px); 
-          }
-          to { 
-            opacity: 1; 
-            transform: translateY(0); 
-          }
-        }
-        
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-        
-        @keyframes shimmer {
-          0% { background-position: -200px 0; }
-          100% { background-position: calc(200px + 100%) 0; }
-        }
-
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-        
-        .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
-        }
-        
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-        
-        .animate-shimmer {
-          background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-          background-size: 200px 100%;
-          animation: shimmer 1.5s infinite;
-        }
-
-        .animate-spin-slow {
-          animation: spin-slow 10s linear infinite;
-        }
-
         .scrollbar-thin {
           scrollbar-width: thin;
+        }
+        .scrollbar-thumb-blue-500 {
+          scrollbar-color: #3b82f6 #e5e7eb;
+        }
+        .scrollbar-track-gray-200 {
+          scrollbar-color: #3b82f6 #e5e7eb;
         }
       `}</style>
     </div>
