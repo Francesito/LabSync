@@ -856,7 +856,7 @@ const descargarPDF = async (vale) => {
     <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 min-h-screen font-sans">
       {/* Nuevo encabezado con lobo */}
       <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-4 bg-white rounded-2xl shadow-lg px-8 py-6 border border-gray-200 hover:shadow-2xl transition-shadow duration-300">
+        <div className="inline-flex items-center gap-4 bg-white rounded-2xl shadow-lg px-8 py-6 border border-gray-200 hover:shadow-2xl transition-shadow duration-300 flex-wrap justify-center">
           <div className="text-6xl animate-bounce">
             🐺
           </div>
@@ -872,7 +872,7 @@ const descargarPDF = async (vale) => {
       {/* Error con mejor styling */}
       {error && (
         <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl shadow-md animate-shake hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -930,38 +930,38 @@ const descargarPDF = async (vale) => {
       {/* DOCENTE */}
       {usuario?.rol === 'docente' && (
         <>
-          <div className="mb-6 flex items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
-            <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="relative">
+          <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+            <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
+              <div className="relative flex-1">
                 {pendientesDocAlumnos > 0 && (
                   <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
                     {pendientesDocAlumnos}
                   </span>
                 )}
                 <button
-                  className={`px-6 py-3 transition-all duration-200 font-medium ${
+                  className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
                     activeTab === 'alumnos' 
                       ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   } border-r border-gray-300 hover:shadow-inner`}
                   onClick={() => setActiveTab('alumnos')}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 justify-center">
                     <span>🎓</span>
                     Solicitudes de Alumnos
                   </div>
                 </button>
               </div>
-              <div className="relative">
+              <div className="relative flex-1">
                 <button
-                  className={`px-6 py-3 transition-all duration-200 font-medium ${
+                  className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
                     activeTab === 'mias' 
                       ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   } hover:shadow-inner`}
                   onClick={() => setActiveTab('mias')}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 justify-center">
                     <span>👨‍🏫</span>
                     Mis Solicitudes como Docente
                   </div>
@@ -969,7 +969,7 @@ const descargarPDF = async (vale) => {
               </div>
             </div>
             
-            <div className="flex-1 relative">
+            <div className="flex-1 relative w-full sm:w-auto mt-4 sm:mt-0">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <span className="text-gray-400 animate-pulse">🔍</span>
               </div>
@@ -1019,42 +1019,42 @@ const descargarPDF = async (vale) => {
       {usuario?.rol === 'almacen' && (
         <>
           <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
-            <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-              <div className="relative">
+            <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
+              <div className="relative flex-1">
                 {pendientesAlmAlumnos > 0 && (
                   <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
                     {pendientesAlmAlumnos}
                   </span>
                 )}
                 <button
-                  className={`px-6 py-3 transition-all duration-200 font-medium ${
+                  className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
                     activeTab === 'alumnos' 
                       ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   } border-r border-gray-300 hover:shadow-inner`}
                   onClick={() => setActiveTab('alumnos')}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 justify-center">
                     <span>🎓</span>
                     Solicitudes de Alumnos
                   </div>
                 </button>
               </div>
-              <div className="relative">
+              <div className="relative flex-1">
                 {pendientesAlmDocentes > 0 && (
                   <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
                     {pendientesAlmDocentes}
                   </span>
                 )}
                 <button
-                  className={`px-6 py-3 transition-all duration-200 font-medium ${
+                  className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
                     activeTab === 'docentes' 
                       ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   } hover:shadow-inner`}
                   onClick={() => setActiveTab('docentes')}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 justify-center">
                     <span>👨‍🏫</span>
                     Solicitudes de Docentes
                   </div>
@@ -1062,7 +1062,7 @@ const descargarPDF = async (vale) => {
               </div>
             </div>
             
-            <div className="flex-1 relative min-w-[200px]">
+            <div className="flex-1 relative w-full sm:w-auto mt-4 sm:mt-0">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <span className="text-gray-400 animate-pulse">🔍</span>
               </div>
@@ -1075,7 +1075,7 @@ const descargarPDF = async (vale) => {
               />
             </div>
             
-            <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 hover:shadow-md transition-shadow duration-200">
+            <div className="flex flex-wrap items-center gap-3 bg-gray-50 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 w-full sm:w-auto mt-4 sm:mt-0">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <span>📅</span>
                 Filtrar por fecha:
@@ -1095,7 +1095,7 @@ const descargarPDF = async (vale) => {
                     setFilterDate(v);
                   }
                 }}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 hover:shadow-sm"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 hover:shadow-sm flex-1"
               />
               {filterDate && (
                 <button
@@ -1109,7 +1109,7 @@ const descargarPDF = async (vale) => {
             </div>
             
             {notice && (
-              <div className="ml-auto">
+              <div className="w-full sm:ml-auto mt-4 sm:mt-0">
                 <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse hover:shadow-md transition-shadow duration-200 flex items-center gap-2">
                   <span>🔔</span>
                   {notice}
@@ -1154,8 +1154,8 @@ const descargarPDF = async (vale) => {
 
       {/* Modal de entrega con mejor styling */}
       {modalEntrega && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform animate-slideUp border border-gray-200 hover:shadow-3xl transition-shadow duration-300">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn overflow-y-auto">
+          <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 my-8 sm:my-0 transform animate-slideUp border border-gray-200 hover:shadow-3xl transition-shadow duration-300">
             <div className="flex items-center gap-3 mb-6">
               <span className="text-2xl animate-spin-slow">🚚</span>
               <h3 className="text-xl font-bold text-gray-800">Entregar materiales</h3>
@@ -1171,7 +1171,7 @@ const descargarPDF = async (vale) => {
                     className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 hover:scale-110 transition-transform duration-200"
                   />
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow duration-200">
                         {item.cantidad} {getUnidad(item.tipo)}
                       </span>
@@ -1195,7 +1195,7 @@ const descargarPDF = async (vale) => {
               </span>
             </div>
             
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 flex-wrap">
               <button 
                 onClick={() => setModalEntrega(null)} 
                 className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
