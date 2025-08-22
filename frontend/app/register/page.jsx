@@ -13,6 +13,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
   const router = useRouter();
 
   // Cargar grupos al montar el componente
@@ -30,6 +31,14 @@ export default function Register() {
     cargarGrupos();
   }, []);
 
+   useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1320px) and (min-height: 915px)');
+    const updateScreen = () => setIsLargeScreen(mediaQuery.matches);
+    updateScreen();
+    mediaQuery.addEventListener('change', updateScreen);
+    return () => mediaQuery.removeEventListener('change', updateScreen);
+  }, []);
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -67,7 +76,7 @@ export default function Register() {
     <div className="min-vh-100 d-flex font-sans position-relative auth-bg">
       <div className="row w-100 m-0 position-relative" style={{ zIndex: 2 }}>
         {/* Sección derecha - Formulario */}
-        <div className="col-12 col-md-6 offset-md-6 d-flex flex-column justify-content-center p-4 p-md-5">
+         <div className={`col-12 col-md-6 ${isLargeScreen ? 'offset-md-6' : 'mx-auto'} d-flex flex-column justify-content-center p-4 p-md-5`}>
           <div className="w-100" style={{ maxWidth: '500px', margin: '0 auto' }}>
             <div className="mb-4">
               <h2 className="fw-bold text-dark mb-1">Crear cuenta</h2>
@@ -230,7 +239,7 @@ export default function Register() {
           background-position: center;
           background-repeat: no-repeat;
         }
-        @media (min-width: 768px) {
+        @media (min-width: 1320px) and (min-height: 915px) {
           .auth-bg {
             background-image: url('/background.jpg');
           }
