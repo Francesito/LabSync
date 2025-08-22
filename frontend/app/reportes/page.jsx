@@ -172,7 +172,7 @@ export default function ReportesPage() {
       {/* Primera fila: Historial de Residuos, Grupos con Adeudos, Solicitudes Aprobadas */}
       <div className="row g-4 mb-5">
         {/* Historial de Residuos */}
-        <div className="col-md-4">
+        <div className="col-md-4 col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
             <h2 className="card-title h5 mb-3 text-primary">
               <i className="bi bi-trash-fill me-2 text-primary"></i>Historial de Residuos
@@ -181,37 +181,39 @@ export default function ReportesPage() {
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
             ) : (
               <>
-                <table className="table table-sm table-hover table-bordered">
-                  <thead className="table-primary">
-                    <tr>
-                      <th className="text-start">Nombre</th>
-                      <th className="text-start">Grupo</th>
-                      <th className="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historial.slice(0, 5).map((h, idx) => (
-                      <tr key={idx} className="animate-row">
-                        <td className="py-2">{h.nombre}</td>
-                        <td className="py-2">{h.grupo}</td>
-                        <td className="py-2 text-center">
-                          <button
-                            onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
-                            className="btn btn-sm btn-outline-primary me-2 animate-button"
-                          >
-                            <i className="bi bi-file-earmark-arrow-down-fill me-1"></i>CSV
-                          </button>
-                          <button
-                            onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
-                            className="btn btn-sm btn-outline-success animate-button"
-                          >
-                            <i className="bi bi-file-earmark-pdf-fill me-1"></i>PDF
-                          </button>
-                        </td>
+                <div className="table-responsive">
+                  <table className="table table-sm table-hover table-bordered align-top">
+                    <thead className="table-primary">
+                      <tr>
+                        <th className="text-start">Nombre</th>
+                        <th className="text-start">Grupo</th>
+                        <th className="text-center">Acciones</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {historial.slice(0, 5).map((h, idx) => (
+                        <tr key={idx} className="animate-row">
+                          <td className="py-2 align-top">{h.nombre}</td>
+                          <td className="py-2 align-top">{h.grupo}</td>
+                          <td className="py-2 text-center align-top">
+                            <button
+                              onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
+                              className="btn btn-sm btn-outline-primary me-2 animate-button"
+                            >
+                              <i className="bi bi-file-earmark-arrow-down-fill me-1"></i>CSV
+                            </button>
+                            <button
+                              onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
+                              className="btn btn-sm btn-outline-success animate-button"
+                            >
+                              <i className="bi bi-file-earmark-pdf-fill me-1"></i>PDF
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 {historial.length > 5 && (
                   <button
                     className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
@@ -226,7 +228,7 @@ export default function ReportesPage() {
         </div>
 
         {/* Grupos con Adeudos */}
-        <div className="col-md-4">
+        <div className="col-md-4 col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
             <h2 className="card-title h5 mb-3 text-teal">
               <i className="bi bi-people-fill me-2 text-teal"></i>Grupos con Adeudos
@@ -235,24 +237,26 @@ export default function ReportesPage() {
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay grupos.</p>
             ) : (
               <>
-                <table className="table table-sm table-hover table-bordered">
-                  <thead className="table-teal">
-                    <tr>
-                      <th className="text-start">Nombre</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {grupos.slice(0, 5).map((g, idx) => (
-                      <tr
-                        key={idx}
-                        className="animate-row cursor-pointer"
-                        onClick={() => setGrupoDetalle(g)}
-                      >
-                        <td className="py-2">{g.nombre}</td>
+                <div className="table-responsive">
+                  <table className="table table-sm table-hover table-bordered">
+                    <thead className="table-teal">
+                      <tr>
+                        <th className="text-start">Nombre</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {grupos.slice(0, 5).map((g, idx) => (
+                        <tr
+                          key={idx}
+                          className="animate-row cursor-pointer"
+                          onClick={() => setGrupoDetalle(g)}
+                        >
+                          <td className="py-2">{g.nombre}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 {grupos.length > 5 && (
                   <button
                     className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
@@ -267,7 +271,7 @@ export default function ReportesPage() {
         </div>
 
         {/* Solicitudes Aprobadas */}
-        <div className="col-md-4">
+        <div className="col-md-4 col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
             <h2 className="card-title h5 mb-3 text-success">
               <i className="bi bi-check-circle-fill me-2 text-success"></i>Solicitudes Aprobadas
@@ -276,30 +280,32 @@ export default function ReportesPage() {
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay solicitudes.</p>
             ) : (
               <>
-                <table className="table table-sm table-hover table-bordered">
-                  <thead className="table-success">
-                    <tr>
-                      <th>Materiales</th>
-                      <th>Docente</th>
-                      <th>Grupo</th>
-                      <th>Fecha</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {solicitudes.slice(0, 5).map((s) => (
-                      <tr key={s.id} className="animate-row">
-                        <td className="py-2 whitespace-pre-line">
-                          {s.materiales
-                            .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
-                            .join('\n')}
-                        </td>
-                        <td className="py-2">{s.docente}</td>
-                        <td className="py-2">{s.grupo}</td>
-                        <td className="py-2">{s.fecha}</td>
+                <div className="table-responsive">
+                  <table className="table table-sm table-hover table-bordered">
+                    <thead className="table-success">
+                      <tr>
+                        <th>Materiales</th>
+                        <th>Docente</th>
+                        <th>Grupo</th>
+                        <th>Fecha</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {solicitudes.slice(0, 5).map((s) => (
+                        <tr key={s.id} className="animate-row">
+                          <td className="py-2 whitespace-pre-line">
+                            {s.materiales
+                              .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
+                              .join('\n')}
+                          </td>
+                          <td className="py-2">{s.docente}</td>
+                          <td className="py-2">{s.grupo}</td>
+                          <td className="py-2">{s.fecha}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 {solicitudes.length > 5 && (
                   <button
                     className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
@@ -325,36 +331,38 @@ export default function ReportesPage() {
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
             ) : (
               <>
-                <table className="table table-sm table-hover table-bordered">
-                  <thead className="table-info">
-                    <tr>
-                      <th>Reactivo</th>
-                      <th>Cantidad</th>
-                      {inventarioLiquidos.meses.map((m) => (
-                        <th key={m} className="text-capitalize">
-                          {m}
-                        </th>
-                      ))}
-                      <th>Existencia Final</th>
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {inventarioLiquidos.datos.slice(0, 5).map((r, idx) => (
-                      <tr key={idx} className="animate-row">
-                        <td className="py-2 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                        <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
+                <div className="table-responsive">
+                  <table className="table table-sm table-hover table-bordered">
+                    <thead className="table-info">
+                      <tr>
+                        <th>Reactivo</th>
+                        <th>Cantidad</th>
                         {inventarioLiquidos.meses.map((m) => (
-                          <td key={m} className="py-2">
-                            {r.consumos[m] || 0}
-                          </td>
+                          <th key={m} className="text-capitalize">
+                            {m}
+                          </th>
                         ))}
-                        <td className="py-2">{r.existencia_final} {r.unidad}</td>
-                        <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                        <th>Existencia Final</th>
+                        <th>Total</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {inventarioLiquidos.datos.slice(0, 5).map((r, idx) => (
+                        <tr key={idx} className="animate-row">
+                          <td className="py-2 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
+                          <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
+                          {inventarioLiquidos.meses.map((m) => (
+                            <td key={m} className="py-2">
+                              {r.consumos[m] || 0}
+                            </td>
+                          ))}
+                          <td className="py-2">{r.existencia_final} {r.unidad}</td>
+                          <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 {inventarioLiquidos.datos.length > 5 && (
                   <button
                     className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
@@ -380,36 +388,38 @@ export default function ReportesPage() {
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
             ) : (
               <>
-                <table className="table table-sm table-hover table-bordered">
-                  <thead className="table-purple">
-                    <tr>
-                      <th>Reactivo</th>
-                      <th>Cantidad</th>
-                      {inventarioSolidos.meses.map((m) => (
-                        <th key={m} className="text-capitalize">
-                          {m}
-                        </th>
-                      ))}
-                      <th>Existencia Final</th>
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {inventarioSolidos.datos.slice(0, 5).map((r, idx) => (
-                      <tr key={idx} className="animate-row">
-                        <td className="py-2 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                        <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
+                <div className="table-responsive">
+                  <table className="table table-sm table-hover table-bordered">
+                    <thead className="table-purple">
+                      <tr>
+                        <th>Reactivo</th>
+                        <th>Cantidad</th>
                         {inventarioSolidos.meses.map((m) => (
-                          <td key={m} className="py-2">
-                            {r.consumos[m] || 0}
-                          </td>
+                          <th key={m} className="text-capitalize">
+                            {m}
+                          </th>
                         ))}
-                        <td className="py-2">{r.existencia_final} {r.unidad}</td>
-                        <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                        <th>Existencia Final</th>
+                        <th>Total</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {inventarioSolidos.datos.slice(0, 5).map((r, idx) => (
+                        <tr key={idx} className="animate-row">
+                          <td className="py-2 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
+                          <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
+                          {inventarioSolidos.meses.map((m) => (
+                            <td key={m} className="py-2">
+                              {r.consumos[m] || 0}
+                            </td>
+                          ))}
+                          <td className="py-2">{r.existencia_final} {r.unidad}</td>
+                          <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 {inventarioSolidos.datos.length > 5 && (
                   <button
                     className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
@@ -436,37 +446,39 @@ export default function ReportesPage() {
                 <i className="bi bi-x-lg"></i> Cerrar
               </button>
             </div>
-            <table className="table table-sm table-hover table-bordered">
-              <thead className="table-primary">
-                <tr>
-                  <th>Nombre</th>
-                  <th>Grupo</th>
-                  <th className="text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {historial.map((h, idx) => (
-                  <tr key={idx} className="animate-row">
-                    <td className="py-2">{h.nombre}</td>
-                    <td className="py-2">{h.grupo}</td>
-                    <td className="py-2 text-center">
-                      <button
-                        onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
-                        className="btn btn-sm btn-outline-primary me-2 animate-button"
-                      >
-                        <i className="bi bi-file-earmark-arrow-down-fill me-1"></i>CSV
-                      </button>
-                      <button
-                        onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
-                        className="btn btn-sm btn-outline-success animate-button"
-                      >
-                        <i className="bi bi-file-earmark-pdf-fill me-1"></i>PDF
-                      </button>
-                    </td>
+            <div className="table-responsive">
+              <table className="table table-sm table-hover table-bordered align-top">
+                <thead className="table-primary">
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Grupo</th>
+                    <th className="text-center">Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {historial.map((h, idx) => (
+                    <tr key={idx} className="animate-row">
+                      <td className="py-2 align-top">{h.nombre}</td>
+                      <td className="py-2 align-top">{h.grupo}</td>
+                      <td className="py-2 text-center align-top">
+                        <button
+                          onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
+                          className="btn btn-sm btn-outline-primary me-2 animate-button"
+                        >
+                          <i className="bi bi-file-earmark-arrow-down-fill me-1"></i>CSV
+                        </button>
+                        <button
+                          onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
+                          className="btn btn-sm btn-outline-success animate-button"
+                        >
+                          <i className="bi bi-file-earmark-pdf-fill me-1"></i>PDF
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -482,27 +494,29 @@ export default function ReportesPage() {
                 <i className="bi bi-x-lg"></i> Cerrar
               </button>
             </div>
-            <table className="table table-sm table-hover table-bordered">
-              <thead className="table-teal">
-                <tr>
-                  <th>Nombre</th>
-                </tr>
-              </thead>
-              <tbody>
-                {grupos.map((g, idx) => (
-                  <tr
-                    key={idx}
-                    className="animate-row cursor-pointer"
-                    onClick={() => {
-                      setGrupoDetalle(g);
-                      setShowGruposModal(false);
-                    }}
-                  >
-                    <td className="py-2">{g.nombre}</td>
+            <div className="table-responsive">
+              <table className="table table-sm table-hover table-bordered">
+                <thead className="table-teal">
+                  <tr>
+                    <th>Nombre</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {grupos.map((g, idx) => (
+                    <tr
+                      key={idx}
+                      className="animate-row cursor-pointer"
+                      onClick={() => {
+                        setGrupoDetalle(g);
+                        setShowGruposModal(false);
+                      }}
+                    >
+                      <td className="py-2">{g.nombre}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -559,30 +573,32 @@ export default function ReportesPage() {
                 </button>
               </div>
             </div>
-            <table className="table table-sm table-hover table-bordered">
-              <thead className="table-success">
-                <tr>
-                  <th>Materiales</th>
-                  <th>Docente</th>
-                  <th>Grupo</th>
-                  <th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {solicitudesFiltradas.map((s) => (
-                  <tr key={s.id} className="animate-row">
-                    <td className="py-2 whitespace-pre-line">
-                      {s.materiales
-                        .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
-                        .join('\n')}
-                    </td>
-                    <td className="py-2">{s.docente}</td>
-                    <td className="py-2">{s.grupo}</td>
-                    <td className="py-2">{s.fecha}</td>
+            <div className="table-responsive">
+              <table className="table table-sm table-hover table-bordered">
+                <thead className="table-success">
+                  <tr>
+                    <th>Materiales</th>
+                    <th>Docente</th>
+                    <th>Grupo</th>
+                    <th>Fecha</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {solicitudesFiltradas.map((s) => (
+                    <tr key={s.id} className="animate-row">
+                      <td className="py-2 whitespace-pre-line">
+                        {s.materiales
+                          .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
+                          .join('\n')}
+                      </td>
+                      <td className="py-2">{s.docente}</td>
+                      <td className="py-2">{s.grupo}</td>
+                      <td className="py-2">{s.fecha}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -598,36 +614,38 @@ export default function ReportesPage() {
                 <i className="bi bi-x-lg"></i> Cerrar
               </button>
             </div>
-            <table className="table table-sm table-hover table-bordered">
-              <thead className="table-info">
-                <tr>
-                  <th>Reactivo</th>
-                  <th>Cantidad</th>
-                  {inventarioLiquidos.meses.map((m) => (
-                    <th key={m} className="capitalize">
-                      {m}
-                    </th>
-                  ))}
-                  <th>Existencia Final</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inventarioLiquidos.datos.map((r, idx) => (
-                  <tr key={idx} className="animate-row">
-                    <td className="py-2 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
+            <div className="table-responsive">
+              <table className="table table-sm table-hover table-bordered">
+                <thead className="table-info">
+                  <tr>
+                    <th>Reactivo</th>
+                    <th>Cantidad</th>
                     {inventarioLiquidos.meses.map((m) => (
-                      <td key={m} className="py-2">
-                        {r.consumos[m] || 0}
-                      </td>
+                      <th key={m} className="capitalize">
+                        {m}
+                      </th>
                     ))}
-                    <td className="py-2">{r.existencia_final} {r.unidad}</td>
-                    <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                    <th>Existencia Final</th>
+                    <th>Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {inventarioLiquidos.datos.map((r, idx) => (
+                    <tr key={idx} className="animate-row">
+                      <td className="py-2 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
+                      <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
+                      {inventarioLiquidos.meses.map((m) => (
+                        <td key={m} className="py-2">
+                          {r.consumos[m] || 0}
+                        </td>
+                      ))}
+                      <td className="py-2">{r.existencia_final} {r.unidad}</td>
+                      <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -643,36 +661,38 @@ export default function ReportesPage() {
                 <i className="bi bi-x-lg"></i> Cerrar
               </button>
             </div>
-            <table className="table table-sm table-hover table-bordered">
-              <thead className="table-purple">
-                <tr>
-                  <th>Reactivo</th>
-                  <th>Cantidad</th>
-                  {inventarioSolidos.meses.map((m) => (
-                    <th key={m} className="capitalize">
-                      {m}
-                    </th>
-                  ))}
-                  <th>Existencia Final</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inventarioSolidos.datos.map((r, idx) => (
-                  <tr key={idx} className="animate-row">
-                    <td className="py-2 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
+            <div className="table-responsive">
+              <table className="table table-sm table-hover table-bordered">
+                <thead className="table-purple">
+                  <tr>
+                    <th>Reactivo</th>
+                    <th>Cantidad</th>
                     {inventarioSolidos.meses.map((m) => (
-                      <td key={m} className="py-2">
-                        {r.consumos[m] || 0}
-                      </td>
+                      <th key={m} className="capitalize">
+                        {m}
+                      </th>
                     ))}
-                    <td className="py-2">{r.existencia_final} {r.unidad}</td>
-                    <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                    <th>Existencia Final</th>
+                    <th>Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {inventarioSolidos.datos.map((r, idx) => (
+                    <tr key={idx} className="animate-row">
+                      <td className="py-2 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
+                      <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
+                      {inventarioSolidos.meses.map((m) => (
+                        <td key={m} className="py-2">
+                          {r.consumos[m] || 0}
+                        </td>
+                      ))}
+                      <td className="py-2">{r.existencia_final} {r.unidad}</td>
+                      <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -738,7 +758,7 @@ export default function ReportesPage() {
           background: rgba(255, 255, 255, 0.9);
         }
         .table th, .table td {
-          vertical-align: middle;
+          vertical-align: top;
           padding: 12px;
         }
         .table-hover tbody tr:hover {
@@ -822,6 +842,25 @@ export default function ReportesPage() {
         }
         .h-100 .table {
           flex-grow: 1;
+        }
+        @media (max-width: 768px) {
+          .display-4 {
+            font-size: 2.5rem;
+          }
+          .card {
+            padding: 1rem;
+          }
+          .table th, .table td {
+            padding: 0.5rem;
+          }
+        }
+        @media (max-width: 576px) {
+          .display-4 {
+            font-size: 2rem;
+          }
+          .btn-sm {
+            font-size: 0.75rem;
+          }
         }
       `}</style>
     </div>
