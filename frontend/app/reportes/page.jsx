@@ -192,10 +192,10 @@ export default function ReportesPage() {
             {grupos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay grupos.</p>
             ) : (
-              <div className="row h-100">
-               <div className="col-12 col-md-auto border-end mb-3 mb-md-0">
+            <div className="d-flex h-100">
+                <div className="me-3 pe-3 border-end flex-shrink-0">
                   <div className="table-responsive">
-                    <table className="table table-sm table-hover table-bordered w-auto">
+                    <table className="table table-sm table-hover table-bordered w-auto mb-0">
                       <thead className="table-teal">
                         <tr>
                           <th className="text-start">Nombre</th>
@@ -223,7 +223,7 @@ export default function ReportesPage() {
                     </button>
                   )}
                 </div>
-                <div className="col-12 col-md">
+                <div className="flex-grow-1 overflow-auto">
                   {grupoDetalle ? (
                     <>
                       {grupoDetalle.adeudos.length === 0 ? (
@@ -231,7 +231,7 @@ export default function ReportesPage() {
                       ) : (
                         <>
                           <div className="table-responsive">
-                            <table className="table table-sm table-hover table-bordered">
+                           <table className="table table-sm table-hover table-bordered mb-0">
                               <thead className="table-teal">
                                 <tr>
                                   <th>Cantidad</th>
@@ -243,7 +243,7 @@ export default function ReportesPage() {
                                 {grupoDetalle.adeudos.slice(0, 5).map((a, idx) => (
                                   <tr key={idx} className="animate-row">
                                     <td className="py-2">{a.cantidad} {a.unidad}</td>
-                                  <td className="py-2">{a.nombre_material}</td>
+                                 <table className="table table-sm table-hover table-bordered mb-0">
                                     <td className="py-2">{a.solicitante}</td>
                                   </tr>
                                 ))}
@@ -500,7 +500,7 @@ export default function ReportesPage() {
             {grupoDetalle.adeudos.map((a, idx) => (
               <tr key={idx} className="animate-row">
                 <td className="py-2">{a.cantidad} {a.unidad}</td>
-             <td className="py-2">{a.nombre_material}</td>
+             <td className="py-2">{a.nombre_material || a.material}</td>
                 <td className="py-2">{a.solicitante}</td>
               </tr>
             ))}
