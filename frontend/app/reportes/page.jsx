@@ -40,7 +40,10 @@ export default function ReportesPage() {
           const key = `${e.nombre || ''}-${e.grupo || ''}`;
           if (!grouped[key]) {
             grouped[key] = { nombre: e.nombre || '', grupo: e.grupo || '', registros: [] };
-          }
+        `}</style>
+    </div>
+  );
+}
           grouped[key].registros.push({ ...e, fecha });
         });
         setHistorial(Object.values(grouped));
@@ -161,18 +164,20 @@ export default function ReportesPage() {
                           <td className="py-2 align-top text-truncate">{h.nombre}</td>
                           <td className="py-2 align-top text-truncate">{h.grupo}</td>
                           <td className="py-2 text-center align-top">
-                            <button
-                              onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
-                              className="btn btn-sm btn-outline-primary me-2 animate-button"
-                            >
-                              <i className="bi bi-file-earmark-arrow-down-fill me-1"></i>CSV
-                            </button>
-                            <button
-                              onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
-                              className="btn btn-sm btn-outline-success animate-button"
-                            >
-                              <i className="bi bi-file-earmark-pdf-fill me-1"></i>PDF
-                            </button>
+                            <div className="d-flex justify-content-center flex-nowrap">
+                              <button
+                                onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
+                                className="btn btn-xs btn-outline-primary me-1 animate-button"
+                              >
+                                <i className="bi bi-file-earmark-arrow-down-fill"></i>
+                              </button>
+                              <button
+                                onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
+                                className="btn btn-xs btn-outline-success animate-button"
+                              >
+                                <i className="bi bi-file-earmark-pdf-fill"></i>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -201,10 +206,10 @@ export default function ReportesPage() {
             {grupos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay grupos.</p>
             ) : (
-              <div className="d-flex h-100">
-                <div className="me-3 pe-3 border-end flex-shrink-0">
+              <div className="row h-100">
+                <div className="col-md-6">
                   <div className="table-responsive">
-                    <table className="table table-sm table-hover table-bordered w-auto mb-0">
+                    <table className="table table-sm table-hover table-bordered">
                       <thead className="table-teal">
                         <tr>
                           <th className="text-start">Nombre</th>
@@ -214,7 +219,7 @@ export default function ReportesPage() {
                         {grupos.slice(0, 5).map((g, idx) => (
                           <tr
                             key={idx}
-                            className="animate-row cursor-pointer"
+                            className={`animate-row cursor-pointer ${grupoDetalle?.nombre === g.nombre ? 'table-active' : ''}`}
                             onClick={() => setGrupoDetalle(g)}
                           >
                             <td className="py-2 text-truncate">{g.nombre}</td>
@@ -232,9 +237,12 @@ export default function ReportesPage() {
                     </button>
                   )}
                 </div>
-                <div className="flex-grow-1 overflow-auto">
+                <div className="col-md-6">
                   {grupoDetalle ? (
                     <>
+                      <h6 className="text-teal mb-2">
+                        <i className="bi bi-arrow-right me-1"></i>Adeudos de {grupoDetalle.nombre}
+                      </h6>
                       {grupoDetalle.adeudos.length === 0 ? (
                         <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Sin adeudos</p>
                       ) : (
@@ -252,7 +260,7 @@ export default function ReportesPage() {
                                 {grupoDetalle.adeudos.slice(0, 5).map((a, idx) => (
                                   <tr key={idx} className="animate-row">
                                     <td className="py-2 text-truncate">{a.cantidad} {a.unidad}</td>
-                                  <td className="py-2">{a.nombre_material}</td>
+                                    <td className="py-2">{a.nombre_material}</td>
                                     <td className="py-2 text-truncate">{a.solicitante}</td>
                                   </tr>
                                 ))}
@@ -271,7 +279,12 @@ export default function ReportesPage() {
                       )}
                     </>
                   ) : (
-                    <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Selecciona un grupo para ver los adeudos que se tienen</p>
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <p className="text-muted text-center">
+                        <i className="bi bi-info-circle me-2"></i>
+                        Selecciona un grupo para ver los adeudos que se tienen
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -421,18 +434,20 @@ export default function ReportesPage() {
                       <td className="py-2 align-top text-truncate">{h.nombre}</td>
                       <td className="py-2 align-top text-truncate">{h.grupo}</td>
                       <td className="py-2 text-center align-top">
-                        <button
-                          onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
-                          className="btn btn-sm btn-outline-primary me-2 animate-button"
-                        >
-                          <i className="bi bi-file-earmark-arrow-down-fill me-1"></i>CSV
-                        </button>
-                        <button
-                          onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
-                          className="btn btn-sm btn-outline-success animate-button"
-                        >
-                          <i className="bi bi-file-earmark-pdf-fill me-1"></i>PDF
-                        </button>
+                        <div className="d-flex justify-content-center flex-nowrap">
+                          <button
+                            onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
+                            className="btn btn-xs btn-outline-primary me-1 animate-button"
+                          >
+                            <i className="bi bi-file-earmark-arrow-down-fill"></i>
+                          </button>
+                          <button
+                            onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
+                            className="btn btn-xs btn-outline-success animate-button"
+                          >
+                            <i className="bi bi-file-earmark-pdf-fill"></i>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -519,7 +534,6 @@ export default function ReportesPage() {
           </div>
         </div>
       )}
-
 
       {showLiquidosModal && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
@@ -761,6 +775,15 @@ export default function ReportesPage() {
         .h-100 .table {
           flex-grow: 1;
         }
+        .btn-xs {
+          font-size: 0.65rem;
+          padding: 0.25rem 0.4rem;
+          line-height: 1.2;
+          border-radius: 0.2rem;
+        }
+        .table-active {
+          background-color: rgba(20, 184, 166, 0.2) !important;
+        }
         @media (max-width: 768px) {
           .display-4 {
             font-size: 2.5rem;
@@ -771,6 +794,10 @@ export default function ReportesPage() {
           .table th, .table td {
             padding: 0.5rem;
           }
+          .btn-xs {
+            font-size: 0.6rem;
+            padding: 0.2rem 0.3rem;
+          }
         }
         @media (max-width: 576px) {
           .display-4 {
@@ -780,7 +807,3 @@ export default function ReportesPage() {
             font-size: 0.75rem;
           }
         }
-      `}</style>
-    </div>
-  );
-}
