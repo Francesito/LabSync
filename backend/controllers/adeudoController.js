@@ -107,17 +107,18 @@ async function getAllAdeudos(req, res) {
          a.cantidad_pendiente AS cantidad,
          CASE a.tipo WHEN 'liquido' THEN 'ml' WHEN 'solido' THEN 'g' ELSE 'u' END AS unidad,
          s.folio,
-         s.nombre_alumno,
+         s.nombre_alumno AS solicitante,
          s.profesor,
          g.nombre AS grupo,
          DATE_FORMAT(a.fecha_entrega, '%Y-%m-%d') AS fecha_entrega
        FROM Adeudo a
        JOIN Solicitud s       ON a.solicitud_id       = s.id
+       JOIN SolicitudItem si  ON a.solicitud_item_id = si.id
        LEFT JOIN Grupo g      ON s.grupo_id = g.id
-        LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND si.material_id=ml.id
-       LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND si.material_id=ms.id
-       LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND si.material_id=me.id
-    ORDER BY a.fecha_entrega DESC`
+          LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND si.material_id = ml.id
+       LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND si.material_id = ms.id
+       LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND si.material_id = me.id
+      ORDER BY a.fecha_entrega DESC`
     );
     res.json(rows);
   } catch (error) {
