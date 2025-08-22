@@ -275,7 +275,6 @@ export default function Catalog() {
   const fetchMaterials = async () => {
     try {
       setLoading(true);
-      console.log('fetchMaterials: Rol del usuario:', userPermissions.rol);
 
       const [liquidoRes, solidoRes, laboratorioRes, equipoRes] = await Promise.all([
         makeSecureApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/liquidos`),
@@ -319,10 +318,6 @@ export default function Catalog() {
         all = all.filter((m) => m.tipo === 'liquido' || m.tipo === 'solido');
       }
 
-      console.log(
-        'Materiales filtrados:',
-        all.map((m) => ({ id: m.id, nombre: m.nombre, tipo: m.tipo, imagen: m.imagen }))
-      );
       setAllMaterials(all);
 
       if (canModifyStock()) {
@@ -668,13 +663,6 @@ export default function Catalog() {
     if (!canViewDetails()) {
       return;
     }
-    console.log(
-      `Clic en material: ${material.nombre}, ID: ${material.id}, Tipo: ${material.tipo}, Image Path: ${getImagePath(
-        material
-      )}, Riesgos Fisicos: ${material.riesgos_fisicos}, Riesgos Salud: ${material.riesgos_salud}, Riesgos Ambientales: ${
-        material.riesgos_ambientales
-      }`
-    );
     setSelectedMaterial(material);
     setDetailAmount('');
     setShowDetailModal(true);
@@ -856,7 +844,6 @@ export default function Catalog() {
     );
   };
 
-  console.log('Permisos cargados:', userPermissions);
   if (permissionsLoading || loading) {
     return (
       <div className="loading-container">
