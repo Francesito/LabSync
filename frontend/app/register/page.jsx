@@ -31,13 +31,20 @@ export default function Register() {
     cargarGrupos();
   }, []);
 
-   useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 1320px) and (min-height: 915px)');
-    const updateScreen = () => setIsLargeScreen(mediaQuery.matches);
-    updateScreen();
+ useEffect(() => {
+  const mediaQuery = window.matchMedia('(min-width: 1320px) and (min-height: 750px)');
+  const updateScreen = () => setIsLargeScreen(mediaQuery.matches);
+  updateScreen();
+
+  if (mediaQuery.addEventListener) {
     mediaQuery.addEventListener('change', updateScreen);
     return () => mediaQuery.removeEventListener('change', updateScreen);
-  }, []);
+  } else {
+    mediaQuery.addListener(updateScreen);
+    return () => mediaQuery.removeListener(updateScreen);
+  }
+}, []);
+
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,14 +80,10 @@ export default function Register() {
   };
 
   return (
-   <div
-      className="min-vh-100 d-flex font-sans position-relative auth-bg"
-      style={{
-        backgroundImage: isLargeScreen
-          ? "url('/background.jpg')"
-          : "linear-gradient(135deg, #dbeafe 0%, #fbcfe8 100%)",
-      }}
-    >
+ <div
+  className={`min-vh-100 d-flex font-sans position-relative auth-bg ${isLargeScreen ? 'bg-image' : 'bg-gradient'}`}
+>
+
       <div className="row w-100 m-0 position-relative" style={{ zIndex: 2 }}>
         {/* Sección derecha - Formulario */}
          <div className={`col-12 col-md-6 ${isLargeScreen ? 'offset-md-6' : 'mx-auto'} d-flex flex-column justify-content-center p-4 p-md-5`}>
@@ -240,11 +243,15 @@ export default function Register() {
       </div>
 
       <style jsx>{`
-      .auth-bg {
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-        }
+     .auth-bg {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.bg-gradient {
+  background-image: linear-gradient(135deg, #e6f7ec 0%, #ffffff 100%);
+}
         
         .form-control:focus {
           background-color: #ffffff !important;
@@ -265,6 +272,10 @@ export default function Register() {
         .btn:disabled {
           cursor: not-allowed;
         }
+
+        .bg-image {
+  background-image: url('/background.jpg');
+}
       `}</style>
     </div>
   );
