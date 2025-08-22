@@ -40,10 +40,7 @@ export default function ReportesPage() {
           const key = `${e.nombre || ''}-${e.grupo || ''}`;
           if (!grouped[key]) {
             grouped[key] = { nombre: e.nombre || '', grupo: e.grupo || '', registros: [] };
-        `}</style>
-    </div>
-  );
-}
+          }
           grouped[key].registros.push({ ...e, fecha });
         });
         setHistorial(Object.values(grouped));
@@ -807,3 +804,7 @@ export default function ReportesPage() {
             font-size: 0.75rem;
           }
         }
+      `}</style>
+    </div>
+  );
+}
