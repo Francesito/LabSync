@@ -1,18 +1,19 @@
   // frontend/app/reportes/page.jsx
   'use client';
   
-  import { useEffect, useState } from 'react';
-  import { useAuth } from '../../lib/auth';
-  import {
-    obtenerResiduos,
-    obtenerAdeudosGlobal,
-     obtenerGrupos,
-    obtenerSolicitudesAprobadas,
-    obtenerInventarioLiquidos,
-    obtenerInventarioSolidos,
-  } from '../../lib/api';
-  import jsPDF from 'jspdf';
-  import autoTable from 'jspdf-autotable';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../lib/auth';
+import {
+  obtenerResiduos,
+  obtenerAdeudosGlobal,
+  obtenerGrupos,
+  obtenerSolicitudesAprobadas,
+  obtenerInventarioLiquidos,
+  obtenerInventarioSolidos,
+} from '../../lib/api';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import 'bootstrap/dist/css/bootstrap.min.css';
   
   export default function ReportesPage() {
     const { usuario } = useAuth();
@@ -158,158 +159,55 @@
       );
     });
     
-    return (
-       <div className="p-4 space-y-8">
-        <h1 className="text-3xl font-bold mb-4">Reportes</h1>
-  
-        {/* Primer fila: tres tablas */}
-        <div className="grid md:grid-cols-3 gap-4">
-          {/* Tabla 1: Historial de residuos */}
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="font-semibold mb-2">Historial de Residuos</h2>
-            {historial.length === 0 ? (
-              <p>No hay registros.</p>
-            ) : (
-              <>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr>
-                      <th className="text-left">Nombre</th>
-                      <th className="text-left">Grupo</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historial.slice(0, 5).map((h, idx) => (
-                      <tr key={idx} className="border-t">
-                        <td className="py-1">{h.nombre}</td>
-                        <td className="py-1">{h.grupo}</td>
-                        <td className="py-1">
-                          <button onClick={() => downloadHistorialCSV(h.registros, h.nombre)} className="mr-2 text-blue-600">CSV</button>
-                          <button onClick={() => downloadHistorialPDF(h.registros, h.nombre)} className="text-green-600">PDF</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {historial.length > 5 && (
-                  <button className="mt-2 text-blue-600" onClick={() => setShowHistorialModal(true)}>
-                    Mostrar más
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-  
-          {/* Tabla 2: Grupos con adeudos */}
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="font-semibold mb-2">Grupos con adeudos</h2>
-            {grupos.length === 0 ? (
-              <p>No hay grupos.</p>
-            ) : (
-              <>
-                <table className="w-full text-sm">
-                  <tbody>
-                    {grupos.slice(0, 5).map((g, idx) => (
-                      <tr
-                        key={idx}
-                        className="border-t cursor-pointer"
-                        onClick={() => setGrupoDetalle(g)}
-                      >
-                        <td className="py-1">{g.nombre}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {grupos.length > 5 && (
-                  <button className="mt-2 text-blue-600" onClick={() => setShowGruposModal(true)}>
-                    Mostrar más
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-  
-          {/* Tabla 3: Solicitudes aprobadas */}
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="font-semibold mb-2">Solicitudes Aprobadas</h2>
-            {solicitudes.length === 0 ? (
-              <p>No hay solicitudes.</p>
-            ) : (
-              <>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr>
-                      <th>Materiales</th>
-                      <th>Docente</th>
-                      <th>Grupo</th>
-                      <th>Fecha</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {solicitudes.slice(0, 5).map((s) => (
-                      <tr key={s.id} className="border-t">
-                        <td className="py-1 whitespace-pre-line">
-                          {s.materiales
-                            .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
-                            .join('\n')}
-                        </td>
-                        <td className="py-1">{s.docente}</td>
-                        <td className="py-1">{s.grupo}</td>
-                        <td className="py-1">{s.fecha}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {solicitudes.length > 5 && (
-                  <button className="mt-2 text-blue-600" onClick={() => setShowSolicitudesModal(true)}>
-                    Mostrar más
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-  
-        {/* Tabla 4: Reactivos líquidos */}
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="font-semibold mb-2">Inventario Reactivos Líquidos</h2>
-         {inventarioLiquidos.datos.length === 0 ? (
+     return (
+    <div className="container py-4">
+      <h1 className="display-5 fw-bold mb-4">Reportes</h1>
+
+      {/* Primer fila: tres tablas */}
+      <div className="row g-4">
+        {/* Tabla 1: Historial de residuos */}
+        <div className="col-md-4 card p-3 shadow-sm">
+          <h2 className="card-title h5">Historial de Residuos</h2>
+          {historial.length === 0 ? (
             <p>No hay registros.</p>
           ) : (
             <>
-              <table className="w-full text-sm">
+               <table className="table table-sm">
                 <thead>
                   <tr>
-                    <th>Reactivo</th>
-                    <th>Cantidad</th>
-                    {inventarioLiquidos.meses.map((m) => (
-                      <th key={m} className="capitalize">
-                        {m}
-                      </th>
-                    ))}
-                    <th>Existencia Final</th>
-                    <th>Total</th>
+                     <th className="text-start">Nombre</th>
+                    <th className="text-start">Grupo</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                 {inventarioLiquidos.datos.slice(0, 5).map((r, idx) => (
-                    <tr key={idx} className="border-t">
-                      <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                                         <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
-                      {inventarioLiquidos.meses.map((m) => (
-                        <td key={m} className="py-1">
-                          {r.consumos[m] || 0}
-                        </td>
-                      ))}
-                      <td className="py-1">{r.existencia_final} {r.unidad}</td>
-                      <td className="py-1">{r.total_consumido} {r.unidad}</td>
+               {historial.slice(0, 5).map((h, idx) => (
+                    <tr key={idx}>
+                      <td className="py-1">{h.nombre}</td>
+                      <td className="py-1">{h.grupo}</td>
+                      <td className="py-1">
+                        <button
+                          onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
+                          className="btn btn-sm btn-outline-primary me-2"
+                        >
+                          CSV
+                        </button>
+                        <button
+                          onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
+                          className="btn btn-sm btn-outline-success"
+                        >
+                          PDF
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            {inventarioLiquidos.datos.length > 5 && (
-                <button className="mt-2 text-blue-600" onClick={() => setShowLiquidosModal(true)}>
+          {historial.length > 5 && (
+                <button
+                  className="btn btn-link p-0"
+                  onClick={() => setShowHistorialModal(true)}
+                >
                   Mostrar más
                 </button>
               )}
@@ -317,51 +215,179 @@
           )}
         </div>
   
-        {/* Tabla 5: Reactivos sólidos */}
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="font-semibold mb-2">Inventario Reactivos Sólidos</h2>
-          {inventarioSolidos.datos.length === 0 ? (
-            <p>No hay registros.</p>
+         {/* Tabla 2: Grupos con adeudos */}
+        <div className="col-md-4 card p-3 shadow-sm">
+          <h2 className="card-title h5">Grupos con adeudos</h2>
+          {grupos.length === 0 ? (
+            <p>No hay grupos.</p>
           ) : (
             <>
-              <table className="w-full text-sm">
+              <table className="table table-sm">
+                <tbody>
+                  {grupos.slice(0, 5).map((g, idx) => (
+                    <tr
+                      key={idx}
+                      className="border-top cursor-pointer"
+                      onClick={() => setGrupoDetalle(g)}
+                    >
+                      <td className="py-1">{g.nombre}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {grupos.length > 5 && (
+                <button
+                  className="btn btn-link p-0"
+                  onClick={() => setShowGruposModal(true)}
+                >
+                  Mostrar más
+                </button>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Tabla 3: Solicitudes aprobadas */}
+        <div className="col-md-4 card p-3 shadow-sm">
+          <h2 className="card-title h5">Solicitudes Aprobadas</h2>
+          {solicitudes.length === 0 ? (
+            <p>No hay solicitudes.</p>
+          ) : (
+            <>
+             <table className="table table-sm">
                 <thead>
                   <tr>
-                    <th>Reactivo</th>
-                <th>Cantidad</th>
-                    {inventarioSolidos.meses.map((m) => (
-                      <th key={m} className="capitalize">
-                        {m}
-                      </th>
-                    ))}
-                    <th>Existencia Final</th>
-                    <th>Total</th>
+                   <th>Materiales</th>
+                    <th>Docente</th>
+                    <th>Grupo</th>
+                    <th>Fecha</th>
                   </tr>
                 </thead>
                 <tbody>
-                 {inventarioSolidos.datos.slice(0, 5).map((r, idx) => (
-                    <tr key={idx} className="border-t">
-                      <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
+               {solicitudes.slice(0, 5).map((s) => (
+                    <tr key={s.id}>
+                      <td className="py-1 whitespace-pre-line">
+                        {s.materiales
+                          .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
+                          .join('\n')}
+                      </td>
+                      <td className="py-1">{s.docente}</td>
+                      <td className="py-1">{s.grupo}</td>
+                      <td className="py-1">{s.fecha}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+             {solicitudes.length > 5 && (
+                <button
+                  className="btn btn-link p-0"
+                  onClick={() => setShowSolicitudesModal(true)}
+                >
+                  Mostrar más
+                </button>
+              )}
+            </>
+          )}
+        </div>
+          </div>
+
+      {/* Tabla 4: Reactivos líquidos */}
+      <div className="card p-3 shadow-sm mt-4">
+        <h2 className="card-title h5">Inventario Reactivos Líquidos</h2>
+        {inventarioLiquidos.datos.length === 0 ? (
+          <p>No hay registros.</p>
+        ) : (
+          <>
+            <table className="table table-sm">
+              <thead>
+                <tr>
+                  <th>Reactivo</th>
+                  <th>Cantidad</th>
+                  {inventarioLiquidos.meses.map((m) => (
+                    <th key={m} className="text-capitalize">
+                      {m}
+                    </th>
+                  ))}
+                  <th>Existencia Final</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inventarioLiquidos.datos.slice(0, 5).map((r, idx) => (
+                  <tr key={idx}>
+                    <td className="py-1 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                     <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
-                      {inventarioSolidos.meses.map((m) => (
-                        <td key={m} className="py-1">
-                          {r.consumos[m] || 0}
-                        </td>
-                      ))}
-                      <td className="py-1">{r.existencia_final} {r.unidad}</td>
-                      <td className="py-1">{r.total_consumido} {r.unidad}</td>
-                    </tr>
+                    {inventarioLiquidos.meses.map((m) => (
+                      <td key={m} className="py-1">
+                        {r.consumos[m] || 0}
+                      </td>
+                    ))}
+                    <td className="py-1">{r.existencia_final} {r.unidad}</td>
+                    <td className="py-1">{r.total_consumido} {r.unidad}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {inventarioLiquidos.datos.length > 5 && (
+              <button
+                className="btn btn-link p-0"
+                onClick={() => setShowLiquidosModal(true)}
+              >
+                Mostrar más
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Tabla 5: Reactivos sólidos */}
+      <div className="card p-3 shadow-sm mt-4">
+        <h2 className="card-title h5">Inventario Reactivos Sólidos</h2>
+        {inventarioSolidos.datos.length === 0 ? (
+          <p>No hay registros.</p>
+        ) : (
+          <>
+            <table className="table table-sm">
+              <thead>
+                <tr>
+                  <th>Reactivo</th>
+                  <th>Cantidad</th>
+                  {inventarioSolidos.meses.map((m) => (
+                    <th key={m} className="text-capitalize">
+                      {m}
+                    </th>
                   ))}
-                </tbody>
-              </table>
-           {inventarioSolidos.datos.length > 5 && (
-                <button className="mt-2 text-blue-600" onClick={() => setShowSolidosModal(true)}>
-                  Mostrar más
-                </button>
-              )}
-            </>
-          )}
-        </div>
+                  <th>Existencia Final</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inventarioSolidos.datos.slice(0, 5).map((r, idx) => (
+                  <tr key={idx}>
+                    <td className="py-1 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
+                    <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
+                    {inventarioSolidos.meses.map((m) => (
+                      <td key={m} className="py-1">
+                        {r.consumos[m] || 0}
+                      </td>
+                    ))}
+                    <td className="py-1">{r.existencia_final} {r.unidad}</td>
+                    <td className="py-1">{r.total_consumido} {r.unidad}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {inventarioSolidos.datos.length > 5 && (
+              <button
+                className="btn btn-link p-0"
+                onClick={() => setShowSolidosModal(true)}
+              >
+                Mostrar más
+              </button>
+            )}
+          </>
+        )}
+      </div>
   
          
         {/* Modales */}
@@ -370,9 +396,9 @@
             <div className="bg-white max-h-[80vh] w-full max-w-2xl p-4 overflow-y-auto">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold">Historial de Residuos</h3>
-                <button onClick={() => setShowHistorialModal(false)}>Cerrar</button>
+               <button onClick={() => setShowHistorialModal(false)} className="btn btn-secondary btn-sm">Cerrar</button>
               </div>
-              <table className="w-full text-sm">
+             <table className="table table-sm">
                 <thead>
                   <tr>
                     <th>Nombre</th>
@@ -382,19 +408,19 @@
                 </thead>
                 <tbody>
                   {historial.map((h, idx) => (
-                    <tr key={idx} className="border-t">
+                   <tr key={idx} className="border-top">
                       <td className="py-1">{h.nombre}</td>
                       <td className="py-1">{h.grupo}</td>
                       <td className="py-1">
                         <button
                           onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
-                          className="mr-2 text-blue-600"
+                         className="btn btn-sm btn-outline-primary me-2"
                         >
                           CSV
                         </button>
                         <button
                           onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
-                          className="text-green-600"
+                           className="btn btn-sm btn-outline-success"
                         >
                           PDF
                         </button>
@@ -412,14 +438,14 @@
             <div className="bg-white max-h-[80vh] w-full max-w-md p-4 overflow-y-auto">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold">Grupos</h3>
-                <button onClick={() => setShowGruposModal(false)}>Cerrar</button>
+               <button onClick={() => setShowGruposModal(false)} className="btn btn-secondary btn-sm">Cerrar</button>
               </div>
-              <table className="w-full text-sm">
+             <table className="table table-sm">
                 <tbody>
                   {grupos.map((g, idx) => (
                     <tr
                       key={idx}
-                      className="border-t cursor-pointer"
+                      className="border-top cursor-pointer"
                       onClick={() => {
                         setGrupoDetalle(g);
                         setShowGruposModal(false);
@@ -439,7 +465,7 @@
             <div className="bg-white max-h-[80vh] w-full max-w-md p-4 overflow-y-auto">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold">{grupoDetalle.nombre}</h3>
-                <button onClick={() => setGrupoDetalle(null)}>Cerrar</button>
+               <button onClick={() => setGrupoDetalle(null)} className="btn btn-secondary btn-sm">Cerrar</button>
               </div>
               <div className="space-y-1">
                 {grupoDetalle.adeudos.length === 0 ? (
@@ -453,7 +479,7 @@
                 )}
               </div>
               <button
-                className="mt-2 text-blue-600"
+                 className="btn btn-link p-0 mt-2"
                 onClick={() => downloadGrupoPDF(grupoDetalle)}
               >
                 Descargar PDF
@@ -471,11 +497,11 @@
                   value={filtro}
                   onChange={(e) => setFiltro(e.target.value)}
                   placeholder="Filtrar grupo o docente"
-                  className="border px-2 py-1"
+                className="form-control form-control-sm"
                 />
-                <button onClick={() => setShowSolicitudesModal(false)}>Cerrar</button>
+                <button onClick={() => setShowSolicitudesModal(false)} className="btn btn-secondary btn-sm">Cerrar</button>
               </div>
-              <table className="w-full text-sm">
+               <table className="table table-sm">
                 <thead>
                   <tr>
                     <th>Materiales</th>
@@ -486,7 +512,7 @@
                 </thead>
                 <tbody>
                   {solicitudesFiltradas.map((s) => (
-                    <tr key={s.id} className="border-t">
+                    <tr key={s.id} className="border-top">
                       <td className="py-1 whitespace-pre-line">
                         {s.materiales
                           .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
@@ -508,9 +534,9 @@
             <div className="bg-white w-full max-w-4xl p-4 max-h-[80vh] overflow-y-auto">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold">Inventario Reactivos Líquidos</h3>
-                <button onClick={() => setShowLiquidosModal(false)}>Cerrar</button>
+              <button onClick={() => setShowLiquidosModal(false)} className="btn btn-secondary btn-sm">Cerrar</button>
               </div>
-              <table className="w-full text-sm">
+               <table className="table table-sm">
                 <thead>
                   <tr>
                     <th>Reactivo</th>
@@ -526,7 +552,7 @@
                 </thead>
                 <tbody>
                 {inventarioLiquidos.datos.map((r, idx) => (
-                    <tr key={idx} className="border-t">
+                    <tr key={idx} className="border-top">
                       <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                    <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
                       {inventarioLiquidos.meses.map((m) => (
@@ -549,9 +575,9 @@
             <div className="bg-white w-full max-w-4xl p-4 max-h-[80vh] overflow-y-auto">
               <div className="flex justify-between mb-2">
                 <h3 className="font-semibold">Inventario Reactivos Sólidos</h3>
-                <button onClick={() => setShowSolidosModal(false)}>Cerrar</button>
+                  <button onClick={() => setShowSolidosModal(false)} className="btn btn-secondary btn-sm">Cerrar</button>
               </div>
-              <table className="w-full text-sm">
+              <table className="table table-sm">
                 <thead>
                   <tr>
                     <th>Reactivo</th>
@@ -567,7 +593,7 @@
                 </thead>
                 <tbody>
                    {inventarioSolidos.datos.map((r, idx) => (
-                    <tr key={idx} className="border-t">
+                  <tr key={idx} className="border-top">
                       <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                       <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
                       {inventarioSolidos.meses.map((m) => (
