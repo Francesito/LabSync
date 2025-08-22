@@ -20,7 +20,7 @@ async function getUsuarioAdeudos(req, res) {
       `SELECT
          a.id,
          a.solicitud_id,
-         si.id AS solicitud_item_id,
+      a.solicitud_item_id,
          COALESCE(ml.nombre, ms.nombre, me.nombre) AS nombre_material,
          a.cantidad_pendiente AS cantidad,
          CASE a.tipo WHEN 'liquido' THEN 'ml'
@@ -28,8 +28,7 @@ async function getUsuarioAdeudos(req, res) {
                      ELSE 'u' END AS unidad,
          s.folio
        FROM Adeudo a
-       JOIN SolicitudItem si ON a.solicitud_item_id = si.id
-       JOIN Solicitud s       ON a.solicitud_id       = s.id
+      JOIN Solicitud s ON a.solicitud_id = s.id
        LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND si.material_id=ml.id
        LEFT JOIN MaterialSolido  ms ON a.tipo='solido'  AND si.material_id=ms.id
        LEFT JOIN MaterialEquipo  me ON a.tipo='equipo'  AND si.material_id=me.id
@@ -103,7 +102,7 @@ async function getAllAdeudos(req, res) {
       `SELECT
          a.id,
          a.solicitud_id,
-         si.id   AS solicitud_item_id,
+         a.solicitud_item_id,
          COALESCE(ml.nombre, ms.nombre, me.nombre) AS nombre_material,
          a.cantidad_pendiente AS cantidad,
          CASE a.tipo WHEN 'liquido' THEN 'ml' WHEN 'solido' THEN 'g' ELSE 'u' END AS unidad,
@@ -113,7 +112,6 @@ async function getAllAdeudos(req, res) {
           g.nombre AS grupo,
          DATE_FORMAT(s.fecha_entrega, '%Y-%m-%d') AS fecha_entrega
        FROM Adeudo a
-       JOIN SolicitudItem si ON a.solicitud_item_id = si.id
        JOIN Solicitud s       ON a.solicitud_id       = s.id
        LEFT JOIN Grupo g      ON s.grupo_id = g.id
         LEFT JOIN MaterialLiquido ml ON a.tipo='liquido' AND si.material_id=ml.id
