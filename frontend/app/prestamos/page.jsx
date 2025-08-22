@@ -132,7 +132,7 @@ const loadPrestamos = async () => {
     
     try {
       const det = await obtenerDetalleSolicitud(solicitud_id);
-    det.items = det.items.map(i => ({ ...i, devolver: 0, entregado: false }));
+    det.items = det.items.map(i => ({ ...i, devolver: 0, entregado: false, estado: {} }));
       setDetalle(det);
     } catch (err) {
       console.error('Error al obtener detalle:', err);
@@ -184,7 +184,7 @@ const handleSave = async () => {
 
     // si aún existe, recarga detalle; y si ya no hay ítems, cierra también
     const nuevoDetalle = await obtenerDetalleSolicitud(selectedSolicitud);
-      nuevoDetalle.items = nuevoDetalle.items.map(i => ({ ...i, devolver: 0, entregado: false }));
+      nuevoDetalle.items = nuevoDetalle.items.map(i => ({ ...i, devolver: 0, entregado: false, estado: {} }));
       if (nuevoDetalle.items.length === 0) {
         return closeModal();
       }
@@ -473,6 +473,11 @@ const handleSave = async () => {
                               <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
                                 Unidad
                               </th>
+                              {detalle.nombre_alumno && (
+                                <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                  Estado
+                                </th>
+                              )}
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-200">
@@ -519,6 +524,17 @@ const handleSave = async () => {
                                       <div className="text-sm font-medium text-slate-900 truncate">
                                         {formatMaterialName(item.nombre_material)}
                                       </div>
+                                       {item.estado?.tipo && item.estado?.numero && (
+                                        <span
+                                          className={`mt-1 inline-block px-2 py-1 rounded text-xs font-medium ${
+                                            item.estado.tipo === 'danado'
+                                              ? 'bg-yellow-100 text-yellow-800'
+                                              : 'bg-red-100 text-red-800'
+                                          }`}
+                                        >
+                                          {item.estado.tipo === 'danado' ? 'Dañado' : 'Extraviado'} {item.estado.numero}
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                 </td>
@@ -530,6 +546,43 @@ const handleSave = async () => {
                                     {item.tipo === 'liquido' ? 'ml' : item.tipo === 'solido' ? 'g' : 'u'}
                                   </span>
                                 </td>
+                                 {detalle.nombre_alumno && (
+                                  <td className="px-4 py-3">
+                                    {item.tipo !== 'liquido' && item.tipo !== 'solido' ? (
+                                      <div className="flex items-center space-x-2">
+                                        <select
+                                          value={item.estado?.tipo || ''}
+                                          onChange={e => {
+                                            item.estado = { tipo: e.target.value, numero: '' };
+                                            setDetalle({ ...detalle });
+                                          }}
+                                          className="border border-slate-300 rounded-md px-2 py-1 text-sm"
+                                        >
+                                          <option value="">Estado</option>
+                                          <option value="danado">Dañado</option>
+                                          <option value="extraviado">Extraviado</option>
+                                        </select>
+                                        {item.estado?.tipo && (
+                                          <select
+                                            value={item.estado.numero || ''}
+                                            onChange={e => {
+                                              item.estado = { ...item.estado, numero: e.target.value };
+                                              setDetalle({ ...detalle });
+                                            }}
+                                            className="border border-slate-300 rounded-md px-2 py-1 text-sm"
+                                          >
+                                            <option value="">#</option>
+                                            {Array.from({ length: item.cantidad }, (_, i) => i + 1).map(n => (
+                                              <option key={n} value={n}>{n}</option>
+                                            ))}
+                                          </select>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs text-slate-500">—</span>
+                                    )}
+                                  </td>
+                                )}
                               </tr>
                             ))}
                           </tbody>
