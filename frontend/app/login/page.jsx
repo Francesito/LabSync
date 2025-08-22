@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
@@ -10,7 +10,16 @@ export default function Login() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const router = useRouter();
+
+    useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1320px) and (min-height: 915px)');
+    const updateScreen = () => setIsLargeScreen(mediaQuery.matches);
+    updateScreen();
+    mediaQuery.addEventListener('change', updateScreen);
+    return () => mediaQuery.removeEventListener('change', updateScreen);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,7 +47,7 @@ export default function Login() {
       <div className="row w-100 m-0 position-relative" style={{ zIndex: 2 }}>
 
         {/* Sección derecha - Formulario */}
-        <div className="col-12 col-md-6 offset-md-6 d-flex flex-column justify-content-center p-4 p-md-5">
+       <div className={`col-12 col-md-6 ${isLargeScreen ? 'offset-md-6' : 'mx-auto'} d-flex flex-column justify-content-center p-4 p-md-5`}>
           <div className="w-100" style={{ maxWidth: '500px', margin: '0 auto' }}>
             <div className="mb-4">
               <h2 className="fw-bold text-dark mb-1">Inicia Sesión</h2>
@@ -142,7 +151,7 @@ export default function Login() {
           background-position: center;
           background-repeat: no-repeat;
         }
-        @media (min-width: 768px) {
+        @media (min-width: 1320px) and (min-height: 915px) {
           .auth-bg {
             background-image: url('/background.jpg');
           }
