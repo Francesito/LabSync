@@ -27,7 +27,7 @@ const EstadoBadge = ({ estado }) => {
   const safe = (estado || '').toLowerCase().trim();
   const { bg, text, icon } = config[safe] || config.pendiente;
   return (
-    <span className={`${bg} ${text} inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium shadow-sm transition-all duration-200 hover:scale-105`}>
+    <span className={`${bg} ${text} inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md`}>
       <span className="animate-pulse">{icon}</span>
       <span className="capitalize">{estado}</span>
     </span>
@@ -45,7 +45,7 @@ const SkeletonRow = ({ colCount }) => (
 );
 
 const Th = ({ children, icon }) => (
-  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-[#003579] first:rounded-tl-lg last:rounded-tr-lg transition-colors duration-200">
+  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-[#003579] first:rounded-tl-lg last:rounded-tr-lg transition-colors duration-200 hover:bg-[#0056b3]">
     <div className="flex items-center gap-2">
       {icon && <span className="text-sm">{icon}</span>}
       {children}
@@ -129,18 +129,18 @@ function TablaSolicitudes({
   const tomorrowStr = toLocalDateStr(tomorrow);
   
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 transition-all duration-300 hover:shadow-xl">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 transition-all duration-300 hover:shadow-xl hover:border-blue-300">
       <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-[#003579] to-[#0056b3] text-white flex items-center justify-between">
         <h2 className="text-lg font-semibold flex items-center gap-2">
-          <span className="text-xl">📋</span>
+          <span className="text-xl animate-spin-slow">📋</span>
           {titulo}
         </h2>
-        <span className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+        <span className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200">
           {data?.length || 0} registros
         </span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-[#003579] to-[#0056b3]">
             <tr>
@@ -161,7 +161,7 @@ function TablaSolicitudes({
               <tr>
                 <td className="px-6 py-10 text-center text-gray-500" colSpan={colCount}>
                   <div className="flex flex-col items-center gap-2">
-                    <span className="text-4xl opacity-50">📭</span>
+                    <span className="text-4xl opacity-50 animate-bounce">📭</span>
                     <span>No hay solicitudes para mostrar.</span>
                   </div>
                 </td>
@@ -192,7 +192,7 @@ function TablaSolicitudes({
                       <td className="px-6 py-4">
                         <div className="space-y-2">
                           {(s.items || []).map((m) => (
-                            <div key={m.item_id} className="text-sm flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                            <div key={m.item_id} className="text-sm flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 shadow-sm hover:shadow-md">
                               <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm">
                                 {m.cantidad} {getUnidad(m.tipo)}
                               </span>
@@ -206,7 +206,7 @@ function TablaSolicitudes({
                     {columnas.fecha && (
                       <Td>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm">📅</span>
+                          <span className="text-sm animate-pulse">📅</span>
                           <span>
                             {dateStr
                               ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
@@ -214,13 +214,13 @@ function TablaSolicitudes({
                           </span>
                         </div>
                         {isOverdue && (
-                          <div className="text-xs text-red-600 mt-1 p-2 bg-red-100 rounded-lg border-l-4 border-red-500 animate-pulse">
+                          <div className="text-xs text-red-600 mt-1 p-2 bg-red-100 rounded-lg border-l-4 border-red-500 animate-pulse shadow-sm">
                             ⚠️ Ha pasado la fecha.<br />
                             Se eliminará la solicitud dentro de 1 día por falta de recolección
                           </div>
                         )}
                         {showMsg && (
-                          <div className="text-xs text-orange-600 mt-1 p-2 bg-orange-100 rounded-lg border-l-4 border-orange-500">
+                          <div className="text-xs text-orange-600 mt-1 p-2 bg-orange-100 rounded-lg border-l-4 border-orange-500 shadow-sm">
                             🕒 {recoDateStr === tomorrowStr
                               ? 'Entrega para mañana'
                               : 'Entrega para otro día'}
@@ -856,25 +856,25 @@ const descargarPDF = async (vale) => {
     <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 min-h-screen font-sans">
       {/* Nuevo encabezado con lobo */}
       <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-4 bg-white rounded-2xl shadow-lg px-8 py-6 border border-gray-200">
+        <div className="inline-flex items-center gap-4 bg-white rounded-2xl shadow-lg px-8 py-6 border border-gray-200 hover:shadow-2xl transition-shadow duration-300">
           <div className="text-6xl animate-bounce">
             🐺
           </div>
           <div>
-            <h1 className="text-4xl font-bold text-gray-800 tracking-tight">
+            <h1 className="text-4xl font-bold text-gray-800 tracking-tight hover:text-blue-600 transition-colors duration-200">
               Solicitudes de Préstamos
             </h1>
-            <p className="text-gray-600 mt-2">Gestiona tus solicitudes de materiales</p>
+            <p className="text-gray-600 mt-2 hover:text-gray-800 transition-colors duration-200">Gestiona tus solicitudes de materiales</p>
           </div>
         </div>
       </div>
 
       {/* Error con mejor styling */}
       {error && (
-        <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl shadow-md animate-shake">
+        <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl shadow-md animate-shake hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -903,7 +903,7 @@ const descargarPDF = async (vale) => {
       {/* Notice con mejor styling */}
       {usuario?.rol !== 'almacen' && notice && (
         <div className="mb-4 flex justify-end">
-          <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse flex items-center gap-2">
+          <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse hover:shadow-md transition-shadow duration-200 flex items-center gap-2">
             <span>🔔</span>
             {notice}
           </div>
@@ -930,8 +930,8 @@ const descargarPDF = async (vale) => {
       {/* DOCENTE */}
       {usuario?.rol === 'docente' && (
         <>
-          <div className="mb-6 flex items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200">
-            <div className="relative flex rounded-lg overflow-hidden shadow-sm">
+          <div className="mb-6 flex items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+            <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
               <div className="relative">
                 {pendientesDocAlumnos > 0 && (
                   <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
@@ -943,7 +943,7 @@ const descargarPDF = async (vale) => {
                     activeTab === 'alumnos' 
                       ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } border-r border-gray-300`}
+                  } border-r border-gray-300 hover:shadow-inner`}
                   onClick={() => setActiveTab('alumnos')}
                 >
                   <div className="flex items-center gap-2">
@@ -958,7 +958,7 @@ const descargarPDF = async (vale) => {
                     activeTab === 'mias' 
                       ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  } hover:shadow-inner`}
                   onClick={() => setActiveTab('mias')}
                 >
                   <div className="flex items-center gap-2">
@@ -971,14 +971,14 @@ const descargarPDF = async (vale) => {
             
             <div className="flex-1 relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400">🔍</span>
+                <span className="text-gray-400 animate-pulse">🔍</span>
               </div>
               <input
                 type="text"
                 placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
               />
             </div>
           </div>
@@ -1018,8 +1018,8 @@ const descargarPDF = async (vale) => {
       {/* ALMACÉN */}
       {usuario?.rol === 'almacen' && (
         <>
-          <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200">
-            <div className="relative flex rounded-lg overflow-hidden shadow-sm">
+          <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+            <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
               <div className="relative">
                 {pendientesAlmAlumnos > 0 && (
                   <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
@@ -1031,7 +1031,7 @@ const descargarPDF = async (vale) => {
                     activeTab === 'alumnos' 
                       ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } border-r border-gray-300`}
+                  } border-r border-gray-300 hover:shadow-inner`}
                   onClick={() => setActiveTab('alumnos')}
                 >
                   <div className="flex items-center gap-2">
@@ -1051,7 +1051,7 @@ const descargarPDF = async (vale) => {
                     activeTab === 'docentes' 
                       ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  } hover:shadow-inner`}
                   onClick={() => setActiveTab('docentes')}
                 >
                   <div className="flex items-center gap-2">
@@ -1064,18 +1064,18 @@ const descargarPDF = async (vale) => {
             
             <div className="flex-1 relative min-w-[200px]">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400">🔍</span>
+                <span className="text-gray-400 animate-pulse">🔍</span>
               </div>
               <input
                 type="text"
                 placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
               />
             </div>
             
-            <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+            <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 hover:shadow-md transition-shadow duration-200">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <span>📅</span>
                 Filtrar por fecha:
@@ -1095,7 +1095,7 @@ const descargarPDF = async (vale) => {
                     setFilterDate(v);
                   }
                 }}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 hover:shadow-sm"
               />
               {filterDate && (
                 <button
@@ -1110,7 +1110,7 @@ const descargarPDF = async (vale) => {
             
             {notice && (
               <div className="ml-auto">
-                <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse flex items-center gap-2">
+                <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse hover:shadow-md transition-shadow duration-200 flex items-center gap-2">
                   <span>🔔</span>
                   {notice}
                 </div>
@@ -1155,27 +1155,27 @@ const descargarPDF = async (vale) => {
       {/* Modal de entrega con mejor styling */}
       {modalEntrega && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform animate-slideUp border border-gray-200">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform animate-slideUp border border-gray-200 hover:shadow-3xl transition-shadow duration-300">
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl">🚚</span>
+              <span className="text-2xl animate-spin-slow">🚚</span>
               <h3 className="text-xl font-bold text-gray-800">Entregar materiales</h3>
             </div>
             
-            <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
+            <div className="space-y-3 mb-6 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200">
               {modalEntrega.items.map(item => (
-                <label key={item.item_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
+                <label key={item.item_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer shadow-sm hover:shadow-md">
                   <input
                     type="checkbox"
                     checked={selectedItems.includes(item.item_id)}
                     onChange={() => toggleItem(item.item_id)}
-                    className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 hover:scale-110 transition-transform duration-200"
                   />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                      <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow duration-200">
                         {item.cantidad} {getUnidad(item.tipo)}
                       </span>
-                      <span className="font-medium text-gray-800">{item.nombre_material}</span>
+                      <span className="font-medium text-gray-800 hover:text-blue-600 transition-colors duration-200">{item.nombre_material}</span>
                     </div>
                   </div>
                 </label>
@@ -1185,12 +1185,12 @@ const descargarPDF = async (vale) => {
             <div className="flex justify-between mb-6">
               <button 
                 onClick={seleccionarTodos} 
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 flex items-center gap-1"
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 flex items-center gap-1 hover:underline"
               >
                 <span>✅</span>
                 Seleccionar todo
               </button>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
                 {selectedItems.length} de {modalEntrega.items.length} seleccionados
               </span>
             </div>
@@ -1198,14 +1198,14 @@ const descargarPDF = async (vale) => {
             <div className="flex justify-end gap-3">
               <button 
                 onClick={() => setModalEntrega(null)} 
-                className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium"
+                className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
               >
                 Cancelar
               </button>
               <button 
                 onClick={confirmarEntrega} 
                 disabled={selectedItems.length === 0}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105 transform"
               >
                 <span>🚚</span>
                 Entregar ({selectedItems.length})
@@ -1242,6 +1242,11 @@ const descargarPDF = async (vale) => {
           0% { background-position: -200px 0; }
           100% { background-position: calc(200px + 100%) 0; }
         }
+
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
         
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
@@ -1259,6 +1264,14 @@ const descargarPDF = async (vale) => {
           background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
           background-size: 200px 100%;
           animation: shimmer 1.5s infinite;
+        }
+
+        .animate-spin-slow {
+          animation: spin-slow 10s linear infinite;
+        }
+
+        .scrollbar-thin {
+          scrollbar-width: thin;
         }
       `}</style>
     </div>
