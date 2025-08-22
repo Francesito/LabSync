@@ -149,7 +149,11 @@ export default function ReportesPage() {
     doc.save(`${grupo.nombre}_adeudos.pdf`);
   };
 
- if (![3, 4].includes(usuario?.rol_id)) return <p>Acceso denegado</p>;
+ if (![3, 4].includes(usuario?.rol_id)) return (
+    <div className="container py-4 bg-danger text-white rounded text-center">
+      <p className="fs-4"><i className="bi bi-exclamation-triangle me-2"></i>Acceso denegado</p>
+    </div>
+ );
 
   const solicitudesFiltradas = solicitudes.filter((s) => {
     const term = filtro.toLowerCase();
@@ -159,278 +163,304 @@ export default function ReportesPage() {
     );
   });
   
-   return (
-  <div className="container py-4 bg-light rounded shadow-sm">
-    <h1 className="display-5 fw-bold mb-4 text-center text-primary"><i className="bi bi-bar-chart-line me-2"></i>Reportes</h1>
+  return (
+    <div className="container-fluid py-5 bg-gradient">
+      <h1 className="display-4 fw-bold mb-5 text-center text-white animate-slide-in">
+        <i className="bi bi-bar-chart-line-fill me-3"></i>Reportes
+      </h1>
 
-    {/* Secciones separadas, cada una abarcando todo el ancho */}
-    {/* Sección 1: Historial de residuos */}
-    <div className="mb-4">
-      <div className="card p-3 shadow-sm animate-fade-in">
-        <h2 className="card-title h5"><i className="bi bi-trash me-2 text-danger"></i>Historial de Residuos</h2>
-        {historial.length === 0 ? (
-          <p>No hay registros.</p>
-        ) : (
-          <>
-             <table className="table table-sm table-hover">
-              <thead className="table-light">
-                <tr>
-                   <th className="text-start">Nombre</th>
-                  <th className="text-start">Grupo</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-             {historial.slice(0, 5).map((h, idx) => (
-                  <tr key={idx}>
-                    <td className="py-1">{h.nombre}</td>
-                    <td className="py-1">{h.grupo}</td>
-                    <td className="py-1">
-                      <button
-                        onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
-                        className="btn btn-sm btn-outline-primary me-2"
-                      >
-                        <i className="bi bi-file-earmark-arrow-down me-1"></i>CSV
-                      </button>
-                      <button
-                        onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
-                        className="btn btn-sm btn-outline-success"
-                      >
-                        <i className="bi bi-file-earmark-pdf me-1"></i>PDF
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-        {historial.length > 5 && (
-              <button
-                className="btn btn-link p-0 text-decoration-underline"
-                onClick={() => setShowHistorialModal(true)}
-              >
-                Mostrar más
-              </button>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-
-    {/* Sección 2: Grupos con adeudos */}
-    <div className="mb-4">
-      <div className="card p-3 shadow-sm animate-fade-in">
-        <h2 className="card-title h5"><i className="bi bi-people me-2 text-warning"></i>Grupos con adeudos</h2>
-        {grupos.length === 0 ? (
-          <p>No hay grupos.</p>
-        ) : (
-          <>
-            <table className="table table-sm table-hover">
-              <tbody>
-                {grupos.slice(0, 5).map((g, idx) => (
-                  <tr
-                    key={idx}
-                    className="border-top cursor-pointer"
-                    onClick={() => setGrupoDetalle(g)}
+      {/* Primera fila: Historial de Residuos, Grupos con Adeudos, Solicitudes Aprobadas */}
+      <div className="row g-4 mb-5">
+        {/* Historial de Residuos */}
+        <div className="col-md-4">
+          <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-90">
+            <h2 className="card-title h5 mb-3 text-danger">
+              <i className="bi bi-trash-fill me-2"></i>Historial de Residuos
+            </h2>
+            {historial.length === 0 ? (
+              <p className="text-muted">No hay registros.</p>
+            ) : (
+              <>
+                <table className="table table-sm table-hover table-bordered">
+                  <thead className="table-danger">
+                    <tr>
+                      <th className="text-start">Nombre</th>
+                      <th className="text-start">Grupo</th>
+                      <th className="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historial.slice(0, 5).map((h, idx) => (
+                      <tr key={idx} className="animate-row">
+                        <td className="py-2">{h.nombre}</td>
+                        <td className="py-2">{h.grupo}</td>
+                        <td className="py-2 text-center">
+                          <button
+                            onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
+                            className="btn btn-sm btn-outline-primary me-2 animate-button"
+                          >
+                            <i className="bi bi-file-earmark-arrow-down-fill me-1"></i>CSV
+                          </button>
+                          <button
+                            onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
+                            className="btn btn-sm btn-outline-success animate-button"
+                          >
+                            <i className="bi bi-file-earmark-pdf-fill me-1"></i>PDF
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {historial.length > 5 && (
+                  <button
+                    className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                    onClick={() => setShowHistorialModal(true)}
                   >
-                    <td className="py-1">{g.nombre}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {grupos.length > 5 && (
-              <button
-                className="btn btn-link p-0 text-decoration-underline"
-                onClick={() => setShowGruposModal(true)}
-              >
-                Mostrar más
-              </button>
+                    <i className="bi bi-chevron-double-down me-1"></i>Mostrar más
+                  </button>
+                )}
+              </>
             )}
-          </>
-        )}
-      </div>
-    </div>
+          </div>
+        </div>
 
-    {/* Sección 3: Solicitudes aprobadas */}
-    <div className="mb-4">
-      <div className="card p-3 shadow-sm animate-fade-in">
-        <h2 className="card-title h5"><i className="bi bi-check-circle me-2 text-success"></i>Solicitudes Aprobadas</h2>
-        {solicitudes.length === 0 ? (
-          <p>No hay solicitudes.</p>
-        ) : (
-          <>
-           <table className="table table-sm table-hover">
-              <thead className="table-light">
-                <tr>
-                 <th>Materiales</th>
-                  <th>Docente</th>
-                  <th>Grupo</th>
-                  <th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-             {solicitudes.slice(0, 5).map((s) => (
-                  <tr key={s.id}>
-                    <td className="py-1 whitespace-pre-line">
-                      {s.materiales
-                        .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
-                        .join('\n')}
-                    </td>
-                    <td className="py-1">{s.docente}</td>
-                    <td className="py-1">{s.grupo}</td>
-                    <td className="py-1">{s.fecha}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-           {solicitudes.length > 5 && (
-              <button
-                className="btn btn-link p-0 text-decoration-underline"
-                onClick={() => setShowSolicitudesModal(true)}
-              >
-                Mostrar más
-              </button>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-
-    {/* Sección 4: Reactivos líquidos */}
-    <div className="mb-4">
-      <div className="card p-3 shadow-sm animate-fade-in">
-        <h2 className="card-title h5"><i className="bi bi-droplet me-2 text-info"></i>Inventario Reactivos Líquidos</h2>
-        {inventarioLiquidos.datos.length === 0 ? (
-          <p>No hay registros.</p>
-        ) : (
-          <>
-            <table className="table table-sm table-hover">
-              <thead className="table-light">
-                <tr>
-                  <th>Reactivo</th>
-                  <th>Cantidad</th>
-                  {inventarioLiquidos.meses.map((m) => (
-                    <th key={m} className="text-capitalize">
-                      {m}
-                    </th>
-                  ))}
-                  <th>Existencia Final</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inventarioLiquidos.datos.slice(0, 5).map((r, idx) => (
-                  <tr key={idx}>
-                    <td className="py-1 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
-                    {inventarioLiquidos.meses.map((m) => (
-                      <td key={m} className="py-1">
-                        {r.consumos[m] || 0}
-                      </td>
+        {/* Grupos con Adeudos */}
+        <div className="col-md-4">
+          <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-90">
+            <h2 className="card-title h5 mb-3 text-warning">
+              <i className="bi bi-people-fill me-2"></i>Grupos con Adeudos
+            </h2>
+            {grupos.length === 0 ? (
+              <p className="text-muted">No hay grupos.</p>
+            ) : (
+              <>
+                <table className="table table-sm table-hover table-bordered">
+                  <thead className="table-warning">
+                    <tr>
+                      <th className="text-start">Nombre</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {grupos.slice(0, 5).map((g, idx) => (
+                      <tr
+                        key={idx}
+                        className="animate-row cursor-pointer"
+                        onClick={() => setGrupoDetalle(g)}
+                      >
+                        <td className="py-2">{g.nombre}</td>
+                      </tr>
                     ))}
-                    <td className="py-1">{r.existencia_final} {r.unidad}</td>
-                    <td className="py-1">{r.total_consumido} {r.unidad}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {inventarioLiquidos.datos.length > 5 && (
-              <button
-                className="btn btn-link p-0 text-decoration-underline"
-                onClick={() => setShowLiquidosModal(true)}
-              >
-                Mostrar más
-              </button>
+                  </tbody>
+                </table>
+                {grupos.length > 5 && (
+                  <button
+                    className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                    onClick={() => setShowGruposModal(true)}
+                  >
+                    <i className="bi bi-chevron-double-down me-1"></i>Mostrar más
+                  </button>
+                )}
+              </>
             )}
-          </>
-        )}
-      </div>
-    </div>
+          </div>
+        </div>
 
-    {/* Sección 5: Reactivos sólidos */}
-    <div className="mb-4">
-      <div className="card p-3 shadow-sm animate-fade-in">
-        <h2 className="card-title h5"><i className="bi bi-cube me-2 text-secondary"></i>Inventario Reactivos Sólidos</h2>
-        {inventarioSolidos.datos.length === 0 ? (
-          <p>No hay registros.</p>
-        ) : (
-          <>
-            <table className="table table-sm table-hover">
-              <thead className="table-light">
-                <tr>
-                  <th>Reactivo</th>
-                  <th>Cantidad</th>
-                  {inventarioSolidos.meses.map((m) => (
-                    <th key={m} className="text-capitalize">
-                      {m}
-                    </th>
-                  ))}
-                  <th>Existencia Final</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inventarioSolidos.datos.slice(0, 5).map((r, idx) => (
-                  <tr key={idx}>
-                    <td className="py-1 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
-                    {inventarioSolidos.meses.map((m) => (
-                      <td key={m} className="py-1">
-                        {r.consumos[m] || 0}
-                      </td>
+        {/* Solicitudes Aprobadas */}
+        <div className="col-md-4">
+          <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-90">
+            <h2 className="card-title h5 mb-3 text-success">
+              <i className="bi bi-check-circle-fill me-2"></i>Solicitudes Aprobadas
+            </h2>
+            {solicitudes.length === 0 ? (
+              <p className="text-muted">No hay solicitudes.</p>
+            ) : (
+              <>
+                <table className="table table-sm table-hover table-bordered">
+                  <thead className="table-success">
+                    <tr>
+                      <th>Materiales</th>
+                      <th>Docente</th>
+                      <th>Grupo</th>
+                      <th>Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {solicitudes.slice(0, 5).map((s) => (
+                      <tr key={s.id} className="animate-row">
+                        <td className="py-2 whitespace-pre-line">
+                          {s.materiales
+                            .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
+                            .join('\n')}
+                        </td>
+                        <td className="py-2">{s.docente}</td>
+                        <td className="py-2">{s.grupo}</td>
+                        <td className="py-2">{s.fecha}</td>
+                      </tr>
                     ))}
-                    <td className="py-1">{r.existencia_final} {r.unidad}</td>
-                    <td className="py-1">{r.total_consumido} {r.unidad}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {inventarioSolidos.datos.length > 5 && (
-              <button
-                className="btn btn-link p-0 text-decoration-underline"
-                onClick={() => setShowSolidosModal(true)}
-              >
-                Mostrar más
-              </button>
+                  </tbody>
+                </table>
+                {solicitudes.length > 5 && (
+                  <button
+                    className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                    onClick={() => setShowSolicitudesModal(true)}
+                  >
+                    <i className="bi bi-chevron-double-down me-1"></i>Mostrar más
+                  </button>
+                )}
+              </>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
-    </div>
 
-       
+      {/* Segunda fila: Inventario Reactivos Líquidos */}
+      <div className="row mb-5">
+        <div className="col-12">
+          <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-90">
+            <h2 className="card-title h5 mb-3 text-info">
+              <i className="bi bi-droplet-fill me-2"></i>Inventario Reactivos Líquidos
+            </h2>
+            {inventarioLiquidos.datos.length === 0 ? (
+              <p className="text-muted">No hay registros.</p>
+            ) : (
+              <>
+                <table className="table table-sm table-hover table-bordered">
+                  <thead className="table-info">
+                    <tr>
+                      <th>Reactivo</th>
+                      <th>Cantidad</th>
+                      {inventarioLiquidos.meses.map((m) => (
+                        <th key={m} className="text-capitalize">
+                          {m}
+                        </th>
+                      ))}
+                      <th>Existencia Final</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inventarioLiquidos.datos.slice(0, 5).map((r, idx) => (
+                      <tr key={idx} className="animate-row">
+                        <td className="py-2 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
+                        <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
+                        {inventarioLiquidos.meses.map((m) => (
+                          <td key={m} className="py-2">
+                            {r.consumos[m] || 0}
+                          </td>
+                        ))}
+                        <td className="py-2">{r.existencia_final} {r.unidad}</td>
+                        <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {inventarioLiquidos.datos.length > 5 && (
+                  <button
+                    className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                    onClick={() => setShowLiquidosModal(true)}
+                  >
+                    <i className="bi bi-chevron-double-down me-1"></i>Mostrar más
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Tercera fila: Inventario Reactivos Sólidos */}
+      <div className="row mb-5">
+        <div className="col-12">
+          <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-90">
+            <h2 className="card-title h5 mb-3 text-secondary">
+              <i className="bi bi-cube-fill me-2"></i>Inventario Reactivos Sólidos
+            </h2>
+            {inventarioSolidos.datos.length === 0 ? (
+              <p className="text-muted">No hay registros.</p>
+            ) : (
+              <>
+                <table className="table table-sm table-hover table-bordered">
+                  <thead className="table-secondary">
+                    <tr>
+                      <th>Reactivo</th>
+                      <th>Cantidad</th>
+                      {inventarioSolidos.meses.map((m) => (
+                        <th key={m} className="text-capitalize">
+                          {m}
+                        </th>
+                      ))}
+                      <th>Existencia Final</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inventarioSolidos.datos.slice(0, 5).map((r, idx) => (
+                      <tr key={idx} className="animate-row">
+                        <td className="py-2 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
+                        <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
+                        {inventarioSolidos.meses.map((m) => (
+                          <td key={m} className="py-2">
+                            {r.consumos[m] || 0}
+                          </td>
+                        ))}
+                        <td className="py-2">{r.existencia_final} {r.unidad}</td>
+                        <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {inventarioSolidos.datos.length > 5 && (
+                  <button
+                    className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                    onClick={() => setShowSolidosModal(true)}
+                  >
+                    <i className="bi bi-chevron-double-down me-1"></i>Mostrar más
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Modales */}
       {showHistorialModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center animate-fade-in">
-          <div className="bg-white max-h-[80vh] w-full max-w-2xl p-4 overflow-y-auto rounded shadow-lg">
-            <div className="flex justify-between mb-2">
-              <h3 className="font-semibold"><i className="bi bi-trash me-2 text-danger"></i>Historial de Residuos</h3>
-             <button onClick={() => setShowHistorialModal(false)} className="btn btn-secondary btn-sm">Cerrar</button>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
+          <div className="bg-white max-h-[80vh] w-full max-w-2xl p-5 overflow-y-auto rounded-lg shadow-2xl">
+            <div className="flex justify-between mb-3">
+              <h3 className="font-semibold text-lg text-danger">
+                <i className="bi bi-trash-fill me-2"></i>Historial de Residuos
+              </h3>
+              <button onClick={() => setShowHistorialModal(false)} className="btn btn-outline-danger btn-sm animate-button">
+                <i className="bi bi-x-lg"></i> Cerrar
+              </button>
             </div>
-           <table className="table table-sm table-hover">
-              <thead className="table-light">
+            <table className="table table-sm table-hover table-bordered">
+              <thead className="table-danger">
                 <tr>
                   <th>Nombre</th>
                   <th>Grupo</th>
-                  <th></th>
+                  <th className="text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {historial.map((h, idx) => (
-                 <tr key={idx} className="border-top">
-                    <td className="py-1">{h.nombre}</td>
-                    <td className="py-1">{h.grupo}</td>
-                    <td className="py-1">
+                  <tr key={idx} className="animate-row">
+                    <td className="py-2">{h.nombre}</td>
+                    <td className="py-2">{h.grupo}</td>
+                    <td className="py-2 text-center">
                       <button
                         onClick={() => downloadHistorialCSV(h.registros, h.nombre)}
-                       className="btn btn-sm btn-outline-primary me-2"
+                        className="btn btn-sm btn-outline-primary me-2 animate-button"
                       >
-                        <i className="bi bi-file-earmark-arrow-down me-1"></i>CSV
+                        <i className="bi bi-file-earmark-arrow-down-fill me-1"></i>CSV
                       </button>
                       <button
                         onClick={() => downloadHistorialPDF(h.registros, h.nombre)}
-                         className="btn btn-sm btn-outline-success"
+                        className="btn btn-sm btn-outline-success animate-button"
                       >
-                        <i className="bi bi-file-earmark-pdf me-1"></i>PDF
+                        <i className="bi bi-file-earmark-pdf-fill me-1"></i>PDF
                       </button>
                     </td>
                   </tr>
@@ -442,24 +472,33 @@ export default function ReportesPage() {
       )}
 
       {showGruposModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center animate-fade-in">
-          <div className="bg-white max-h-[80vh] w-full max-w-md p-4 overflow-y-auto rounded shadow-lg">
-            <div className="flex justify-between mb-2">
-              <h3 className="font-semibold"><i className="bi bi-people me-2 text-warning"></i>Grupos</h3>
-             <button onClick={() => setShowGruposModal(false)} className="btn btn-secondary btn-sm">Cerrar</button>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
+          <div className="bg-white max-h-[80vh] w-full max-w-md p-5 overflow-y-auto rounded-lg shadow-2xl">
+            <div className="flex justify-between mb-3">
+              <h3 className="font-semibold text-lg text-warning">
+                <i className="bi bi-people-fill me-2"></i>Grupos
+              </h3>
+              <button onClick={() => setShowGruposModal(false)} className="btn btn-outline-danger btn-sm animate-button">
+                <i className="bi bi-x-lg"></i> Cerrar
+              </button>
             </div>
-           <table className="table table-sm table-hover">
+            <table className="table table-sm table-hover table-bordered">
+              <thead className="table-warning">
+                <tr>
+                  <th>Nombre</th>
+                </tr>
+              </thead>
               <tbody>
                 {grupos.map((g, idx) => (
                   <tr
                     key={idx}
-                    className="border-top cursor-pointer"
+                    className="animate-row cursor-pointer"
                     onClick={() => {
                       setGrupoDetalle(g);
                       setShowGruposModal(false);
                     }}
                   >
-                    <td className="py-1">{g.nombre}</td>
+                    <td className="py-2">{g.nombre}</td>
                   </tr>
                 ))}
               </tbody>
@@ -469,48 +508,59 @@ export default function ReportesPage() {
       )}
 
       {grupoDetalle && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center animate-fade-in">
-          <div className="bg-white max-h-[80vh] w-full max-w-md p-4 overflow-y-auto rounded shadow-lg">
-            <div className="flex justify-between mb-2">
-              <h3 className="font-semibold"><i className="bi bi-people me-2 text-warning"></i>{grupoDetalle.nombre}</h3>
-             <button onClick={() => setGrupoDetalle(null)} className="btn btn-secondary btn-sm">Cerrar</button>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
+          <div className="bg-white max-h-[80vh] w-full max-w-md p-5 overflow-y-auto rounded-lg shadow-2xl">
+            <div className="flex justify-between mb-3">
+              <h3 className="font-semibold text-lg text-warning">
+                <i className="bi bi-people-fill me-2"></i>{grupoDetalle.nombre}
+              </h3>
+              <button onClick={() => setGrupoDetalle(null)} className="btn btn-outline-danger btn-sm animate-button">
+                <i className="bi bi-x-lg"></i> Cerrar
+              </button>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-2">
               {grupoDetalle.adeudos.length === 0 ? (
-                <p>Sin adeudos</p>
+                <p className="text-muted">Sin adeudos</p>
               ) : (
                 grupoDetalle.adeudos.map((a, idx) => (
-                  <div key={idx} className="border-b py-1">
+                  <div key={idx} className="border-b py-2 animate-row">
+                    <i className="bi bi-box-seam me-2 text-muted"></i>
                     {`${a.cantidad} ${a.unidad} ${a.material}`}
                   </div>
                 ))
               )}
             </div>
             <button
-               className="btn btn-link p-0 mt-2 text-decoration-underline"
+              className="btn btn-link text-decoration-underline text-primary mt-3 animate-button"
               onClick={() => downloadGrupoPDF(grupoDetalle)}
             >
-              <i className="bi bi-file-earmark-pdf me-1"></i>Descargar PDF
+              <i className="bi bi-file-earmark-pdf-fill me-1"></i>Descargar PDF
             </button>
           </div>
         </div>
       )}
 
       {showSolicitudesModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center animate-fade-in">
-          <div className="bg-white w-full max-w-3xl p-4 max-h-[80vh] overflow-y-auto rounded shadow-lg">
-            <div className="sticky top-0 bg-white pb-2 mb-2 flex items-center justify-between">
-              <h3 className="font-semibold"><i className="bi bi-check-circle me-2 text-success"></i>Solicitudes Aprobadas</h3>
-              <input
-                value={filtro}
-                onChange={(e) => setFiltro(e.target.value)}
-                placeholder="Filtrar grupo o docente"
-              className="form-control form-control-sm mx-2"
-              />
-              <button onClick={() => setShowSolicitudesModal(false)} className="btn btn-secondary btn-sm">Cerrar</button>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
+          <div className="bg-white w-full max-w-4xl p-5 max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl">
+            <div className="sticky top-0 bg-white pb-3 mb-3 flex items-center justify-between">
+              <h3 className="font-semibold text-lg text-success">
+                <i className="bi bi-check-circle-fill me-2"></i>Solicitudes Aprobadas
+              </h3>
+              <div className="d-flex align-items-center">
+                <input
+                  value={filtro}
+                  onChange={(e) => setFiltro(e.target.value)}
+                  placeholder="Filtrar grupo o docente"
+                  className="form-control form-control-sm mx-2 animate-input"
+                />
+                <button onClick={() => setShowSolicitudesModal(false)} className="btn btn-outline-danger btn-sm animate-button">
+                  <i className="bi bi-x-lg"></i> Cerrar
+                </button>
+              </div>
             </div>
-             <table className="table table-sm table-hover">
-              <thead className="table-light">
+            <table className="table table-sm table-hover table-bordered">
+              <thead className="table-success">
                 <tr>
                   <th>Materiales</th>
                   <th>Docente</th>
@@ -520,15 +570,15 @@ export default function ReportesPage() {
               </thead>
               <tbody>
                 {solicitudesFiltradas.map((s) => (
-                  <tr key={s.id} className="border-top">
-                    <td className="py-1 whitespace-pre-line">
+                  <tr key={s.id} className="animate-row">
+                    <td className="py-2 whitespace-pre-line">
                       {s.materiales
                         .map((m) => `${m.cantidad} ${m.unidad} ${m.nombre}`)
                         .join('\n')}
                     </td>
-                    <td className="py-1">{s.docente}</td>
-                    <td className="py-1">{s.grupo}</td>
-                    <td className="py-1">{s.fecha}</td>
+                    <td className="py-2">{s.docente}</td>
+                    <td className="py-2">{s.grupo}</td>
+                    <td className="py-2">{s.fecha}</td>
                   </tr>
                 ))}
               </tbody>
@@ -538,18 +588,22 @@ export default function ReportesPage() {
       )}
 
       {showLiquidosModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center animate-fade-in">
-          <div className="bg-white w-full max-w-4xl p-4 max-h-[80vh] overflow-y-auto rounded shadow-lg">
-            <div className="flex justify-between mb-2">
-              <h3 className="font-semibold"><i className="bi bi-droplet me-2 text-info"></i>Inventario Reactivos Líquidos</h3>
-            <button onClick={() => setShowLiquidosModal(false)} className="btn btn-secondary btn-sm">Cerrar</button>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
+          <div className="bg-white w-full max-w-5xl p-5 max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl">
+            <div className="flex justify-between mb-3">
+              <h3 className="font-semibold text-lg text-info">
+                <i className="bi bi-droplet-fill me-2"></i>Inventario Reactivos Líquidos
+              </h3>
+              <button onClick={() => setShowLiquidosModal(false)} className="btn btn-outline-danger btn-sm animate-button">
+                <i className="bi bi-x-lg"></i> Cerrar
+              </button>
             </div>
-             <table className="table table-sm table-hover">
-              <thead className="table-light">
+            <table className="table table-sm table-hover table-bordered">
+              <thead className="table-info">
                 <tr>
                   <th>Reactivo</th>
                   <th>Cantidad</th>
-                 {inventarioLiquidos.meses.map((m) => (
+                  {inventarioLiquidos.meses.map((m) => (
                     <th key={m} className="capitalize">
                       {m}
                     </th>
@@ -559,17 +613,17 @@ export default function ReportesPage() {
                 </tr>
               </thead>
               <tbody>
-              {inventarioLiquidos.datos.map((r, idx) => (
-                  <tr key={idx} className="border-top">
-                    <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                 <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
+                {inventarioLiquidos.datos.map((r, idx) => (
+                  <tr key={idx} className="animate-row">
+                    <td className="py-2 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
+                    <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
                     {inventarioLiquidos.meses.map((m) => (
-                      <td key={m} className="py-1">
+                      <td key={m} className="py-2">
                         {r.consumos[m] || 0}
                       </td>
                     ))}
-                    <td className="py-1">{r.existencia_final} {r.unidad}</td>
-                    <td className="py-1">{r.total_consumido} {r.unidad}</td>
+                    <td className="py-2">{r.existencia_final} {r.unidad}</td>
+                    <td className="py-2">{r.total_consumido} {r.unidad}</td>
                   </tr>
                 ))}
               </tbody>
@@ -579,17 +633,21 @@ export default function ReportesPage() {
       )}
 
       {showSolidosModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center animate-fade-in">
-          <div className="bg-white w-full max-w-4xl p-4 max-h-[80vh] overflow-y-auto rounded shadow-lg">
-            <div className="flex justify-between mb-2">
-              <h3 className="font-semibold"><i className="bi bi-cube me-2 text-secondary"></i>Inventario Reactivos Sólidos</h3>
-                <button onClick={() => setShowSolidosModal(false)} className="btn btn-secondary btn-sm">Cerrar</button>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
+          <div className="bg-white w-full max-w-5xl p-5 max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl">
+            <div className="flex justify-between mb-3">
+              <h3 className="font-semibold text-lg text-secondary">
+                <i className="bi bi-cube-fill me-2"></i>Inventario Reactivos Sólidos
+              </h3>
+              <button onClick={() => setShowSolidosModal(false)} className="btn btn-outline-danger btn-sm animate-button">
+                <i className="bi bi-x-lg"></i> Cerrar
+              </button>
             </div>
-            <table className="table table-sm table-hover">
-              <thead className="table-light">
+            <table className="table table-sm table-hover table-bordered">
+              <thead className="table-secondary">
                 <tr>
                   <th>Reactivo</th>
-                    <th>Cantidad</th>
+                  <th>Cantidad</th>
                   {inventarioSolidos.meses.map((m) => (
                     <th key={m} className="capitalize">
                       {m}
@@ -600,17 +658,17 @@ export default function ReportesPage() {
                 </tr>
               </thead>
               <tbody>
-                 {inventarioSolidos.datos.map((r, idx) => (
-                <tr key={idx} className="border-top">
-                    <td className="py-1 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
-                    <td className="py-1">{r.cantidad_inicial} {r.unidad}</td>
+                {inventarioSolidos.datos.map((r, idx) => (
+                  <tr key={idx} className="animate-row">
+                    <td className="py-2 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
+                    <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
                     {inventarioSolidos.meses.map((m) => (
-                      <td key={m} className="py-1">
+                      <td key={m} className="py-2">
                         {r.consumos[m] || 0}
                       </td>
                     ))}
-                    <td className="py-1">{r.existencia_final} {r.unidad}</td>
-                    <td className="py-1">{r.total_consumido} {r.unidad}</td>
+                    <td className="py-2">{r.existencia_final} {r.unidad}</td>
+                    <td className="py-2">{r.total_consumido} {r.unidad}</td>
                   </tr>
                 ))}
               </tbody>
@@ -619,28 +677,88 @@ export default function ReportesPage() {
         </div>
       )}
 
-    <style jsx global>{`
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-in-out;
-      }
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-      .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
-      .table-hover tbody tr:hover {
-        background-color: #f8f9fa;
-      }
-      .cursor-pointer {
-        cursor: pointer;
-      }
-    `}</style>
-  </div>
-);
+      <style jsx global>{`
+        body {
+          background: linear-gradient(to bottom, #1e3a8a, #3b82f6);
+          background-attachment: fixed;
+          min-height: 100vh;
+          color: #333;
+        }
+        .bg-gradient {
+          background: transparent;
+        }
+        .card {
+          border-radius: 10px;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          backdrop-filter: blur(5px);
+        }
+        .card:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+        }
+        .animate-card {
+          animation: slideIn 0.5s ease-in-out;
+        }
+        .animate-row {
+          animation: fadeIn 0.5s ease-in-out;
+        }
+        .animate-slide-in {
+          animation: slideIn 0.5s ease-in-out;
+        }
+        .animate-button {
+          transition: all 0.3s ease;
+        }
+        .animate-button:hover {
+          transform: scale(1.05);
+        }
+        .animate-input {
+          transition: all 0.3s ease;
+        }
+        .animate-input:focus {
+          box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+          border-color: #3b82f6;
+        }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .table {
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .table th, .table td {
+          vertical-align: middle;
+        }
+        .table-hover tbody tr:hover {
+          background-color: rgba(59, 130, 246, 0.1);
+        }
+        .cursor-pointer {
+          cursor: pointer;
+        }
+        .btn-outline-primary, .btn-outline-success, .btn-outline-danger {
+          transition: all 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+          background-color: #3b82f6;
+          color: white;
+        }
+        .btn-outline-success:hover {
+          background-color: #22c55e;
+          color: white;
+        }
+        .btn-outline-danger:hover {
+          background-color: #ef4444;
+          color: white;
+        }
+        .form-control {
+          border-radius: 5px;
+          border: 1px solid #ced4da;
+        }
+      `}</style>
+    </div>
+  );
 }
