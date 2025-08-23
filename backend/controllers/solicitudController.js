@@ -798,46 +798,6 @@ const ajustarCantidadSolicitud = async (req, res) => {
   }
 };
 
-const marcarMaterialDanado = async (req, res) => {
-  const { id } = req.params;
-  const { item_id, cantidad_danada, descripcion } = req.body;
-
-  const connection = await pool.getConnection();
-  
-  try {
-    await connection.beginTransaction();
-
-    // Obtener información del item
-    const [itemInfo] = await connection.query(
-      'SELECT si.*, s.usuario_id FROM SolicitudItem si JOIN Solicitud s ON si.solicitud_id = s.id WHERE si.id = ? AND s.id = ?',
-      [item_id, id]
-    );
-
-    if (itemInfo.length === 0) {
-      await connection.rollback();
-      return res.status(404).json({ error: 'Item no encontrado' });
-    }
-
-    const { material_id, tipo, usuario_id } = itemInfo[0];
-
-    // Crear adeudo por material dañado
-    await connection.query(
-      'INSERT INTO Adeudo (solicitud_id, solicitud_item_id, usuario_id, material_id, tipo, cantidad_pendiente) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, item_id, usuario_id, material_id, tipo, cantidad_danada]
-    );
-
-    await connection.commit();
-    res.json({ mensaje: 'Material marcado como dañado y adeudo creado' });
-
-  } catch (error) {
-    await connection.rollback();
-    console.error('Error al marcar material como dañado:', error);
-    res.status(500).json({ error: 'Error al procesar material dañado' });
-  } finally {
-    connection.release();
-  }
-};
-
 const procesarDevolucionParcial = async (req, res) => {
   const { id } = req.params;
   const { item_id, cantidad_devuelta } = req.body;
@@ -1037,66 +997,6 @@ const obtenerEstadisticasCompletas = async (req, res) => {
   }
 };
 
-const obtenerReporteEficienciaUsuarios = async (req, res) => {
-  try {
-    const [rows] = await pool.query(`
-      SELECT 
-        u.id,
-        u.nombre,
-        u.correo_institucional,
-        COUNT(s.id) as total_solicitudes,
-        SUM(CASE WHEN s.estado = 'aprobada' THEN 1 ELSE 0 END) as aprobadas,
-        SUM(CASE WHEN s.estado = 'rechazada' THEN 1 ELSE 0 END) as rechazadas,
-        SUM(CASE WHEN s.estado = 'entregado' THEN 1 ELSE 0 END) as entregadas,
-        SUM(CASE WHEN s.estado = 'cancelado' THEN 1 ELSE 0 END) as canceladas,
-        ROUND(
-          (SUM(CASE WHEN s.estado = 'entregado' THEN 1 ELSE 0 END) / COUNT(s.id)) * 100, 2
-        ) as porcentaje_exitosas
-      FROM Usuario u
-      LEFT JOIN Solicitud s ON u.id = s.usuario_id
-      WHERE u.rol_id = 1
-      GROUP BY u.id, u.nombre, u.correo_institucional
-      HAVING COUNT(s.id) > 0
-      ORDER BY porcentaje_exitosas DESC
-    `);
-
-    res.json(rows);
-  } catch (error) {
-    console.error('Error al obtener reporte de eficiencia:', error);
-    res.status(500).json({ error: 'Error al obtener reporte de eficiencia' });
-  }
-};
-
-const obtenerReporteMaterialesPopulares = async (req, res) => {
-  try {
-    const [rows] = await pool.query(`
-      SELECT 
-        si.tipo,
-        si.material_id,
-        CASE 
-          WHEN si.tipo = 'liquido' THEN ml.nombre
-          WHEN si.tipo = 'solido' THEN ms.nombre
-          WHEN si.tipo = 'equipo' THEN me.nombre
-        END AS nombre_material,
-        COUNT(*) as veces_solicitado,
-        SUM(si.cantidad) as cantidad_total_solicitada
-      FROM SolicitudItem si
-      JOIN Solicitud s ON si.solicitud_id = s.id
-      LEFT JOIN MaterialLiquido ml ON si.material_id = ml.id AND si.tipo = 'liquido'
-      LEFT JOIN MaterialSolido ms ON si.material_id = ms.id AND si.tipo = 'solido'
-      LEFT JOIN MaterialEquipo me ON si.material_id = me.id AND si.tipo = 'equipo'
-      WHERE s.estado IN ('aprobada', 'entregado')
-      GROUP BY si.tipo, si.material_id
-      ORDER BY veces_solicitado DESC
-      LIMIT 20
-    `);
-
-    res.json(rows);
-  } catch (error) {
-    console.error('Error al obtener materiales populares:', error);
-    res.status(500).json({ error: 'Error al obtener reporte de materiales' });
-  }
-};
 
 const eliminarSolicitud = async (req, res) => {
   const { id } = req.params;
