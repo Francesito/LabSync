@@ -350,15 +350,6 @@ router.get(
   materialController.getUsuariosConPermisos
 );
 
-// Reporte de materiales más solicitados (docentes y admin)
-router.get(
-  '/reportes/mas-solicitados',
-  verificarToken,
-  verificarRol([2, 4]),
-  materialController.getReporteMasSolicitados
-);
-
-
 // Obtener estado del sistema de materiales (admin)
 router.get(
   '/estado-sistema',
