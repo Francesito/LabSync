@@ -1976,8 +1976,6 @@ crearSolicitud,
 
   // Funciones administrativas
   obtenerEstadisticasCompletas,
-  obtenerReporteEficienciaUsuarios,
-  obtenerReporteMaterialesPopulares,
   eliminarSolicitud,
   restaurarSolicitud,
 
