@@ -1301,55 +1301,6 @@ const obtenerReporteDevolucionesPendientes = async (req, res) => {
   }
 };
 
-const obtenerReporteEstadoGeneral = async (req, res) => {
-  try {
-    const [resumen] = await pool.query(`
-      SELECT 
-        COUNT(*) as total_solicitudes,
-        SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) as pendientes,
-        SUM(CASE WHEN estado = 'aprobada' THEN 1 ELSE 0 END) as aprobadas,
-        SUM(CASE WHEN estado = 'entregado' THEN 1 ELSE 0 END) as entregadas,
-        SUM(CASE WHEN estado = 'rechazada' THEN 1 ELSE 0 END) as rechazadas,
-        SUM(CASE WHEN estado = 'cancelado' THEN 1 ELSE 0 END) as canceladas
-      FROM Solicitud
-    `);
-
-    const [adeudos] = await pool.query(`
-      SELECT COUNT(*) as total_adeudos
-      FROM Adeudo
-    `);
-
-    const [materialesPopulares] = await pool.query(`
-      SELECT 
-        si.tipo,
-        CASE 
-          WHEN si.tipo = 'liquido' THEN ml.nombre
-          WHEN si.tipo = 'solido' THEN ms.nombre
-          WHEN si.tipo = 'equipo' THEN me.nombre
-        END AS nombre_material,
-        COUNT(*) as veces_solicitado
-      FROM SolicitudItem si
-      LEFT JOIN MaterialLiquido ml ON si.material_id = ml.id AND si.tipo = 'liquido'
-      LEFT JOIN MaterialSolido ms ON si.material_id = ms.id AND si.tipo = 'solido'
-      LEFT JOIN MaterialEquipo me ON si.material_id = me.id AND si.tipo = 'equipo'
-      GROUP BY si.tipo, si.material_id
-      ORDER BY veces_solicitado DESC
-      LIMIT 5
-    `);
-
-    res.json({
-      resumen: resumen[0],
-      adeudos: adeudos[0],
-      materiales_populares: materialesPopulares
-    });
-
-  } catch (error) {
-    console.error('Error al obtener estado general:', error);
-    res.status(500).json({ error: 'Error al obtener reporte' });
-  }
-};
-
-
 const marcarSolicitudVista = async (req, res) => {
   const { id } = req.params;
 
@@ -1989,7 +1940,6 @@ crearSolicitud,
   obtenerReportePorFecha,
   obtenerReporteEntregasPendientes,
   obtenerReporteDevolucionesPendientes,
-  obtenerReporteEstadoGeneral,
 
   // Funciones de notificaciones y alertas
   marcarSolicitudVista,
