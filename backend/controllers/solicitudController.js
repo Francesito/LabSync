@@ -1149,33 +1149,6 @@ const restaurarSolicitud = async (req, res) => {
   }
 };
 
-const transferirSolicitud = async (req, res) => {
-  const { id } = req.params;
-  const { nuevo_usuario_id } = req.body;
-
-  try {
-    // Verificar que el nuevo usuario existe
-    const [usuario] = await pool.query(
-      'SELECT id, nombre FROM Usuario WHERE id = ?',
-      [nuevo_usuario_id]
-    );
-
-    if (usuario.length === 0) {
-      return res.status(404).json({ error: 'Usuario destino no encontrado' });
-    }
-
-    await pool.query(
-      'UPDATE Solicitud SET usuario_id = ?, nombre_alumno = ? WHERE id = ?',
-      [nuevo_usuario_id, usuario[0].nombre, id]
-    );
-
-    res.json({ mensaje: 'Solicitud transferida correctamente' });
-  } catch (error) {
-    console.error('Error al transferir solicitud:', error);
-    res.status(500).json({ error: 'Error al transferir solicitud' });
-  }
-};
-
 // ========================================
 // FUNCIONES DE MANTENIMIENTO
 // ========================================
@@ -1476,59 +1449,6 @@ const obtenerReporteEstadoGeneral = async (req, res) => {
   }
 };
 
-// ========================================
-// FUNCIONES DE NOTIFICACIONES Y ALERTAS
-// ========================================
-
-const obtenerSolicitudesAtencionRequerida = async (req, res) => {
-  const { rol_id } = req.usuario;
-
-  try {
-    let alertas = [];
-
-    // Alertas para docentes
-    if ([2, 4].includes(rol_id)) {
-      const [pendientesAprobacion] = await pool.query(`
-        SELECT COUNT(*) as cantidad
-        FROM Solicitud 
-        WHERE estado = 'pendiente' AND fecha_solicitud < DATE_SUB(NOW(), INTERVAL 2 DAY)
-      `);
-      
-      if (pendientesAprobacion[0].cantidad > 0) {
-        alertas.push({
-          tipo: 'solicitudes_pendientes_viejas',
-          mensaje: `${pendientesAprobacion[0].cantidad} solicitudes pendientes por más de 2 días`,
-          cantidad: pendientesAprobacion[0].cantidad
-        });
-      }
-    }
-
-    // Alertas para almacenistas
-    if ([3, 4].includes(rol_id)) {
-      const [devolucionesPendientes] = await pool.query(`
-        SELECT COUNT(DISTINCT s.id) as cantidad
-        FROM Solicitud s
-        JOIN SolicitudItem si ON s.id = si.solicitud_id
-        WHERE s.estado = 'entregado' 
-        AND si.cantidad > si.cantidad_devuelta
-        AND s.fecha_solicitud < DATE_SUB(NOW(), INTERVAL 7 DAY)
-      `);
-
-      if (devolucionesPendientes[0].cantidad > 0) {
-        alertas.push({
-          tipo: 'devoluciones_pendientes_viejas',
-          mensaje: `${devolucionesPendientes[0].cantidad} solicitudes con devoluciones pendientes por más de 7 días`,
-          cantidad: devolucionesPendientes[0].cantidad
-        });
-      }
-    }
-
-    res.json(alertas);
-  } catch (error) {
-    console.error('Error al obtener alertas:', error);
-    res.status(500).json({ error: 'Error al obtener alertas' });
-  }
-};
 
 const marcarSolicitudVista = async (req, res) => {
   const { id } = req.params;
@@ -2161,7 +2081,6 @@ crearSolicitud,
   obtenerReporteMaterialesPopulares,
   eliminarSolicitud,
   restaurarSolicitud,
-  transferirSolicitud,
 
   // Funciones de mantenimiento
   limpiarSolicitudesCanceladas,
@@ -2176,7 +2095,6 @@ crearSolicitud,
   obtenerReporteEstadoGeneral,
 
   // Funciones de notificaciones y alertas
-  obtenerSolicitudesAtencionRequerida,
   marcarSolicitudVista,
   obtenerNotificacionesPendientes,
     informarPrestamoVencido,
