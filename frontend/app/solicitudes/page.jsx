@@ -96,6 +96,16 @@ function toLocalDateStr(date) {
     .split('T')[0];
 }
 
+function formatFechaStr(fecha) {
+  if (!fecha) return '';
+  try {
+    const [year, month, day] = fecha.split('T')[0].split('-');
+    return `${day}/${month}/${year}`;
+  } catch (e) {
+    return '';
+  }
+}
+
 /** Tabla genérica configurable por columnas */
 function TablaSolicitudes({
   titulo,
@@ -759,9 +769,7 @@ const descargarPDF = async (vale) => {
     // Tabla de información principal
     const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
     const grupo = vale.isDocenteRequest ? 'No aplica' : (vale.grupo || '');
-    const fechaReco = vale.fecha_recoleccion
-      ? new Date(vale.fecha_recoleccion).toLocaleDateString('es-MX')
-      : '';
+   const fechaReco = formatFechaStr(vale.fecha_recoleccion);
 
     autoTable(doc, {
       startY: lineY + 5,
@@ -814,10 +822,7 @@ const descargarPDF = async (vale) => {
 
     // Sección inferior
     const afterTableY = doc.lastAutoTable.finalY + 4;
-    const fechaDev = vale.fecha_devolucion || vale.fecha_recoleccion;
-    const fechaDevolucion = fechaDev
-      ? new Date(fechaDev).toLocaleDateString('es-MX')
-      : '';
+   const fechaDevolucion = formatFechaStr(vale.fecha_devolucion);
     const profesor = vale.profesor || '';
 
     doc.setFontSize(10);
