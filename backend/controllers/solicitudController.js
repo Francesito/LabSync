@@ -1967,7 +1967,6 @@ crearSolicitud,
   recibirDevolucion,
   cancelarSolicitudAlmacen,
   ajustarCantidadSolicitud,
-  marcarMaterialDanado,
   procesarDevolucionParcial,
 
   // Funciones generales
