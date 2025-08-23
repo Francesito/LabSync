@@ -19,11 +19,8 @@ export default function Historial() {
   const formatearFecha = (fecha) => {
     if (!fecha) return '-';
     try {
-      return new Date(fecha).toLocaleDateString('es-MX', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      });
+    const [year, month, day] = fecha.split('T')[0].split('-');
+      return `${day}/${month}/${year}`;
     } catch (e) {
       return '-';
     }
