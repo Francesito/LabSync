@@ -157,13 +157,6 @@ router.put(
   solicitudController.ajustarCantidadSolicitud
 );
 
-// Marcar material como dañado/perdido (requiere permisos de stock)
-router.put(
-  '/marcar-danado/:id',
-  verificarToken,
-  verificarAccesoStock, // Verificar permisos de stock
-  solicitudController.marcarMaterialDanado
-);
 
 // Procesar devolución parcial (requiere permisos de stock)
 router.put(
