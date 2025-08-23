@@ -207,44 +207,12 @@ router.get(
   solicitudController.obtenerEstadisticasCompletas
 );
 
-// Obtener reporte de eficiencia por usuario
-router.get(
-  '/reportes/eficiencia-usuarios',
-  verificarToken,
-  requireAdmin,
-  solicitudController.obtenerReporteEficienciaUsuarios
-);
-
-// Obtener reporte de materiales más solicitados
-router.get(
-  '/reportes/materiales-populares',
-  verificarToken,
-  requireAdmin,
-  solicitudController.obtenerReporteMaterialesPopulares
-);
-
 // Eliminar solicitud (solo admin - para casos excepcionales)
 router.delete(
   '/eliminar/:id',
   verificarToken,
   requireAdmin,
   solicitudController.eliminarSolicitud
-);
-
-// Restaurar solicitud eliminada (solo admin)
-router.put(
-  '/restaurar/:id',
-  verificarToken,
-  requireAdmin,
-  solicitudController.restaurarSolicitud
-);
-
-// Transferir solicitud a otro usuario (solo admin)
-router.put(
-  '/transferir/:id',
-  verificarToken,
-  requireAdmin,
-  solicitudController.transferirSolicitud
 );
 
 /**
@@ -275,14 +243,6 @@ router.get(
   verificarToken,
   requireAdmin,
   solicitudController.validarIntegridadSolicitudes
-);
-
-// Reparar solicitudes inconsistentes (solo admin)
-router.post(
-  '/reparar-inconsistencias',
-  verificarToken,
-  requireAdmin,
-  solicitudController.repararSolicitudesInconsistentes
 );
 
 /**
@@ -327,27 +287,6 @@ router.get(
   verificarToken,
   verificarRol([4]),
   solicitudController.obtenerHistorialSolicitudes
-);
-
-// Reportes generales
-router.get(
-  '/reportes/estado-general',
-  verificarToken,
-  verificarRol([2, 3, 4]),
-  solicitudController.obtenerReporteEstadoGeneral
-);
-
-/**
- * ========================================
- * RUTAS DE NOTIFICACIONES Y ALERTAS
- * ========================================
- */
-
-// Obtener solicitudes que requieren atención
-router.get(
-  '/alertas/atencion-requerida',
-  verificarToken,
-  solicitudController.obtenerSolicitudesAtencionRequerida
 );
 
 // Marcar solicitud como vista
