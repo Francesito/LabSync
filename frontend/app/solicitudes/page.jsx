@@ -695,9 +695,9 @@ export default function SolicitudesPage() {
 const descargarPDF = async (vale) => {
   try {
     const doc = new jsPDF({
-      orientation: 'landscape',
+     orientation: 'portrait',
       unit: 'mm',
-      format: [297, 167] // 16:9
+    format: 'a4'
     });
 
     const toBase64 = async (url) => {
@@ -745,8 +745,10 @@ const descargarPDF = async (vale) => {
       headerWidth = maxHeaderHeight * originalRatio;
     }
 
-    // Reducir la imagen a la mitad del tamaño calculado
-    headerHeight /= 2;
+    // Escalamos la imagen para evitar distorsiones
+    const scale = 0.5;
+    headerWidth *= scale;
+    headerHeight *= scale;
     
     // Centramos la imagen horizontalmente
     const imageX = (pageWidth - headerWidth) / 2;
@@ -945,10 +947,10 @@ const descargarPDF = async (vale) => {
                 )}
                 <button
                   className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
-                    activeTab === 'alumnos' 
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
+                    activeTab === 'alumnos'
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } border-r border-gray-300 hover:shadow-inner`}
+                   } hover:shadow-inner`}
                   onClick={() => setActiveTab('alumnos')}
                 >
                   <div className="flex items-center gap-2 justify-center">
