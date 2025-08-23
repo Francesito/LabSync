@@ -31,6 +31,10 @@ export default function ReportesPage() {
   const [inventarioSolidos, setInventarioSolidos] = useState({ meses: [], datos: [] });
   const [showSolidosModal, setShowSolidosModal] = useState(false);
 
+  const [searchHistorial, setSearchHistorial] = useState('');
+  const [searchLiquidos, setSearchLiquidos] = useState('');
+  const [searchSolidos, setSearchSolidos] = useState('');
+
   useEffect(() => {
     obtenerResiduos()
       .then((data) => {
@@ -122,6 +126,18 @@ export default function ReportesPage() {
     doc.save(`${nombre}_residuos.pdf`);
   };
 
+    const filteredHistorial = historial.filter((h) =>
+    `${h.nombre} ${h.grupo}`.toLowerCase().includes(searchHistorial.toLowerCase())
+  );
+
+  const filteredLiquidos = inventarioLiquidos.datos.filter((r) =>
+    r.nombre.toLowerCase().includes(searchLiquidos.toLowerCase())
+  );
+
+  const filteredSolidos = inventarioSolidos.datos.filter((r) =>
+    r.nombre.toLowerCase().includes(searchSolidos.toLowerCase())
+  );
+  
   if (![3, 4].includes(usuario?.rol_id)) return (
     <div className="container py-4 bg-danger text-white rounded text-center">
       <p className="fs-4"><i className="bi bi-exclamation-triangle me-2"></i>Acceso denegado</p>
@@ -139,10 +155,20 @@ export default function ReportesPage() {
         {/* Historial de Residuos */}
         <div className="col-md-4 col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
-            <h2 className="card-title h5 mb-3 text-primary">
-              <i className="bi bi-trash-fill me-2 text-primary"></i>Historial de Residuos
-            </h2>
-            {historial.length === 0 ? (
+          <div className="d-flex align-items-center mb-3">
+              <h2 className="card-title h5 mb-0 text-primary">
+                <i className="bi bi-trash-fill me-2 text-primary"></i>Historial de Residuos
+              </h2>
+              <input
+                type="text"
+                className="form-control form-control-sm ms-auto"
+                placeholder="Grupo, Nombre..."
+                value={searchHistorial}
+                onChange={(e) => setSearchHistorial(e.target.value)}
+                style={{ maxWidth: '200px' }}
+              />
+            </div>
+            {filteredHistorial.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
             ) : (
               <>
@@ -156,7 +182,7 @@ export default function ReportesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {historial.slice(0, 5).map((h, idx) => (
+                     {filteredHistorial.slice(0, 5).map((h, idx) => (
                         <tr key={idx} className="animate-row">
                           <td className="py-2 align-top text-truncate">{h.nombre}</td>
                           <td className="py-2 align-top text-truncate">{h.grupo}</td>
@@ -181,7 +207,7 @@ export default function ReportesPage() {
                     </tbody>
                   </table>
                 </div>
-                {historial.length > 5 && (
+              {filteredHistorial.length > 5 && (
                   <button
                     className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
                     onClick={() => setShowHistorialModal(true)}
@@ -295,10 +321,20 @@ export default function ReportesPage() {
       <div className="row mb-5">
         <div className="col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95">
-            <h2 className="card-title h5 mb-3 text-info">
-              <i className="bi bi-droplet-fill me-2 text-info"></i>Inventario Reactivos Líquidos
-            </h2>
-            {inventarioLiquidos.datos.length === 0 ? (
+           <div className="d-flex align-items-center mb-3">
+              <h2 className="card-title h5 mb-0 text-info">
+                <i className="bi bi-droplet-fill me-2 text-info"></i>Inventario Reactivos Líquidos
+              </h2>
+              <input
+                type="text"
+                className="form-control form-control-sm ms-auto"
+                placeholder="Reactivo..."
+                value={searchLiquidos}
+                onChange={(e) => setSearchLiquidos(e.target.value)}
+                style={{ maxWidth: '200px' }}
+              />
+            </div>
+            {filteredLiquidos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
             ) : (
               <>
@@ -318,7 +354,7 @@ export default function ReportesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {inventarioLiquidos.datos.slice(0, 5).map((r, idx) => (
+                     {filteredLiquidos.slice(0, 5).map((r, idx) => (
                         <tr key={idx} className="animate-row">
                           <td className="py-2 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                           <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
@@ -334,7 +370,7 @@ export default function ReportesPage() {
                     </tbody>
                   </table>
                 </div>
-                {inventarioLiquidos.datos.length > 5 && (
+               {filteredLiquidos.length > 5 && (
                   <button
                     className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
                     onClick={() => setShowLiquidosModal(true)}
@@ -352,10 +388,20 @@ export default function ReportesPage() {
       <div className="row mb-5">
         <div className="col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95">
-            <h2 className="card-title h5 mb-3 text-purple">
-              <i className="bi bi-cube-fill me-2 text-purple"></i>Inventario Reactivos Sólidos
-            </h2>
-            {inventarioSolidos.datos.length === 0 ? (
+          <div className="d-flex align-items-center mb-3">
+              <h2 className="card-title h5 mb-0 text-purple">
+                <i className="bi bi-cube-fill me-2 text-purple"></i>Inventario Reactivos Sólidos
+              </h2>
+              <input
+                type="text"
+                className="form-control form-control-sm ms-auto"
+                placeholder="Reactivo..."
+                value={searchSolidos}
+                onChange={(e) => setSearchSolidos(e.target.value)}
+                style={{ maxWidth: '200px' }}
+              />
+            </div>
+            {filteredSolidos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
             ) : (
               <>
@@ -375,7 +421,7 @@ export default function ReportesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {inventarioSolidos.datos.slice(0, 5).map((r, idx) => (
+                       {filteredSolidos.slice(0, 5).map((r, idx) => (
                         <tr key={idx} className="animate-row">
                           <td className="py-2 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                           <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
@@ -391,7 +437,7 @@ export default function ReportesPage() {
                     </tbody>
                   </table>
                 </div>
-                {inventarioSolidos.datos.length > 5 && (
+                {filteredSolidos.length > 5 && (
                   <button
                     className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
                     onClick={() => setShowSolidosModal(true)}
@@ -427,7 +473,7 @@ export default function ReportesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {historial.map((h, idx) => (
+                 {filteredHistorial.map((h, idx) => (
                     <tr key={idx} className="animate-row">
                       <td className="py-2 align-top text-truncate">{h.nombre}</td>
                       <td className="py-2 align-top text-truncate">{h.grupo}</td>
@@ -560,7 +606,7 @@ export default function ReportesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {inventarioLiquidos.datos.map((r, idx) => (
+                   {filteredLiquidos.map((r, idx) => (
                     <tr key={idx} className="animate-row">
                       <td className="py-2 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                       <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
@@ -607,7 +653,7 @@ export default function ReportesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {inventarioSolidos.datos.map((r, idx) => (
+                 {filteredSolidos.map((r, idx) => (
                     <tr key={idx} className="animate-row">
                       <td className="py-2 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                       <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
