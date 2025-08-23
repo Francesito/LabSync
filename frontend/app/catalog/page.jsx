@@ -94,9 +94,9 @@ export default function Catalog() {
     if (day === 6) {
       d.setDate(d.getDate() + 2); // sábado -> lunes
     } else if (day === 0) {
-      d.setDate(d.getDate() + (hour >= 19 ? 2 : 1)); // domingo
+      d.setDate(d.getDate() + (hour >= 21 ? 2 : 1)); // domingo
     } else {
-      d.setDate(d.getDate() + (hour >= 19 ? 2 : 1)); // lunes-viernes
+      d.setDate(d.getDate() + (hour >= 21 ? 2 : 1)); // lunes-viernes
       if (d.getDay() === 6) d.setDate(d.getDate() + 2); // cae en sábado
       if (d.getDay() === 0) d.setDate(d.getDate() + 1); // cae en domingo
     }
