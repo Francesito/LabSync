@@ -2315,34 +2315,6 @@ const getEstadoSistema = async (req, res) => {
   }
 };
 
-const getReporteMasSolicitados = async (req, res) => {
-  logRequest('getReporteMasSolicitados');
-  try {
-    const [reporte] = await pool.query(`
-      SELECT 
-        si.tipo,
-        COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) as nombre_material,
-        COUNT(*) as total_solicitudes,
-        SUM(si.cantidad) as cantidad_total
-      FROM SolicitudItem si
-      JOIN Solicitud s ON si.solicitud_id = s.id
-      LEFT JOIN MaterialLiquido ml ON si.tipo = 'liquido' AND si.material_id = ml.id
-      LEFT JOIN MaterialSolido ms ON si.tipo = 'solido' AND si.material_id = ms.id
-      LEFT JOIN MaterialEquipo me ON si.tipo = 'equipo' AND si.material_id = me.id
-      LEFT JOIN MaterialLaboratorio mlab ON si.tipo = 'laboratorio' AND si.material_id = mlab.id
-      WHERE s.fecha_solicitud >= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
-      GROUP BY si.tipo, si.material_id
-      ORDER BY total_solicitudes DESC
-      LIMIT 20
-    `);
-
-    res.json(reporte);
-  } catch (error) {
-    console.error('[Error] getReporteMasSolicitados:', error);
-    res.status(500).json({ error: 'Error al generar reporte: ' + error.message });
-  }
-};
-
 
 const verifyImage = async (req, res) => {
   logRequest('verifyImage');
@@ -2665,7 +2637,6 @@ module.exports = {
   getEstadisticas,
   getHistorialMovimientos,
   getHistorialSolicitudes,
-  getReporteMasSolicitados,
   obtenerDocentesParaSolicitud,
   
   // Usuarios y permisos
