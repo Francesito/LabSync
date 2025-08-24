@@ -1475,109 +1475,6 @@ const obtenerSolicitudesPorRangoFechas = async (req, res) => {
  }
 };
 
-const crearSolicitud = async (req, res) => {
-  const {
-    materiales,
-    motivo,
-    fecha_solicitud,
-    aprobar_automatico,
-    docente_id,
-    profesor
-  } = req.body;
-  const token = req.headers.authorization?.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ error: 'Token requerido' });
-  }
-
-  try {
-    const { id: usuario_id, rol_id, nombre } = req.usuario;
-
-    if (![1, 2].includes(rol_id)) {
-      return res.status(403).json({ error: 'Solo alumnos o docentes pueden crear solicitudes' });
-    }
-
-    if (!Array.isArray(materiales) || materiales.length === 0) {
-      return res.status(400).json({ error: 'Se requiere al menos un material' });
-    }
-
-    if (rol_id === 1) {
-      const [adeudos] = await pool.query(
-        'SELECT * FROM Adeudo WHERE usuario_id = ? AND pagado = FALSE',
-        [usuario_id]
-      );
-
-      if (adeudos.length > 0) {
-        return res.status(400).json({ error: 'Usuario con adeudos pendientes' });
-      }
-    }
-
-    const estado = (rol_id === 2 || aprobar_automatico) ? 'aprobada' : 'pendiente';
-
-    const [result] = await pool.query(
-     `INSERT INTO Solicitud
-       (usuario_id, fecha_solicitud, motivo, estado, nombre_alumno, profesor, docente_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        usuario_id,
-        fecha_solicitud,
-        motivo,
-        estado,
-        nombre,
-        profesor || nombre,
-        docente_id || null
-      ]
-    );
-
-    const solicitudId = result.insertId;
-       // Notificación para el alumno que crea la solicitud
-    await crearNotificacion(
-      usuario_id,
-      'creacion_solicitud',
-      `Solicitud ${solicitudId} creada`
-    );
-
-   // Notificación para el docente seleccionado (solo al docente elegido)
-    if (docente_id) {
-      await crearNotificacion(
-        docente_id,
-        'solicitud_nueva',
-        `Nueva solicitud ${solicitudId} del alumno ${nombre}`
-      );
-    }
-
-    // Notificar a almacenistas con permiso de modificar stock
-    const [almacenistas] = await pool.query(
-      `SELECT u.id
-       FROM Usuario u
-       JOIN PermisosAlmacen p ON u.id = p.usuario_id
-       WHERE u.rol_id = 3 AND p.modificar_stock = TRUE`
-    );
-    for (const a of almacenistas) {
-      await crearNotificacion(
-        a.id,
-        'solicitud_nueva',
-        `Nueva solicitud ${solicitudId} del usuario ${nombre}`
-      );
-    }
-
-    for (const mat of materiales) {
-      const { material_id, cantidad, tipo } = mat;
-      await pool.query(
-        `INSERT INTO SolicitudItem 
-         (solicitud_id, material_id, tipo, cantidad)
-         VALUES (?, ?, ?, ?)`,
-        [solicitudId, material_id, tipo, cantidad]
-      );
-    }
-
-    res.status(201).json({ mensaje: 'Solicitud creada correctamente', solicitudId });
-  } catch (error) {
-    console.error('Error al crear solicitud:', error);
-    res.status(500).json({ error: 'Error al crear solicitud' });
-  }
-};
-
 // Crear solicitud con adeudo
 const crearSolicitudConAdeudo = async (req, res) => {
   const { usuario_id, material_id, fecha_solicitud, motivo, monto_adeudo } = req.body;
@@ -1749,7 +1646,6 @@ const eliminarSolicitudesViejasHandler = async (req, res) => {
 };
 
 module.exports = {
-crearSolicitud,
   crearSolicitudConAdeudo,
   aprobarSolicitud,
   rechazarSolicitud,
