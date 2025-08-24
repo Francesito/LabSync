@@ -956,61 +956,61 @@ const descargarPDF = async (vale) => {
         />
       )}
 
-      {/* DOCENTE */}
-      {usuario?.rol === 'docente' && (
-        <>
-          <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
-            <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
-              <div className="relative flex-1">
-                {pendientesDocAlumnos > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
-                    {pendientesDocAlumnos}
-                  </span>
-                )}
-                <button
-                  className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
-                    activeTab === 'alumnos'
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                   } hover:shadow-inner`}
-                  onClick={() => setActiveTab('alumnos')}
-                >
-                  <div className="flex items-center gap-2 justify-center">
-                    <span>🎓</span>
-                    Solicitudes de Alumnos
-                  </div>
-                </button>
-              </div>
-              <div className="relative flex-1">
-                <button
-                  className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
-                    activeTab === 'mias' 
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } hover:shadow-inner`}
-                  onClick={() => setActiveTab('mias')}
-                >
-                  <div className="flex items-center gap-2 justify-center">
-                    <span>👨‍🏫</span>
-                    Mis Solicitudes como Docente
-                  </div>
-                </button>
-              </div>
+     {/* DOCENTE */}
+{usuario?.rol === 'docente' && (
+  <>
+    <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+      <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
+        <div className="relative flex-1">
+          {pendientesDocAlumnos > 0 && (
+            <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-20">
+              {pendientesDocAlumnos}
+            </span>
+          )}
+          <button
+            className={`w-full px-6 py-4 transition-all duration-200 font-medium min-h-[52px] flex items-center justify-center ${
+              activeTab === 'alumnos'
+                ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+             } hover:shadow-inner`}
+            onClick={() => setActiveTab('alumnos')}
+          >
+            <div className="flex items-center gap-2 justify-center">
+              <span>🎓</span>
+              Solicitudes de Alumnos
             </div>
-            
-            <div className="flex-1 relative w-full sm:w-auto mt-4 sm:mt-0">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400 animate-pulse">🔍</span>
-              </div>
-              <input
-                type="text"
-                placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
-              />
+          </button>
+        </div>
+        <div className="relative flex-1">
+          <button
+            className={`w-full px-6 py-4 transition-all duration-200 font-medium min-h-[52px] flex items-center justify-center ${
+              activeTab === 'mias' 
+                ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            } hover:shadow-inner`}
+            onClick={() => setActiveTab('mias')}
+          >
+            <div className="flex items-center gap-2 justify-center">
+              <span>👨‍🏫</span>
+              Mis Solicitudes como Docente
             </div>
-          </div>
+          </button>
+        </div>
+      </div>
+      
+      <div className="flex-1 relative w-full sm:w-auto mt-4 sm:mt-0">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <span className="text-gray-400 animate-pulse">🔍</span>
+        </div>
+        <input
+          type="text"
+          placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
+        />
+      </div>
+    </div>
           
           {activeTab === 'alumnos' ? (
             <TablaSolicitudes
@@ -1047,50 +1047,50 @@ const descargarPDF = async (vale) => {
       {/* ALMACÉN */}
       {usuario?.rol === 'almacen' && (
         <>
-          <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
-            <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
-             <div className="relative flex-1">
-  {pendientesAlmAlumnos > 0 && (
-    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
-      {pendientesAlmAlumnos}
-    </span>
-  )}
-  <button
-    className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
-      activeTab === 'alumnos' 
-        ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-    } hover:shadow-inner`}
-    onClick={() => setActiveTab('alumnos')}
-  >
-    <div className="flex items-center gap-2 justify-center">
-      <span>🎓</span>
-      Solicitudes de Alumnos
-    </div>
-  </button>
-</div>
+         <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+  <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
+   <div className="relative flex-1">
+    {pendientesAlmAlumnos > 0 && (
+      <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-20">
+        {pendientesAlmAlumnos}
+      </span>
+    )}
+    <button
+      className={`w-full px-6 py-4 transition-all duration-200 font-medium min-h-[52px] flex items-center justify-center ${
+        activeTab === 'alumnos' 
+          ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+      } hover:shadow-inner`}
+      onClick={() => setActiveTab('alumnos')}
+    >
+      <div className="flex items-center gap-2 justify-center">
+        <span>🎓</span>
+        Solicitudes de Alumnos
+      </div>
+    </button>
+  </div>
 
-              <div className="relative flex-1">
-                {pendientesAlmDocentes > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
-                    {pendientesAlmDocentes}
-                  </span>
-                )}
-                <button
-                  className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
-                    activeTab === 'docentes' 
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } hover:shadow-inner`}
-                  onClick={() => setActiveTab('docentes')}
-                >
-                  <div className="flex items-center gap-2 justify-center">
-                    <span>👨‍🏫</span>
-                    Solicitudes de Docentes
-                  </div>
-                </button>
-              </div>
-            </div>
+    <div className="relative flex-1">
+      {pendientesAlmDocentes > 0 && (
+        <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-20">
+          {pendientesAlmDocentes}
+        </span>
+      )}
+      <button
+        className={`w-full px-6 py-4 transition-all duration-200 font-medium min-h-[52px] flex items-center justify-center ${
+          activeTab === 'docentes' 
+            ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+        } hover:shadow-inner`}
+        onClick={() => setActiveTab('docentes')}
+      >
+        <div className="flex items-center gap-2 justify-center">
+          <span>👨‍🏫</span>
+          Solicitudes de Docentes
+        </div>
+      </button>
+    </div>
+  </div>
             
             <div className="flex-1 relative w-full sm:w-auto mt-4 sm:mt-0">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
