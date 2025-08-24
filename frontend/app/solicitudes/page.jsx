@@ -758,11 +758,6 @@ const descargarPDF = async (vale) => {
     doc.setFont('helvetica', 'bold');
     doc.text('VALE DE ALMACÉN', pageWidth / 2, titleY, { align: 'center' });
     
-    // Línea separadora
-    const lineY = titleY + 3;
-    doc.setLineWidth(0.3);
-    doc.line(marginLeft, lineY, pageWidth - marginLeft, lineY);
-       
     // Tabla de información principal
     const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
     const grupo = vale.isDocenteRequest ? 'No aplica' : (vale.grupo || '');
@@ -770,10 +765,10 @@ const descargarPDF = async (vale) => {
     const fechaDevolucion = formatFechaStr(vale.fecha_devolucion);
 
     autoTable(doc, {
-      startY: lineY + 5,
+       startY: titleY + 5,
       theme: 'grid',
-      head: [['Nombre', 'Grupo', 'Fecha de recolección']],
-      body: [[nombre, grupo, fechaReco]],
+      head: [['Nombre', 'Grupo', 'Folio']],
+      body: [[nombre, grupo, vale.folio]],
       headStyles: {
         fillColor: [255, 255, 255],
         textColor: [0, 0, 0],
