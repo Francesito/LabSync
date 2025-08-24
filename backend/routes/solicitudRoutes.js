@@ -195,28 +195,6 @@ router.get(
 
 /**
  * ========================================
- * RUTAS ADMINISTRATIVAS (SOLO ADMIN - ROL 4)
- * ========================================
- */
-
-// Obtener estadísticas completas de solicitudes
-router.get(
-  '/estadisticas/completas',
-  verificarToken,
-  requireAdmin,
-  solicitudController.obtenerEstadisticasCompletas
-);
-
-// Eliminar solicitud (solo admin - para casos excepcionales)
-router.delete(
-  '/eliminar/:id',
-  verificarToken,
-  requireAdmin,
-  solicitudController.eliminarSolicitud
-);
-
-/**
- * ========================================
  * RUTAS DE MANTENIMIENTO Y LIMPIEZA
  * ========================================
  */
