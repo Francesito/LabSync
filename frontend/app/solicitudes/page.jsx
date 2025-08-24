@@ -934,7 +934,11 @@ const descargarPDF = async (vale) => {
      {/* DOCENTE */}
 {usuario?.rol === 'docente' && (
   <>
- <div className="flex flex-wrap items-center gap-4">
+  <div className="flex items-center gap-2 mb-4">
+        <span>🐺</span>
+        <h2 className="text-xl font-bold">Solicitudes de préstamo</h2>
+      </div>
+    <div className="flex flex-wrap items-center gap-4">
   <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto gap-2">
     <div className="relative flex-1">
       {pendientesDocAlumnos > 0 && (
@@ -972,12 +976,7 @@ const descargarPDF = async (vale) => {
       </button>
     </div>
   </div>
-          <div className="flex flex-col flex-1 w-full sm:w-auto">
-      <div className="flex items-center gap-2">
-        <span>🐺</span>
-        <h2 className="text-xl font-bold">Solicitudes de préstamo</h2>
-      </div>
-      <div className="flex-1 relative w-full sm:w-auto">
+        <div className="relative flex-1 w-full sm:w-auto">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <span className="text-gray-400 animate-pulse">🔍</span>
         </div>
@@ -989,7 +988,6 @@ const descargarPDF = async (vale) => {
           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
         />
       </div>
-    </div>
         </div>
     
     {activeTab === 'alumnos' ? (
@@ -1027,6 +1025,10 @@ const descargarPDF = async (vale) => {
       {/* ALMACÉN */}
       {usuario?.rol === 'almacen' && (
         <>
+           <div className="flex items-center gap-2 mb-4">
+        <span>🐺</span>
+        <h2 className="text-xl font-bold">Solicitudes de préstamo</h2>
+      </div>
          <div className="flex flex-wrap items-center gap-4">
   <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto gap-2">
    <div className="relative flex-1">
@@ -1071,12 +1073,7 @@ const descargarPDF = async (vale) => {
       </button>
     </div>
   </div>
-              <div className="flex flex-col flex-1 w-full sm:w-auto">
-      <div className="flex items-center gap-2">
-        <span>🐺</span>
-        <h2 className="text-xl font-bold">Solicitudes de préstamo</h2>
-      </div>
-      <div className="flex-1 relative w-full sm:w-auto">
+                <div className="relative flex-1 w-full sm:w-auto">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <span className="text-gray-400 animate-pulse">🔍</span>
         </div>
@@ -1088,7 +1085,6 @@ const descargarPDF = async (vale) => {
           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
         />
       </div>
-    </div>
 
             <div className="flex flex-wrap items-center gap-3 bg-gray-50 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
