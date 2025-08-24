@@ -52,6 +52,8 @@ export default function ResiduosPage() {
   const [entries, setEntries] = useState([]);
   const [selected, setSelected] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+    const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const { usuario } = useAuth();
 
   useEffect(() => {
@@ -121,11 +123,17 @@ export default function ResiduosPage() {
     }
   };
 
-  const handleDownload = async () => {
-    if (entries.length === 0) return;
-    if (!window.confirm('Al descargar el CSV se eliminarán todos los registros. ¿Deseas continuar?')) return;
+ const filteredEntries = entries.filter((e) => {
+    const date = formatDate(e.fecha);
+    if (fromDate && date < fromDate) return false;
+    if (toDate && date > toDate) return false;
+    return true;
+  });
+
+  const handleDownload = () => {
+    if (filteredEntries.length === 0) return;
     const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
-    const rows = entries.map(e => [
+  const rows = filteredEntries.map(e => [
       formatDate(e.fecha),
       e.laboratorio,
       e.reactivo,
@@ -143,20 +151,13 @@ export default function ResiduosPage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    try {
-      await eliminarResiduos(entries.map(e => e.id));
-      setEntries([]);
-      setSelected([]);
-    } catch (err) {
-      console.error('Error al eliminar residuos:', err);
-    }
   };
 
   const handleDownloadPDF = () => {
-    if (entries.length === 0) return;
+    if (filteredEntries.length === 0) return;
     const doc = new jsPDF();
     const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
-    const rows = entries.map(e => [
+   const rows = filteredEntries.map(e => [
       formatDate(e.fecha),
       e.laboratorio,
       e.reactivo,
@@ -171,7 +172,8 @@ export default function ResiduosPage() {
     doc.save('residuos.pdf');
   };
   
-  const allChecked = selected.length === entries.length && entries.length > 0;
+    const allChecked =
+    filteredEntries.length > 0 && filteredEntries.every((e) => selected.includes(e.id));
 
  if ([3, 4].includes(usuario?.rol_id)) return <p>Acceso denegado</p>;
 
@@ -199,14 +201,14 @@ export default function ResiduosPage() {
                   <span className="text-2xl">📋</span>
                   <h2 className="text-xl font-semibold text-white">Historial de Registros</h2>
                   <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-sm font-medium">
-                    {entries.length}
+                    {filteredEntries.length}
                   </span>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownload}
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                    disabled={entries.length === 0}
+                      disabled={filteredEntries.length === 0}
                   >
                     <span>📊</span>
                     <span className="hidden sm:inline">CSV</span>
@@ -214,7 +216,7 @@ export default function ResiduosPage() {
                   <button
                     onClick={handleDownloadPDF}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                    disabled={entries.length === 0}
+                   disabled={filteredEntries.length === 0}
                   >
                     <span>📄</span>
                     <span className="hidden sm:inline">PDF</span>
@@ -237,7 +239,27 @@ export default function ResiduosPage() {
             </div>
 
             <div className="p-6">
-              {entries.length === 0 ? (
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-700">Desde</label>
+                  <input
+                    type="date"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="border rounded px-2 py-1"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-sm text-gray-700">Hasta</label>
+                  <input
+                    type="date"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="border rounded px-2 py-1"
+                  />
+                </div>
+              </div>
+              {filteredEntries.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4 opacity-50">📭</div>
                   <p className="text-gray-500 text-lg">No hay residuos registrados aún.</p>
@@ -254,7 +276,9 @@ export default function ResiduosPage() {
                             checked={allChecked}
                             onChange={(e) =>
                               setSelected(
-                                e.target.checked ? entries.map((en) => en.id) : []
+                                 e.target.checked
+                                  ? filteredEntries.map((en) => en.id)
+                                  : []
                               )
                             }
                             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 transition-all duration-200"
@@ -269,9 +293,9 @@ export default function ResiduosPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {entries.map((entry, index) => (
-                        <tr 
-                          key={entry.id} 
+                      {filteredEntries.map((entry, index) => (
+                        <tr
+                          key={entry.id}
                           className="border-b hover:bg-blue-50 transition-all duration-200 transform hover:scale-[1.01]"
                           style={{ 
                             animationDelay: `${index * 50}ms`,
