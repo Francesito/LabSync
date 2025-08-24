@@ -1025,47 +1025,6 @@ const limpiarSolicitudesCanceladas = async (req, res) => {
   }
 };
 
-const validarIntegridadSolicitudes = async (req, res) => {
-  try {
-    // Verificar solicitudes sin items
-    const [sinItems] = await pool.query(`
-      SELECT s.id, s.folio 
-      FROM Solicitud s 
-      LEFT JOIN SolicitudItem si ON s.id = si.solicitud_id 
-      WHERE si.solicitud_id IS NULL
-    `);
-
-    // Verificar items con materiales inexistentes
-    const [itemsHuerfanos] = await pool.query(`
-      SELECT si.id, si.solicitud_id, si.material_id, si.tipo
-      FROM SolicitudItem si
-      LEFT JOIN MaterialLiquido ml ON si.material_id = ml.id AND si.tipo = 'liquido'
-      LEFT JOIN MaterialSolido ms ON si.material_id = ms.id AND si.tipo = 'solido'
-      LEFT JOIN MaterialEquipo me ON si.material_id = me.id AND si.tipo = 'equipo'
-      WHERE ml.id IS NULL AND ms.id IS NULL AND me.id IS NULL
-    `);
-
-    // Verificar usuarios inexistentes
-    const [usuariosHuerfanos] = await pool.query(`
-      SELECT s.id, s.usuario_id 
-      FROM Solicitud s 
-      LEFT JOIN Usuario u ON s.usuario_id = u.id 
-      WHERE u.id IS NULL
-    `);
-
-    res.json({
-      solicitudes_sin_items: sinItems,
-      items_huerfanos: itemsHuerfanos,
-      usuarios_huerfanos: usuariosHuerfanos,
-      integridad_ok: sinItems.length === 0 && itemsHuerfanos.length === 0 && usuariosHuerfanos.length === 0
-    });
-
-  } catch (error) {
-    console.error('Error al validar integridad:', error);
-    res.status(500).json({ error: 'Error al validar integridad' });
-  }
-};
-
 // ========================================
 // FUNCIONES DE REPORTES POR ROL
 // ========================================
@@ -1829,7 +1788,6 @@ crearSolicitud,
 
   // Funciones de mantenimiento
   limpiarSolicitudesCanceladas,
-  validarIntegridadSolicitudes,
 
   // Funciones de reportes por rol
   obtenerReportePorAlumno,
