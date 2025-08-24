@@ -963,28 +963,6 @@ const obtenerHistorialSolicitud = async (req, res) => {
   }
 };
 
-const restaurarSolicitud = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    // Esta función requeriría una tabla de auditoría o respaldos
-    // Por ahora solo cambiamos el estado si existe
-    const [result] = await pool.query(
-      'UPDATE Solicitud SET estado = ? WHERE id = ?',
-      ['pendiente', id]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Solicitud no encontrada' });
-    }
-
-    res.json({ mensaje: 'Solicitud restaurada (estado cambiado a pendiente)' });
-  } catch (error) {
-    console.error('Error al restaurar solicitud:', error);
-    res.status(500).json({ error: 'Error al restaurar solicitud' });
-  }
-};
-
 // ========================================
 // FUNCIONES DE MANTENIMIENTO
 // ========================================
@@ -1677,9 +1655,6 @@ module.exports = {
   obtenerSolicitudPorId,
   obtenerHistorialSolicitud,
   obtenerGrupoPorUsuario,
-
-  // Funciones administrativas
-  restaurarSolicitud,
 
   // Funciones de mantenimiento
   limpiarSolicitudesCanceladas,
