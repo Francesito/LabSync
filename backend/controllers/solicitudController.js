@@ -1783,7 +1783,6 @@ crearSolicitud,
   obtenerGrupoPorUsuario,
 
   // Funciones administrativas
-  eliminarSolicitud,
   restaurarSolicitud,
 
   // Funciones de mantenimiento
