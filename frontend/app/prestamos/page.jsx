@@ -463,11 +463,11 @@ export default function Prestamos() {
                     )}
                   </div>
 
-                  {/* Formulario Responsivo */}
+                  {/* Formulario Responsivo Mejorado */}
                   <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-slate-200">
-                      <div className="bg-slate-50 px-3 sm:px-4 py-3 border-b border-slate-200">
-                        <h3 className="text-sm sm:text-md font-semibold text-slate-800 flex items-center space-x-2">
+                      <div className="bg-slate-50 px-3 sm:px-4 py-2 border-b border-slate-200">
+                        <h3 className="text-sm font-semibold text-slate-800 flex items-center space-x-2">
                           <svg className="w-4 h-4 text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                           </svg>
@@ -475,23 +475,29 @@ export default function Prestamos() {
                         </h3>
                       </div>
 
-                      {/* Tabla Responsiva */}
+                      {/* Tabla Responsiva Mejorada */}
                       <div className="overflow-x-auto">
-                        {/* Vista Desktop */}
-                        <div className="hidden sm:block">
-                          <table className="w-full">
+                        {/* Vista Desktop - Tabla compacta */}
+                        <div className="hidden lg:block">
+                          <table className="w-full table-fixed">
+                            <colgroup>
+                              <col className="w-20" />
+                              <col />
+                              <col className="w-16" />
+                              <col className="w-16" />
+                            </colgroup>
                             <thead className="bg-slate-50">
                               <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                  {detalle.nombre_alumno ? 'Cantidad devuelta' : 'Entregado'}
+                                <th className="px-2 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                  {detalle.nombre_alumno ? 'Devolver' : 'Entregado'}
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <th className="px-2 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
                                   Material
                                 </th>
-                                <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <th className="px-2 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wide">
                                   Total
                                 </th>
-                                <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                <th className="px-2 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wide">
                                   Unidad
                                 </th>
                               </tr>
@@ -499,9 +505,9 @@ export default function Prestamos() {
                             <tbody className="divide-y divide-slate-200">
                               {detalle.items.map((item) => (
                                 <tr key={item.item_id} className="hover:bg-slate-50">
-                                  <td className="px-4 py-3">
+                                  <td className="px-2 py-2">
                                     {detalle.nombre_alumno ? (
-                                      <div className="flex items-center space-x-2">
+                                      <div className="flex items-center justify-center space-x-1">
                                         <input
                                           type="number"
                                           min="0"
@@ -512,9 +518,9 @@ export default function Prestamos() {
                                             item.devolver = Math.min(Math.max(val, 0), item.cantidad);
                                             setDetalle({ ...detalle });
                                           }}
-                                          className="w-16 border border-slate-300 rounded-md px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+                                          className="w-10 border border-slate-300 rounded px-1 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-transparent"
                                         />
-                                        <span className="text-xs text-slate-500">/{item.cantidad}</span>
+                                        <span className="text-xs text-slate-400">/{item.cantidad}</span>
                                       </div>
                                     ) : (
                                       <div className="flex justify-center">
@@ -525,29 +531,30 @@ export default function Prestamos() {
                                             item.entregado = e.target.checked;
                                             setDetalle({ ...detalle });
                                           }}
+                                          className="w-4 h-4"
                                         />
                                       </div>
                                     )}
                                   </td>
-                                  <td className="px-4 py-3">
+                                  <td className="px-2 py-2">
                                     <div className="flex items-center space-x-2">
-                                      <div className="p-1 bg-slate-100 rounded-lg">
+                                      <div className="p-1 bg-slate-100 rounded flex-shrink-0">
                                         <svg className="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                                         </svg>
                                       </div>
-                                      <div className="min-w-0">
-                                        <div className="text-sm font-medium text-slate-900 truncate">
+                                      <div className="min-w-0 flex-1">
+                                        <div className="text-xs font-medium text-slate-900 leading-tight truncate">
                                           {formatMaterialName(item.nombre_material)}
                                         </div>
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="px-4 py-3 text-center">
-                                    <span className="text-sm font-medium text-slate-900">{item.cantidad}</span>
+                                  <td className="px-2 py-2 text-center">
+                                    <span className="text-xs font-medium text-slate-900">{item.cantidad}</span>
                                   </td>
-                                  <td className="px-4 py-3 text-center">
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                                  <td className="px-2 py-2 text-center">
+                                    <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
                                       {item.tipo === 'liquido' ? 'ml' : item.tipo === 'solido' ? 'g' : 'u'}
                                     </span>
                                   </td>
@@ -557,65 +564,146 @@ export default function Prestamos() {
                           </table>
                         </div>
 
-                        {/* Vista Móvil - Cards */}
-                        <div className="block sm:hidden">
-                          <div className="space-y-3 p-3">
+                        {/* Vista Tablet - Tabla más compacta */}
+                        <div className="hidden md:block lg:hidden">
+                          <table className="w-full">
+                            <thead className="bg-slate-50">
+                              <tr>
+                                <th className="px-2 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                  {detalle.nombre_alumno ? 'Dev.' : 'Ent.'}
+                                </th>
+                                <th className="px-2 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                  Material
+                                </th>
+                                <th className="px-2 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                  Total
+                                </th>
+                                <th className="px-2 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                  Und
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                              {detalle.items.map((item) => (
+                                <tr key={item.item_id} className="hover:bg-slate-50">
+                                  <td className="px-2 py-2">
+                                    {detalle.nombre_alumno ? (
+                                      <div className="flex items-center justify-center space-x-1">
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          max={item.cantidad}
+                                          value={item.devolver}
+                                          onChange={e => {
+                                            const val = parseInt(e.target.value || '0', 10);
+                                            item.devolver = Math.min(Math.max(val, 0), item.cantidad);
+                                            setDetalle({ ...detalle });
+                                          }}
+                                          className="w-10 border border-slate-300 rounded px-1 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-transparent"
+                                        />
+                                        <span className="text-xs text-slate-400">/{item.cantidad}</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex justify-center">
+                                        <input
+                                          type="checkbox"
+                                          checked={item.entregado}
+                                          onChange={e => {
+                                            item.entregado = e.target.checked;
+                                            setDetalle({ ...detalle });
+                                          }}
+                                          className="w-4 h-4"
+                                        />
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="px-2 py-2">
+                                    <div className="flex items-center space-x-2">
+                                      <div className="p-1 bg-slate-100 rounded flex-shrink-0">
+                                        <svg className="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                        </svg>
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <div className="text-xs font-medium text-slate-900 leading-tight truncate">
+                                          {formatMaterialName(item.nombre_material)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-2 py-2 text-center">
+                                    <span className="text-xs font-medium text-slate-900">{item.cantidad}</span>
+                                  </td>
+                                  <td className="px-2 py-2 text-center">
+                                    <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
+                                      {item.tipo === 'liquido' ? 'ml' : item.tipo === 'solido' ? 'g' : 'u'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Vista Móvil Compacta */}
+                        <div className="block md:hidden">
+                          <div className="space-y-2 p-2">
                             {detalle.items.map((item) => (
-                              <div key={item.item_id} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                                <div className="flex items-start justify-between mb-3">
-                                  <div className="flex items-center space-x-2 flex-1 min-w-0">
-                                    <div className="p-1 bg-slate-100 rounded-lg flex-shrink-0">
+                              <div key={item.item_id} className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-2 flex-1 min-w-0 mr-3">
+                                    <div className="p-1 bg-slate-100 rounded flex-shrink-0">
                                       <svg className="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                                       </svg>
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                      <div className="text-sm font-medium text-slate-900 truncate">
+                                      <div className="text-xs font-medium text-slate-900 leading-tight mb-1">
                                         {formatMaterialName(item.nombre_material)}
                                       </div>
-                                      <div className="flex items-center space-x-3 mt-1">
+                                      <div className="flex items-center space-x-2">
                                         <span className="text-xs text-slate-600">
-                                          Total: {item.cantidad}
+                                          {item.cantidad}
                                         </span>
-                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-slate-200 text-slate-700">
+                                        <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-slate-200 text-slate-700">
                                           {item.tipo === 'liquido' ? 'ml' : item.tipo === 'solido' ? 'g' : 'u'}
                                         </span>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                                
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-medium text-slate-600 uppercase">
-                                    {detalle.nombre_alumno ? 'Cantidad devuelta' : 'Entregado'}
-                                  </span>
-                                  {detalle.nombre_alumno ? (
-                                    <div className="flex items-center space-x-2">
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max={item.cantidad}
-                                        value={item.devolver}
-                                        onChange={e => {
-                                          const val = parseInt(e.target.value || '0', 10);
-                                          item.devolver = Math.min(Math.max(val, 0), item.cantidad);
-                                          setDetalle({ ...detalle });
-                                        }}
-                                        className="w-16 border border-slate-300 rounded-md px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent"
-                                      />
-                                      <span className="text-xs text-slate-500">/{item.cantidad}</span>
-                                    </div>
-                                  ) : (
-                                    <input
-                                      type="checkbox"
-                                      checked={item.entregado}
-                                      onChange={e => {
-                                        item.entregado = e.target.checked;
-                                        setDetalle({ ...detalle });
-                                      }}
-                                      className="w-4 h-4"
-                                    />
-                                  )}
+                                  
+                                  <div className="flex-shrink-0">
+                                    {detalle.nombre_alumno ? (
+                                      <div className="text-center">
+                                        <div className="text-xs text-slate-500 font-medium mb-1">Devolver</div>
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          max={item.cantidad}
+                                          value={item.devolver}
+                                          onChange={e => {
+                                            const val = parseInt(e.target.value || '0', 10);
+                                            item.devolver = Math.min(Math.max(val, 0), item.cantidad);
+                                            setDetalle({ ...detalle });
+                                          }}
+                                          className="w-12 border border-slate-300 rounded px-1 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-transparent"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="text-center">
+                                        <div className="text-xs text-slate-500 font-medium mb-1">Entregado</div>
+                                        <input
+                                          type="checkbox"
+                                          checked={item.entregado}
+                                          onChange={e => {
+                                            item.entregado = e.target.checked;
+                                            setDetalle({ ...detalle });
+                                          }}
+                                          className="w-4 h-4"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             ))}
@@ -625,18 +713,18 @@ export default function Prestamos() {
                     </div>
 
                     {/* Botones de acción responsivos */}
-                    <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-4 sm:mt-6">
+                    <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-4">
                       <button
                         type="button"
                         onClick={closeModal}
-                        className="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium border border-slate-300 text-sm order-2 sm:order-1"
+                        className="w-full sm:w-auto px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium border border-slate-300 text-sm order-2 sm:order-1"
                       >
                         Cancelar
                       </button>
                       <button
                         type="submit"
                         disabled={saving}
-                        className="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2 bg-[#003579] text-white rounded-lg hover:bg-[#002a5e] font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm order-1 sm:order-2"
+                        className="w-full sm:w-auto px-4 py-2 bg-[#003579] text-white rounded-lg hover:bg-[#002a5e] font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm order-1 sm:order-2"
                       >
                         {saving ? (
                           <>
