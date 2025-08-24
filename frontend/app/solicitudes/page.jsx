@@ -451,10 +451,10 @@ export default function SolicitudesPage() {
             msg = `Tienes ${hoyCount} solicitudes para entregar hoy`;
           } else if (mañanaCount > 0) {
             msg = `Tienes ${mañanaCount} solicitudes para entregar mañana`;
-          } else {
-            msg = `Tienes ${pendientes.length} solicitudes pendientes`;
           }
-          setNotice(msg);
+            if (msg) {
+            setNotice(msg);
+          }
         }
         
         setError('');
@@ -883,21 +883,6 @@ const descargarPDF = async (vale) => {
   // --- RENDER POR ROL ---
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 min-h-screen font-sans">
-      {/* Nuevo encabezado con lobo */}
-      <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-4 bg-white rounded-2xl shadow-lg px-8 py-6 border border-gray-200 hover:shadow-2xl transition-shadow duration-300 flex-wrap justify-center">
-          <div className="text-6xl animate-bounce">
-            🐺
-          </div>
-          <div>
-            <h1 className="text-4xl font-bold text-gray-800 tracking-tight hover:text-blue-600 transition-colors duration-200">
-              Solicitudes de Préstamos
-            </h1>
-            <p className="text-gray-600 mt-2 hover:text-gray-800 transition-colors duration-200">Gestiona tus solicitudes de materiales</p>
-          </div>
-        </div>
-      </div>
-
       {/* Error con mejor styling */}
       {error && (
         <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl shadow-md animate-shake hover:shadow-lg transition-shadow duration-200">
@@ -929,16 +914,6 @@ const descargarPDF = async (vale) => {
         </div>
       )}
 
-      {/* Notice con mejor styling */}
-      {usuario?.rol !== 'almacen' && notice && (
-        <div className="mb-4 flex justify-end">
-          <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse hover:shadow-md transition-shadow duration-200 flex items-center gap-2">
-            <span>🔔</span>
-            {notice}
-          </div>
-        </div>
-      )}
-  
       {/* ALUMNO */}
       {usuario?.rol === 'alumno' && (
         <TablaSolicitudes
@@ -959,7 +934,7 @@ const descargarPDF = async (vale) => {
      {/* DOCENTE */}
 {usuario?.rol === 'docente' && (
   <>
-  <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+ <div className="flex flex-wrap items-center gap-4">
   <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto gap-2">
     <div className="relative flex-1">
       {pendientesDocAlumnos > 0 && (
@@ -997,8 +972,12 @@ const descargarPDF = async (vale) => {
       </button>
     </div>
   </div>
-      
-      <div className="flex-1 relative w-full sm:w-auto mt-4 sm:mt-0">
+          <div className="flex flex-col flex-1 w-full sm:w-auto">
+      <div className="flex items-center gap-2">
+        <span>🐺</span>
+        <h2 className="text-xl font-bold">Solicitudes de préstamo</h2>
+      </div>
+      <div className="flex-1 relative w-full sm:w-auto">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <span className="text-gray-400 animate-pulse">🔍</span>
         </div>
@@ -1011,43 +990,44 @@ const descargarPDF = async (vale) => {
         />
       </div>
     </div>
-          
-          {activeTab === 'alumnos' ? (
-            <TablaSolicitudes
-              titulo="Solicitudes de alumnos para aprobar"
-              data={filteredDocAprobar}
-              loading={loading}
-              showSolicitante
-              showEncargado={false}
-              showGrupo
-              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-              usuario={usuario}
-              onAccion={actualizarEstado}
-              onPDF={descargarPDF}
-              procesandoId={procesando}
-            />
-          ) : (
-            <TablaSolicitudes
-              titulo="Mis solicitudes como docente"
-              data={filteredDocMias}
-              loading={loading}
-              showSolicitante={false}
-              showEncargado={false}
-              showGrupo={false}
-              columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
-              usuario={usuario}
-              onAccion={actualizarEstado}
-              onPDF={descargarPDF}
-              procesandoId={procesando}
-            />
-          )}
-        </>
-      )}
+        </div>
+    
+    {activeTab === 'alumnos' ? (
+      <TablaSolicitudes
+        titulo="Solicitudes de alumnos para aprobar"
+        data={filteredDocAprobar}
+        loading={loading}
+        showSolicitante
+        showEncargado={false}
+        showGrupo
+        columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+        usuario={usuario}
+        onAccion={actualizarEstado}
+        onPDF={descargarPDF}
+        procesandoId={procesando}
+      />
+    ) : (
+      <TablaSolicitudes
+        titulo="Mis solicitudes como docente"
+        data={filteredDocMias}
+        loading={loading}
+        showSolicitante={false}
+        showEncargado={false}
+        showGrupo={false}
+        columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
+        usuario={usuario}
+        onAccion={actualizarEstado}
+        onPDF={descargarPDF}
+        procesandoId={procesando}
+      />
+    )}
+  </>
+)}
 
       {/* ALMACÉN */}
       {usuario?.rol === 'almacen' && (
         <>
-        <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+         <div className="flex flex-wrap items-center gap-4">
   <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto gap-2">
    <div className="relative flex-1">
     {pendientesAlmAlumnos > 0 && (
@@ -1091,21 +1071,26 @@ const descargarPDF = async (vale) => {
       </button>
     </div>
   </div>
-            
-            <div className="flex-1 relative w-full sm:w-auto mt-4 sm:mt-0">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400 animate-pulse">🔍</span>
-              </div>
-              <input
-                type="text"
-                placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
-              />
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-3 bg-gray-50 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 w-full sm:w-auto mt-4 sm:mt-0">
+              <div className="flex flex-col flex-1 w-full sm:w-auto">
+      <div className="flex items-center gap-2">
+        <span>🐺</span>
+        <h2 className="text-xl font-bold">Solicitudes de préstamo</h2>
+      </div>
+      <div className="flex-1 relative w-full sm:w-auto">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <span className="text-gray-400 animate-pulse">🔍</span>
+        </div>
+        <input
+          type="text"
+          placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
+        />
+      </div>
+    </div>
+
+            <div className="flex flex-wrap items-center gap-3 bg-gray-50 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <span>📅</span>
                 Filtrar por fecha:
@@ -1138,14 +1123,15 @@ const descargarPDF = async (vale) => {
               )}
             </div>
             
-            {notice && (
-              <div className="w-full sm:ml-auto mt-4 sm:mt-0">
-                <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse hover:shadow-md transition-shadow duration-200 flex items-center gap-2">
-                  <span>🔔</span>
-                  {notice}
-                </div>
+       
+           {notice && (
+            <div className="w-full sm:ml-auto">
+              <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse hover:shadow-md transition-shadow duration-200 flex items-center gap-2">
+                <span>🔔</span>
+                {notice}
               </div>
-            )}
+            </div>
+          )}
           </div>
 
           {activeTab === 'alumnos' ? (
