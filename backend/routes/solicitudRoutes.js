@@ -215,14 +215,6 @@ router.delete(
   solicitudController.limpiarSolicitudesCanceladas
 );
 
-// Validar integridad de solicitudes (solo admin)
-router.get(
-  '/validar-integridad',
-  verificarToken,
-  requireAdmin,
-  solicitudController.validarIntegridadSolicitudes
-);
-
 /**
  * ========================================
  * RUTAS DE REPORTES POR ROL
