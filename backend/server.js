@@ -24,17 +24,23 @@ const { crearNotificacion } = require('./models/notificacion');
 const app = express();
 
 // ==================== MIDDLEWARES ====================
-// CORS configurado para permitir el frontend
-app.use(cors({
-  origin: [
-    'https://labsync-frontend.onrender.com', // Tu frontend en Render
-    'http://localhost:3000',                 // Para desarrollo local
-    'https://localhost:3000'                 // Para desarrollo local con HTTPS
-  ],
+// CORS configurado para permitir el frontend y manejar preflights
+const allowedOrigins = [
+  'https://labsync-frontend.onrender.com', // Frontend en producción
+  'http://localhost:3000',                 // Desarrollo local
+  'https://localhost:3000'                 // Desarrollo local con HTTPS
+];
+
+const corsOptions = {
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+app.use(cors(corsOptions));
+// Manejo explícito de solicitudes preflight
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
