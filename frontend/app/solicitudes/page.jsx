@@ -99,7 +99,8 @@ function toLocalDateStr(date) {
 function formatFechaStr(fecha) {
   if (!fecha) return '';
   try {
-    const [year, month, day] = fecha.split('T')[0].split('-');
+   const datePart = String(fecha).split('T')[0];
+    const [year, month, day] = datePart.split('-');
     return `${day}/${month}/${year}`;
   } catch (e) {
     return '';
@@ -715,16 +716,10 @@ const descargarPDF = async (vale) => {
     const encabezadoImg = await toBase64(encabezadoUT);
 
     const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 15;
     const marginLeft = margin;
     const primary = [0, 0, 0];
     const secondary = [100, 100, 100];
-
-    // Marco
-    doc.setDrawColor(...primary);
-    doc.setLineWidth(0.5);
-    doc.rect(margin, margin, pageWidth - margin * 2, pageHeight - margin * 2);
 
     // Encabezado - Imagen adaptada y más pequeña
     // Calculamos dimensiones más pequeñas manteniendo proporción
@@ -771,7 +766,8 @@ const descargarPDF = async (vale) => {
     // Tabla de información principal
     const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
     const grupo = vale.isDocenteRequest ? 'No aplica' : (vale.grupo || '');
-   const fechaReco = formatFechaStr(vale.fecha_recoleccion);
+    const fechaReco = formatFechaStr(vale.fecha_recoleccion);
+    const fechaDevolucion = formatFechaStr(vale.fecha_devolucion);
 
     autoTable(doc, {
       startY: lineY + 5,
@@ -824,27 +820,37 @@ const descargarPDF = async (vale) => {
 
     // Sección inferior
     const afterTableY = doc.lastAutoTable.finalY + 4;
-   const fechaDevolucion = formatFechaStr(vale.fecha_devolucion);
     const profesor = vale.profesor || '';
 
     doc.setFontSize(10);
     doc.setTextColor(...primary);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Fecha devolución:', marginLeft, afterTableY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(fechaDevolucion, marginLeft + 40, afterTableY);
 
+      // Fechas de recolección y devolución
     doc.setFont('helvetica', 'bold');
-    doc.text('Profesor:', pageWidth / 2, afterTableY);
+    doc.text('Fecha recolección:', marginLeft, afterTableY);
     doc.setFont('helvetica', 'normal');
-    doc.text(profesor, pageWidth / 2 + 25, afterTableY);
+    doc.text(fechaReco, marginLeft + 40, afterTableY);
+    
+    doc.setFont('helvetica', 'bold');
+   doc.text('Fecha devolución:', pageWidth / 2, afterTableY);
+    doc.setFont('helvetica', 'normal');
+   doc.text(fechaDevolucion, pageWidth / 2 + 40, afterTableY);
+
+      // Profesor
+    const profesorY = afterTableY + 6;
+    doc.setFont('helvetica', 'bold');
+   doc.text('Profesor:', marginLeft, profesorY);
+    doc.setFont('helvetica', 'normal');
+     doc.text(profesor, marginLeft + 25, profesorY);
+
+    // Nota
     doc.setFontSize(8);
     doc.setTextColor(...secondary);
     doc.setFont('helvetica', 'normal');
     doc.text(
       'NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
       pageWidth / 2,
-      afterTableY + 6,
+       profesorY + 6,
       { align: 'center', maxWidth: pageWidth - margin * 2 }
     );
 
