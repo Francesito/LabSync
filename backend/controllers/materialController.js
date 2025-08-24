@@ -822,12 +822,12 @@ const rejectSolicitud = async (req, res) => {
       'SELECT usuario_id, nombre_alumno, folio FROM Solicitud WHERE id = ?',
       [id]
     );
+     const solicitud = rows[0];
     await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
     await pool.query('DELETE FROM Adeudo WHERE solicitud_id = ?', [id]);
     await pool.query('DELETE FROM Solicitud WHERE id = ?', [id]);
     
-  if (rows.length) {
-      const solicitud = rows[0];
+  if (solicitud) {
       await crearNotificacion(
         solicitud.usuario_id,
         'solicitud_rechazada',
@@ -845,7 +845,7 @@ const rejectSolicitud = async (req, res) => {
         await crearNotificacion(
           a.id,
           'solicitud_rechazada',
-          `Solicitud ${id} rechazada para ${solicitud.nombre_alumno}`
+         `Solicitud ${id} rechazada${solicitud ? ` para ${solicitud.nombre_alumno}` : ''}`
         );
       }
     
