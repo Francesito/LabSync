@@ -1388,7 +1388,7 @@ export default function Catalog() {
                   }}
                 />
                 <small className="text-muted">
-                  Debes solicitar con al menos 24 horas de anticipación. Solicitudes después de las 7 PM se procesarán un día hábil adicional.
+                  Debes solicitar con al menos 24 horas de anticipación. Solicitudes después de las 9 PM se procesarán un día hábil adicional.
                 </small>
               </div>
               <div className="mt-3">
