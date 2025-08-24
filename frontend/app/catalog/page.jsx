@@ -6,6 +6,13 @@ import axios from 'axios';
 import { useAuth } from '../../lib/auth';
 import './estilos.css';
 
+function toLocalDateStr(date) {
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60000)
+    .toISOString()
+    .split('T')[0];
+}
+
 export default function Catalog() {
   const { usuario } = useAuth();
   const router = useRouter();
@@ -612,7 +619,7 @@ export default function Catalog() {
             tipo: item.tipo,
           })),
           motivo: 'Solicitud desde catálogo',
-          fecha_solicitud: new Date().toISOString().split('T')[0],
+         fecha_solicitud: toLocalDateStr(new Date()),
           fecha_recoleccion: pickupDate,
           fecha_devolucion: returnDate,
           aprobar_automatico: userPermissions.rol === 'docente',
