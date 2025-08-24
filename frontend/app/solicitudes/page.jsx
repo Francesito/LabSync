@@ -774,15 +774,22 @@ const descargarPDF = async (vale) => {
     
     // Tabla de información principal
     const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
-    const grupo = vale.isDocenteRequest ? 'No aplica' : (vale.grupo || '');
+    const grupo = vale.isDocenteRequest ? '' : (vale.grupo || '');
     const fechaReco = formatFechaStr(vale.fecha_recoleccion);
     const fechaDevolucion = formatFechaStr(vale.fecha_devolucion);
 
+     const headInfo = vale.isDocenteRequest
+      ? [['Nombre', 'Folio']]
+      : [['Nombre', 'Grupo', 'Folio']];
+    const bodyInfo = vale.isDocenteRequest
+      ? [[nombre, vale.folio]]
+      : [[nombre, grupo, vale.folio]];
+    
     autoTable(doc, {
        startY: titleY + 5,
       theme: 'grid',
-      head: [['Nombre', 'Grupo', 'Folio']],
-      body: [[nombre, grupo, vale.folio]],
+     head: headInfo,
+      body: bodyInfo,
       headStyles: {
         fillColor: [255, 255, 255],
         textColor: [0, 0, 0],
@@ -839,18 +846,22 @@ const descargarPDF = async (vale) => {
     doc.text('Fecha recolección:', marginLeft, afterTableY);
     doc.setFont('helvetica', 'normal');
     doc.text(fechaReco, marginLeft + 40, afterTableY);
-    
+
     doc.setFont('helvetica', 'bold');
-   doc.text('Fecha devolución:', pageWidth / 2, afterTableY);
+  doc.text('Fecha devolución:', pageWidth / 2, afterTableY);
     doc.setFont('helvetica', 'normal');
    doc.text(fechaDevolucion, pageWidth / 2 + 40, afterTableY);
 
-      // Profesor
-    const profesorY = afterTableY + 6;
-    doc.setFont('helvetica', 'bold');
-   doc.text('Profesor:', marginLeft, profesorY);
-    doc.setFont('helvetica', 'normal');
-     doc.text(profesor, marginLeft + 25, profesorY);
+    let noteY = afterTableY;
+
+    if (!vale.isDocenteRequest) {
+      const profesorY = afterTableY + 6;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Profesor:', marginLeft, profesorY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(profesor, marginLeft + 25, profesorY);
+      noteY = profesorY;
+    }
 
     // Nota
     doc.setFontSize(8);
@@ -859,7 +870,7 @@ const descargarPDF = async (vale) => {
     doc.text(
       'NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
       pageWidth / 2,
-       profesorY + 6,
+      noteY + 6,
       { align: 'center', maxWidth: pageWidth - margin * 2 }
     );
 
