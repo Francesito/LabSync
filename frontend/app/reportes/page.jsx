@@ -137,6 +137,61 @@ export default function ReportesPage() {
   const filteredSolidos = inventarioSolidos.datos.filter((r) =>
     r.nombre.replace(/_/g, ' ').toLowerCase().includes(searchSolidos.toLowerCase())
   );
+
+    const downloadAdeudosPDF = () => {
+    if (!grupoDetalle) return;
+    const doc = new jsPDF();
+    const rows = grupoDetalle.adeudos.map((a) => [
+      `${a.cantidad} ${a.unidad}`,
+      a.nombre_material,
+      a.solicitante,
+    ]);
+    autoTable(doc, {
+      head: [['Cantidad', 'Material', 'Solicitante']],
+      body: rows,
+    });
+    doc.save(`adeudos_${grupoDetalle.nombre}.pdf`);
+  };
+
+  const downloadInventarioLiquidosPDF = () => {
+    const doc = new jsPDF('landscape');
+    const headers = [
+      'Reactivo',
+      'Cantidad',
+      ...inventarioLiquidos.meses,
+      'Existencia Final',
+      'Total',
+    ];
+    const rows = filteredLiquidos.map((r) => [
+      r.nombre.replace(/_/g, ' '),
+      `${r.cantidad_inicial} ${r.unidad}`,
+      ...inventarioLiquidos.meses.map((m) => r.consumos[m] || 0),
+      `${r.existencia_final} ${r.unidad}`,
+      `${r.total_consumido} ${r.unidad}`,
+    ]);
+    autoTable(doc, { head: [headers], body: rows });
+    doc.save('inventario_liquidos.pdf');
+  };
+
+  const downloadInventarioSolidosPDF = () => {
+    const doc = new jsPDF('landscape');
+    const headers = [
+      'Reactivo',
+      'Cantidad',
+      ...inventarioSolidos.meses,
+      'Existencia Final',
+      'Total',
+    ];
+    const rows = filteredSolidos.map((r) => [
+      r.nombre.replace(/_/g, ' '),
+      `${r.cantidad_inicial} ${r.unidad}`,
+      ...inventarioSolidos.meses.map((m) => r.consumos[m] || 0),
+      `${r.existencia_final} ${r.unidad}`,
+      `${r.total_consumido} ${r.unidad}`,
+    ]);
+    autoTable(doc, { head: [headers], body: rows });
+    doc.save('inventario_solidos.pdf');
+  };
   
   if (![3, 4].includes(usuario?.rol_id)) return (
     <div className="container py-4 bg-danger text-white rounded text-center">
@@ -266,10 +321,20 @@ export default function ReportesPage() {
         {/* Adeudos del Grupo Seleccionado */}
         <div className="col-md-4 col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
-            <h2 className="card-title h5 mb-3 text-teal">
-              <i className="bi bi-list-check me-2 text-teal"></i>
-              {grupoDetalle ? `Adeudos de ${grupoDetalle.nombre}` : 'Adeudos del Grupo Seleccionado'}
-            </h2>
+          <div className="d-flex align-items-center mb-3">
+              <h2 className="card-title h5 mb-0 text-teal">
+                <i className="bi bi-list-check me-2 text-teal"></i>
+                {grupoDetalle ? `Adeudos de ${grupoDetalle.nombre}` : 'Adeudos del Grupo Seleccionado'}
+              </h2>
+              {grupoDetalle && grupoDetalle.adeudos.length > 0 && (
+                <button
+                  onClick={downloadAdeudosPDF}
+                  className="btn btn-sm btn-outline-danger ms-2 animate-button"
+                >
+                  <i className="bi bi-file-earmark-pdf me-1"></i>PDF
+                </button>
+              )}
+            </div>
             {grupoDetalle ? (
               grupoDetalle.adeudos.length === 0 ? (
                 <p className="text-muted"><i className="bi bi-info-circle me-2"></i>Sin adeudos</p>
@@ -325,14 +390,23 @@ export default function ReportesPage() {
               <h2 className="card-title h5 mb-0 text-info">
                 <i className="bi bi-droplet-fill me-2 text-info"></i>Inventario Reactivos Líquidos
               </h2>
-              <input
-                type="text"
-                className="form-control form-control-sm ms-auto"
-                placeholder="Reactivo..."
-                value={searchLiquidos}
-                onChange={(e) => setSearchLiquidos(e.target.value)}
-                style={{ maxWidth: '200px' }}
-              />
+              <div className="ms-auto d-flex align-items-center">
+                <button
+                  onClick={downloadInventarioLiquidosPDF}
+                  className="btn btn-sm btn-outline-danger me-2 animate-button"
+                  disabled={filteredLiquidos.length === 0}
+                >
+                  <i className="bi bi-file-earmark-pdf"></i>
+                </button>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Reactivo..."
+                  value={searchLiquidos}
+                  onChange={(e) => setSearchLiquidos(e.target.value)}
+                  style={{ maxWidth: '200px' }}
+                />
+              </div>
             </div>
             {filteredLiquidos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
@@ -392,14 +466,23 @@ export default function ReportesPage() {
               <h2 className="card-title h5 mb-0 text-purple">
                 <i className="bi bi-cube-fill me-2 text-purple"></i>Inventario Reactivos Sólidos
               </h2>
-              <input
-                type="text"
-                className="form-control form-control-sm ms-auto"
-                placeholder="Reactivo..."
-                value={searchSolidos}
-                onChange={(e) => setSearchSolidos(e.target.value)}
-                style={{ maxWidth: '200px' }}
-              />
+            <div className="ms-auto d-flex align-items-center">
+                <button
+                  onClick={downloadInventarioSolidosPDF}
+                  className="btn btn-sm btn-outline-danger me-2 animate-button"
+                  disabled={filteredSolidos.length === 0}
+                >
+                  <i className="bi bi-file-earmark-pdf"></i>
+                </button>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Reactivo..."
+                  value={searchSolidos}
+                  onChange={(e) => setSearchSolidos(e.target.value)}
+                  style={{ maxWidth: '200px' }}
+                />
+              </div>
             </div>
             {filteredSolidos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
