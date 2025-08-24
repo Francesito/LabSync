@@ -1144,34 +1144,6 @@ const adjustInventory = async (req, res) => {
  * ========================================
  */
 
-/** Obtener estadísticas de materiales (solo admin) */
-const getEstadisticas = async (req, res) => {
-  logRequest('getEstadisticas');
-  try {
-    const { rol_id } = req.usuario;
-    if (rol_id !== 4) return res.status(403).json({ error: 'Solo administradores pueden ver estadísticas' });
-
-    const [liquidos] = await pool.query('SELECT COUNT(*) as total, SUM(cantidad_disponible_ml) as stock FROM MaterialLiquido');
-    const [solidos] = await pool.query('SELECT COUNT(*) as total, SUM(cantidad_disponible_g) as stock FROM MaterialSolido');
-    const [equipos] = await pool.query('SELECT COUNT(*) as total, SUM(cantidad_disponible_u) as stock FROM MaterialEquipo');
-    const [laboratorio] = await pool.query('SELECT COUNT(*) as total, SUM(cantidad_disponible) as stock FROM MaterialLaboratorio');
-
-    const stats = {
-      liquidos: { total: liquidos[0].total, stock: liquidos[0].stock || 0 },
-      solidos: { total: solidos[0].total, stock: solidos[0].stock || 0 },
-      equipos: { total: equipos[0].total, stock: equipos[0].stock || 0 },
-      laboratorio: { total: laboratorio[0].total, stock: laboratorio[0].stock || 0 },
-      total_items: liquidos[0].total + solidos[0].total + equipos[0].total + laboratorio[0].total,
-      total_stock: (liquidos[0].stock || 0) + (solidos[0].stock || 0) + (equipos[0].stock || 0) + (laboratorio[0].stock || 0)
-    };
-
-    res.json(stats);
-  } catch (error) {
-    console.error('[Error] getEstadisticas:', error);
-    res.status(500).json({ error: 'Error al obtener estadísticas: ' + error.message });
-  }
-};
-
 /** Obtener historial de movimientos (solo admin) */
 const getHistorialMovimientos = async (req, res) => {
   logRequest('getHistorialMovimientos');
@@ -2641,7 +2613,6 @@ module.exports = {
   getCategorias,
   
   // Estadísticas y reportes
-  getEstadisticas,
   getHistorialMovimientos,
   getHistorialSolicitudes,
   obtenerDocentesParaSolicitud,
