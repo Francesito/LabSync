@@ -364,7 +364,7 @@ export default function Prestamos() {
       {/* Modal Completamente Responsivo */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-2 sm:p-4">
-          <div className="bg-white rounded-lg sm:rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
+         <div className="bg-white rounded-lg sm:rounded-xl shadow-2xl w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
             {/* Header del Modal Responsivo */}
             <div className="bg-[#003579] text-white px-4 sm:px-6 py-3 sm:py-4">
               <div className="flex justify-between items-center">
@@ -399,7 +399,7 @@ export default function Prestamos() {
               ) : (
                 <>
                   {/* Info Cards Responsivas */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <div className="bg-slate-50 rounded-lg p-3 sm:p-4">
                       <div className="flex items-center space-x-2">
                         <div className="p-1 bg-[#002e63] rounded-lg flex-shrink-0">  
@@ -440,7 +440,7 @@ export default function Prestamos() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <span className="block text-xs text-slate-500 uppercase font-medium">Alumno</span>
-                            <span className="block font-bold text-sm text-slate-800 truncate">{detalle.nombre_alumno}</span>
+                         <span className="block font-bold text-sm text-slate-800 break-words">{detalle.nombre_alumno}</span>
                           </div>
                         </div>
                       </div>
@@ -456,7 +456,7 @@ export default function Prestamos() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <span className="block text-xs text-slate-500 uppercase font-medium">Profesor</span>
-                            <span className="block font-bold text-sm text-slate-800 truncate">{detalle.profesor}</span>
+                             <span className="block font-bold text-sm text-slate-800 break-words">{detalle.profesor}</span>
                           </div>
                         </div>
                       </div>
@@ -479,13 +479,7 @@ export default function Prestamos() {
                       <div className="overflow-x-auto">
                         {/* Vista Desktop - Tabla compacta */}
                         <div className="hidden lg:block">
-                          <table className="w-full table-fixed">
-                            <colgroup>
-                              <col className="w-20" />
-                              <col />
-                              <col className="w-16" />
-                              <col className="w-16" />
-                            </colgroup>
+                          <table className="table-auto w-auto mx-auto">
                             <thead className="bg-slate-50">
                               <tr>
                                 <th className="px-2 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
