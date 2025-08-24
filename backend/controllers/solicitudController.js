@@ -963,43 +963,6 @@ const obtenerHistorialSolicitud = async (req, res) => {
   }
 };
 
-// ========================================
-// FUNCIONES ADMINISTRATIVAS
-// ========================================
-
-const obtenerEstadisticasCompletas = async (req, res) => {
-  try {
-    const [estadisticas] = await pool.query(`
-      SELECT 
-        COUNT(*) as total_solicitudes,
-        SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) as pendientes,
-        SUM(CASE WHEN estado = 'aprobada' THEN 1 ELSE 0 END) as aprobadas,
-        SUM(CASE WHEN estado = 'rechazada' THEN 1 ELSE 0 END) as rechazadas,
-        SUM(CASE WHEN estado = 'entregado' THEN 1 ELSE 0 END) as entregadas,
-        SUM(CASE WHEN estado = 'cancelado' THEN 1 ELSE 0 END) as canceladas
-      FROM Solicitud
-    `);
-
-    const [porMes] = await pool.query(`
-      SELECT 
-        DATE_FORMAT(fecha_solicitud, '%Y-%m') as mes,
-        COUNT(*) as cantidad
-      FROM Solicitud
-      WHERE fecha_solicitud >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-      GROUP BY DATE_FORMAT(fecha_solicitud, '%Y-%m')
-      ORDER BY mes
-    `);
-
-    res.json({
-      resumen: estadisticas[0],
-      por_mes: porMes
-    });
-  } catch (error) {
-    console.error('Error al obtener estadísticas:', error);
-    res.status(500).json({ error: 'Error al obtener estadísticas' });
-  }
-};
-
 
 const eliminarSolicitud = async (req, res) => {
   const { id } = req.params;
@@ -1929,7 +1892,6 @@ crearSolicitud,
   obtenerGrupoPorUsuario,
 
   // Funciones administrativas
-  obtenerEstadisticasCompletas,
   eliminarSolicitud,
   restaurarSolicitud,
 
