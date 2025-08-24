@@ -959,44 +959,44 @@ const descargarPDF = async (vale) => {
      {/* DOCENTE */}
 {usuario?.rol === 'docente' && (
   <>
-    <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
-      <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
-        <div className="relative flex-1">
-          {pendientesDocAlumnos > 0 && (
-            <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-20">
-              {pendientesDocAlumnos}
-            </span>
-          )}
-          <button
-            className={`w-full px-6 py-4 transition-all duration-200 font-medium min-h-[52px] flex items-center justify-center ${
-              activeTab === 'alumnos'
-                ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-             } hover:shadow-inner`}
-            onClick={() => setActiveTab('alumnos')}
-          >
-            <div className="flex items-center gap-2 justify-center">
-              <span>🎓</span>
-              Solicitudes de Alumnos
-            </div>
-          </button>
+  <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+  <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto gap-2">
+    <div className="relative flex-1">
+      {pendientesDocAlumnos > 0 && (
+        <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-20">
+          {pendientesDocAlumnos}
+        </span>
+      )}
+      <button
+        className={`w-full px-4 py-2 transition-all duration-200 font-medium min-h-[40px] flex items-center justify-center text-sm ${
+          activeTab === 'alumnos'
+            ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+         } hover:shadow-inner rounded-lg`}
+        onClick={() => setActiveTab('alumnos')}
+      >
+        <div className="flex items-center gap-2 justify-center">
+          <span>🎓</span>
+          <span className="whitespace-nowrap">Solicitudes de Alumnos</span>
         </div>
-        <div className="relative flex-1">
-          <button
-            className={`w-full px-6 py-4 transition-all duration-200 font-medium min-h-[52px] flex items-center justify-center ${
-              activeTab === 'mias' 
-                ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            } hover:shadow-inner`}
-            onClick={() => setActiveTab('mias')}
-          >
-            <div className="flex items-center gap-2 justify-center">
-              <span>👨‍🏫</span>
-              Mis Solicitudes como Docente
-            </div>
-          </button>
+      </button>
+    </div>
+    <div className="relative flex-1">
+      <button
+        className={`w-full px-4 py-2 transition-all duration-200 font-medium min-h-[40px] flex items-center justify-center text-sm ${
+          activeTab === 'mias' 
+            ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+        } hover:shadow-inner rounded-lg`}
+        onClick={() => setActiveTab('mias')}
+      >
+        <div className="flex items-center gap-2 justify-center">
+          <span>👨‍🏫</span>
+          <span className="whitespace-nowrap">Mis Solicitudes</span>
         </div>
-      </div>
+      </button>
+    </div>
+  </div>
       
       <div className="flex-1 relative w-full sm:w-auto mt-4 sm:mt-0">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1047,8 +1047,8 @@ const descargarPDF = async (vale) => {
       {/* ALMACÉN */}
       {usuario?.rol === 'almacen' && (
         <>
-         <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
-  <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
+        <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+  <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto gap-2">
    <div className="relative flex-1">
     {pendientesAlmAlumnos > 0 && (
       <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-20">
@@ -1056,16 +1056,16 @@ const descargarPDF = async (vale) => {
       </span>
     )}
     <button
-      className={`w-full px-6 py-4 transition-all duration-200 font-medium min-h-[52px] flex items-center justify-center ${
+      className={`w-full px-4 py-2 transition-all duration-200 font-medium min-h-[40px] flex items-center justify-center text-sm ${
         activeTab === 'alumnos' 
           ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-      } hover:shadow-inner`}
+      } hover:shadow-inner rounded-lg`}
       onClick={() => setActiveTab('alumnos')}
     >
       <div className="flex items-center gap-2 justify-center">
         <span>🎓</span>
-        Solicitudes de Alumnos
+        <span className="whitespace-nowrap">Solicitudes de Alumnos</span>
       </div>
     </button>
   </div>
@@ -1077,16 +1077,16 @@ const descargarPDF = async (vale) => {
         </span>
       )}
       <button
-        className={`w-full px-6 py-4 transition-all duration-200 font-medium min-h-[52px] flex items-center justify-center ${
+        className={`w-full px-4 py-2 transition-all duration-200 font-medium min-h-[40px] flex items-center justify-center text-sm ${
           activeTab === 'docentes' 
             ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-        } hover:shadow-inner`}
+        } hover:shadow-inner rounded-lg`}
         onClick={() => setActiveTab('docentes')}
       >
         <div className="flex items-center gap-2 justify-center">
           <span>👨‍🏫</span>
-          Solicitudes de Docentes
+          <span className="whitespace-nowrap">Solicitudes de Docentes</span>
         </div>
       </button>
     </div>
