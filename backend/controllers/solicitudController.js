@@ -963,36 +963,6 @@ const obtenerHistorialSolicitud = async (req, res) => {
   }
 };
 
-
-const eliminarSolicitud = async (req, res) => {
-  const { id } = req.params;
-
-  const connection = await pool.getConnection();
-  
-  try {
-    await connection.beginTransaction();
-
-    // Eliminar items de la solicitud
-    await connection.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
-    
-    // Eliminar adeudos relacionados
-    await connection.query('DELETE FROM Adeudo WHERE solicitud_id = ?', [id]);
-    
-    // Eliminar la solicitud
-    await connection.query('DELETE FROM Solicitud WHERE id = ?', [id]);
-
-    await connection.commit();
-    res.json({ mensaje: 'Solicitud eliminada correctamente' });
-
-  } catch (error) {
-    await connection.rollback();
-    console.error('Error al eliminar solicitud:', error);
-    res.status(500).json({ error: 'Error al eliminar solicitud' });
-  } finally {
-    connection.release();
-  }
-};
-
 const restaurarSolicitud = async (req, res) => {
   const { id } = req.params;
 
@@ -1093,44 +1063,6 @@ const validarIntegridadSolicitudes = async (req, res) => {
   } catch (error) {
     console.error('Error al validar integridad:', error);
     res.status(500).json({ error: 'Error al validar integridad' });
-  }
-};
-
-const repararSolicitudesInconsistentes = async (req, res) => {
-  const connection = await pool.getConnection();
-  
-  try {
-    await connection.beginTransaction();
-
-    // Eliminar solicitudes sin items
-    const [solicitudesSinItems] = await connection.query(`
-      DELETE s FROM Solicitud s 
-      LEFT JOIN SolicitudItem si ON s.id = si.solicitud_id 
-      WHERE si.solicitud_id IS NULL
-    `);
-
-    // Eliminar items huérfanos
-    const [itemsHuerfanos] = await connection.query(`
-      DELETE si FROM SolicitudItem si
-      LEFT JOIN MaterialLiquido ml ON si.material_id = ml.id AND si.tipo = 'liquido'
-      LEFT JOIN MaterialSolido ms ON si.material_id = ms.id AND si.tipo = 'solido'
-      LEFT JOIN MaterialEquipo me ON si.material_id = me.id AND si.tipo = 'equipo'
-      WHERE ml.id IS NULL AND ms.id IS NULL AND me.id IS NULL
-    `);
-
-    await connection.commit();
-    res.json({ 
-      mensaje: 'Reparación completada',
-      solicitudes_eliminadas: solicitudesSinItems.affectedRows,
-      items_eliminados: itemsHuerfanos.affectedRows
-    });
-
-  } catch (error) {
-    await connection.rollback();
-    console.error('Error al reparar inconsistencias:', error);
-    res.status(500).json({ error: 'Error al reparar inconsistencias' });
-  } finally {
-    connection.release();
   }
 };
 
@@ -1898,7 +1830,6 @@ crearSolicitud,
   // Funciones de mantenimiento
   limpiarSolicitudesCanceladas,
   validarIntegridadSolicitudes,
-  repararSolicitudesInconsistentes,
 
   // Funciones de reportes por rol
   obtenerReportePorAlumno,
