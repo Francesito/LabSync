@@ -131,11 +131,11 @@ export default function ReportesPage() {
   );
 
   const filteredLiquidos = inventarioLiquidos.datos.filter((r) =>
-    r.nombre.toLowerCase().includes(searchLiquidos.toLowerCase())
+   r.nombre.replace(/_/g, ' ').toLowerCase().includes(searchLiquidos.toLowerCase())
   );
 
   const filteredSolidos = inventarioSolidos.datos.filter((r) =>
-    r.nombre.toLowerCase().includes(searchSolidos.toLowerCase())
+    r.nombre.replace(/_/g, ' ').toLowerCase().includes(searchSolidos.toLowerCase())
   );
   
   if (![3, 4].includes(usuario?.rol_id)) return (
