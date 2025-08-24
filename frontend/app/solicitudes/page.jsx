@@ -1053,26 +1053,27 @@ const descargarPDF = async (vale) => {
         <>
           <div className="mb-6 flex flex-wrap items-center gap-4 bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-xl transition-shadow duration-200">
             <div className="relative flex rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
-              <div className="relative flex-1">
-                {pendientesAlmAlumnos > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
-                    {pendientesAlmAlumnos}
-                  </span>
-                )}
-                <button
-                  className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
-                    activeTab === 'alumnos' 
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  } border-r border-gray-300 hover:shadow-inner`}
-                  onClick={() => setActiveTab('alumnos')}
-                >
-                  <div className="flex items-center gap-2 justify-center">
-                    <span>🎓</span>
-                    Solicitudes de Alumnos
-                  </div>
-                </button>
-              </div>
+             <div className="relative flex-1">
+  {pendientesAlmAlumnos > 0 && (
+    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
+      {pendientesAlmAlumnos}
+    </span>
+  )}
+  <button
+    className={`w-full px-6 py-3 transition-all duration-200 font-medium ${
+      activeTab === 'alumnos' 
+        ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
+        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+    } hover:shadow-inner`}
+    onClick={() => setActiveTab('alumnos')}
+  >
+    <div className="flex items-center gap-2 justify-center">
+      <span>🎓</span>
+      Solicitudes de Alumnos
+    </div>
+  </button>
+</div>
+
               <div className="relative flex-1">
                 {pendientesAlmDocentes > 0 && (
                   <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-10">
