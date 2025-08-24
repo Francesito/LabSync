@@ -204,7 +204,21 @@ export default function ResiduosPage() {
                     {filteredEntries.length}
                   </span>
                 </div>
-                <div className="flex gap-2">
+               <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={fromDate}
+                      onChange={(e) => setFromDate(e.target.value)}
+                      className="border rounded px-2 py-1 text-gray-800"
+                    />
+                    <input
+                      type="date"
+                      value={toDate}
+                      onChange={(e) => setToDate(e.target.value)}
+                      className="border rounded px-2 py-1 text-gray-800"
+                    />
+                  </div>
                   <button
                     onClick={handleDownload}
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
@@ -239,26 +253,6 @@ export default function ResiduosPage() {
             </div>
 
             <div className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                <div className="flex flex-col">
-                  <label className="text-sm text-gray-700">Desde</label>
-                  <input
-                    type="date"
-                    value={fromDate}
-                    onChange={(e) => setFromDate(e.target.value)}
-                    className="border rounded px-2 py-1"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-sm text-gray-700">Hasta</label>
-                  <input
-                    type="date"
-                    value={toDate}
-                    onChange={(e) => setToDate(e.target.value)}
-                    className="border rounded px-2 py-1"
-                  />
-                </div>
-              </div>
               {filteredEntries.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4 opacity-50">📭</div>
