@@ -219,9 +219,7 @@ function TablaSolicitudes({
                         <div className="flex items-center gap-2">
                           <span className="text-sm animate-pulse">📅</span>
                           <span>
-                            {dateStr
-                              ? new Date(`${dateStr}T00:00:00`).toLocaleDateString('es-MX')
-                              : ''}
+                           {dateStr ? formatFechaStr(dateStr) : ''}
                           </span>
                         </div>
                         {isOverdue && (
@@ -230,11 +228,9 @@ function TablaSolicitudes({
                             Se eliminará la solicitud dentro de 1 día por falta de recolección
                           </div>
                         )}
-                        {showMsg && (
+                       {showMsg && recoDateStr === tomorrowStr && (
                           <div className="text-xs text-orange-600 mt-1 p-2 bg-orange-100 rounded-lg border-l-4 border-orange-500 shadow-sm">
-                            🕒 {recoDateStr === tomorrowStr
-                              ? 'Entrega para mañana'
-                              : 'Entrega para otro día'}
+                            🕒 Entrega para mañana
                           </div>
                         )}
                       </Td>
