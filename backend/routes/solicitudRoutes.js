@@ -15,20 +15,6 @@ const {
  * ========================================
  */
 
-// Crear solicitud normal (alumnos y docentes)
-router.post(
-  '/',
-  verificarToken,
-  verificarRol([1, 2]), // Solo alumnos y docentes
-  (req, res, next) => {
-    if (req.usuario && req.usuario.rol_id) {
-      req.body.rol_id = req.usuario.rol_id;
-    }
-    next();
-  },
-  solicitudController.crearSolicitud
-);
-
 // Crear solicitud con adeudo (solo alumnos)
 router.post(
   '/con-adeudo',
