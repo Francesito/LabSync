@@ -489,11 +489,12 @@ export default function SolicitudesPage() {
 
         by[key] = {
           id: key,
-          folio: item.folio || Math.random().toString(36).slice(2, 6).toUpperCase(),
+           folio: item.folio || '',
           nombre_alumno: item.nombre_alumno || '',
           profesor: item.profesor || '',
           fecha_solicitud: item.fecha_solicitud,
           fecha_recoleccion: item.fecha_recoleccion,
+           fecha_devolucion: item.fecha_devolucion,
           estado: estadoUI,
           rawEstado,
           isDocenteRequest: isDocenteReq,
@@ -695,6 +696,19 @@ export default function SolicitudesPage() {
   /** PDF */
 const descargarPDF = async (vale) => {
   try {
+      const token = localStorage.getItem('token');
+    if (token && vale?.id) {
+      try {
+        const { data } = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/solicitudes/detalle/${vale.id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        vale = { ...vale, ...data };
+      } catch (e) {
+        console.error('Error al obtener detalle de solicitud:', e);
+      }
+    }
+    
     const doc = new jsPDF({
      orientation: 'portrait',
       unit: 'mm',
