@@ -86,7 +86,7 @@ export default function Prestamos() {
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 
-    const [showPrestamo, setShowPrestamo] = useState(false);
+  const [showPrestamo, setShowPrestamo] = useState(false);
   const [usuariosList, setUsuariosList] = useState([]);
   const [itemsList, setItemsList] = useState([]);
   const [tipoPrestamo, setTipoPrestamo] = useState('alumno');
@@ -98,12 +98,22 @@ export default function Prestamos() {
   const [minDevDate, setMinDevDate] = useState('');
   const [pendingItem, setPendingItem] = useState(null);
   
-    const computeMinDevDate = () => {
-    const d = new Date();
-    while (d.getDay() === 0 || d.getDay() === 6) {
-      d.setDate(d.getDate() + 1);
+  // Función mejorada para calcular la fecha mínima de devolución
+  const computeMinDevDate = () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Si son después de las 9 PM, empezar desde mañana
+    if (currentHour >= 21) {
+      now.setDate(now.getDate() + 1);
     }
-    return d.toISOString().split('T')[0];
+    
+    // Buscar el próximo día hábil
+    while (now.getDay() === 0 || now.getDay() === 6) {
+      now.setDate(now.getDate() + 1);
+    }
+    
+    return now.toISOString().split('T')[0];
   };
 
   const handleTipoPrestamoChange = (tipo) => {
@@ -167,17 +177,36 @@ export default function Prestamos() {
     setFechaDev(min);
   }, [showPrestamo]);
 
-    const userQueryNorm = normalizeSearch(userQuery);
-  const filteredUsers = usuariosList.filter(u =>
-    u.rol &&
-    u.rol.toLowerCase() === (tipoPrestamo === 'alumno' ? 'alumno' : 'docente') &&
-    normalizeSearch(u.correo_institucional).includes(userQueryNorm)
-  );
+  // Filtrado mejorado de usuarios - buscar por correo exacto
+  const filteredUsers = usuariosList.filter(u => {
+    if (!u.rol) return false;
+    
+    const rolMatch = u.rol.toLowerCase() === (tipoPrestamo === 'alumno' ? 'alumno' : 'docente');
+    if (!rolMatch) return false;
+    
+    // Búsqueda exacta por correo
+    if (!userQuery.trim()) return false;
+    
+    const queryLower = userQuery.toLowerCase();
+    const correoMatch = u.correo_institucional && u.correo_institucional.toLowerCase().includes(queryLower);
+    
+    return correoMatch;
+  });
 
-   const itemQueryNorm = normalizeSearch(itemQuery);
-  const filteredItems = itemsList.filter(i =>
-     normalizeSearch(i.nombre).includes(itemQueryNorm)
-  );
+  // Filtrado mejorado de materiales - búsqueda más precisa
+  const filteredItems = itemsList.filter(item => {
+    if (!itemQuery.trim()) return false;
+    
+    const queryNormalized = normalizeSearch(itemQuery);
+    const itemNameNormalized = normalizeSearch(item.nombre);
+    
+    // Búsqueda más precisa: debe contener todas las palabras del query
+    const queryWords = queryNormalized.split(' ').filter(word => word.length > 0);
+    
+    return queryWords.every(word => 
+      itemNameNormalized.includes(word)
+    );
+  });
 
   const handleStartAddItem = (item) => {
     setPendingItem({ ...item, cantidad: '' });
@@ -929,112 +958,209 @@ export default function Prestamos() {
           </div>
         </div>
       )}
-       {showPrestamo && (
+
+      {/* Modal de Préstamo Inmediato */}
+      {showPrestamo && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto">
           <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 my-8">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">Préstamo Inmediato</h3>
-              <button onClick={handleClosePrestamo}>✖️</button>
+              <h3 className="text-xl font-bold text-slate-800">Préstamo Inmediato</h3>
+              <button 
+                onClick={handleClosePrestamo}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
+
+            {/* Selector de tipo de préstamo */}
             <div className="flex gap-2 mb-4">
-              <Btn color={tipoPrestamo === 'alumno' ? 'blue' : 'gray'} onClick={() => handleTipoPrestamoChange('alumno')}>
+              <Btn 
+                color={tipoPrestamo === 'alumno' ? 'blue' : 'gray'} 
+                onClick={() => handleTipoPrestamoChange('alumno')}
+              >
                 Alumno
               </Btn>
-              <Btn color={tipoPrestamo === 'docente' ? 'blue' : 'gray'} onClick={() => handleTipoPrestamoChange('docente')}>
+              <Btn 
+                color={tipoPrestamo === 'docente' ? 'blue' : 'gray'} 
+                onClick={() => handleTipoPrestamoChange('docente')}
+              >
                 Docente
               </Btn>
             </div>
+
+            {/* Selector de usuario */}
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">Usuario</label>
+              <label className="block text-sm font-medium mb-2 text-slate-700">
+                {tipoPrestamo === 'alumno' ? 'Alumno' : 'Docente'}
+              </label>
               <input
                 type="text"
                 value={userQuery}
                 onChange={e => setUserQuery(e.target.value)}
-                className="w-full border px-3 py-2 rounded-lg"
-                placeholder="Buscar por correo..."
+                className="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Buscar por correo institucional..."
               />
-              {userQuery && (
-                <ul className="border rounded-lg mt-2 max-h-40 overflow-y-auto">
+              {userQuery && filteredUsers.length > 0 && (
+                <div className="border border-slate-200 rounded-lg mt-2 max-h-40 overflow-y-auto bg-white shadow-lg">
                   {filteredUsers.map(u => (
-                    <li
+                    <div
                       key={u.id}
-                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => { setSelectedUser(u); setUserQuery(''); }}
+                      className="px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                      onClick={() => { 
+                        setSelectedUser(u); 
+                        setUserQuery(''); 
+                      }}
                     >
-                      {u.nombre} - {u.correo_institucional}
-                      {tipoPrestamo === 'alumno' && u.grupo_nombre ? ` (${u.grupo_nombre})` : ''}
-                    </li>
+                      <div className="font-medium text-slate-900">{u.nombre}</div>
+                      <div className="text-sm text-slate-600">{u.correo_institucional}</div>
+                      {tipoPrestamo === 'alumno' && u.grupo_nombre && (
+                        <div className="text-xs text-slate-500">Grupo: {u.grupo_nombre}</div>
+                      )}
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
+              {userQuery && filteredUsers.length === 0 && (
+                <div className="text-sm text-slate-500 mt-2">No se encontraron usuarios</div>
+              )}
+              
+              {/* Usuario seleccionado */}
               {selectedUser && (
-                <div className="mt-2 inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
-                  {selectedUser.nombre}
-                  {tipoPrestamo === 'alumno' && selectedUser.grupo_nombre ? ` - ${selectedUser.grupo_nombre}` : ''}
-                  <button className="ml-2" onClick={() => setSelectedUser(null)}>✖️</button>
+                <div className="mt-3 inline-flex items-center bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm">
+                  <div>
+                    <span className="font-medium">{selectedUser.nombre}</span>
+                    {tipoPrestamo === 'alumno' && selectedUser.grupo_nombre && (
+                      <span className="text-blue-600"> - {selectedUser.grupo_nombre}</span>
+                    )}
+                  </div>
+                  <button 
+                    className="ml-2 text-blue-600 hover:text-blue-800"
+                    onClick={() => setSelectedUser(null)}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
               )}
             </div>
+
+            {/* Selector de materiales */}
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">Materiales / Reactivos</label>
+              <label className="block text-sm font-medium mb-2 text-slate-700">
+                {tipoPrestamo === 'alumno' ? 'Materiales de Laboratorio' : 'Reactivos'}
+              </label>
               <input
                 type="text"
                 value={itemQuery}
-                onChange={e => { setItemQuery(e.target.value); setPendingItem(null); }}
-                className="w-full border px-3 py-2 rounded-lg"
-                placeholder="Buscar..."
+                onChange={e => { 
+                  setItemQuery(e.target.value); 
+                  setPendingItem(null); 
+                }}
+                className="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Buscar materiales..."
               />
-              {itemQuery && (
-                <ul className="border rounded-lg mt-2 max-h-40 overflow-y-auto">
-                  {filteredItems.map(it => (
-                    <li key={it.id} className="px-3 py-2 flex justify-between items-center hover:bg-gray-100">
-                      <span>{normalizeName(it.nombre)}</span>
-                      {pendingItem && pendingItem.id === it.id ? (
+              {itemQuery && filteredItems.length > 0 && (
+                <div className="border border-slate-200 rounded-lg mt-2 max-h-40 overflow-y-auto bg-white shadow-lg">
+                  {filteredItems.map(item => (
+                    <div key={item.id} className="px-3 py-2 flex justify-between items-center hover:bg-slate-50 border-b border-slate-100 last:border-b-0">
+                      <div className="flex-1">
+                        <div className="font-medium text-slate-900">{normalizeName(item.nombre)}</div>
+                        <div className="text-sm text-slate-600">Stock: {item.stock} {item.unidad}</div>
+                      </div>
+                      {pendingItem && pendingItem.id === item.id ? (
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
+                            min="1"
+                            max={item.stock}
                             value={pendingItem.cantidad}
                             onChange={e => setPendingItem({ ...pendingItem, cantidad: e.target.value })}
-                            className="w-20 border px-2 py-1 rounded"
-                            placeholder="Cantidad"
+                            className="w-20 border border-slate-300 px-2 py-1 rounded text-sm"
+                            placeholder="Cant."
+                            autoFocus
                           />
-                          <button className="text-green-600 text-sm" onClick={handleConfirmAddItem}>OK</button>
+                          <button 
+                            className="text-green-600 hover:text-green-700 text-sm font-medium"
+                            onClick={handleConfirmAddItem}
+                          >
+                            ✓
+                          </button>
+                          <button 
+                            className="text-slate-400 hover:text-slate-600 text-sm"
+                            onClick={() => setPendingItem(null)}
+                          >
+                            ✕
+                          </button>
                         </div>
                       ) : (
-                        <button className="text-blue-600 text-sm" onClick={() => handleStartAddItem(it)}>Agregar</button>
+                        <button 
+                          className="text-blue-600 hover:text-blue-700 text-sm font-medium px-2 py-1 rounded"
+                          onClick={() => handleStartAddItem(item)}
+                        >
+                          Agregar
+                        </button>
                       )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {prestamoItems.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {prestamoItems.map((it, idx) => (
-                    <span key={idx} className="bg-gray-200 px-2 py-1 rounded-full text-sm">
-                      {normalizeName(it.nombre)} - {it.cantidad} {it.unidad}
-                    </span>
+                    </div>
                   ))}
                 </div>
               )}
+              {itemQuery && filteredItems.length === 0 && (
+                <div className="text-sm text-slate-500 mt-2">No se encontraron materiales</div>
+              )}
+              
+              {/* Materiales seleccionados */}
+              {prestamoItems.length > 0 && (
+                <div className="mt-3">
+                  <div className="text-sm font-medium text-slate-700 mb-2">Materiales seleccionados:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {prestamoItems.map((item, idx) => (
+                      <div key={idx} className="inline-flex items-center bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-sm">
+                        <span>{normalizeName(item.nombre)} - {item.cantidad} {item.unidad}</span>
+                        <button 
+                          className="ml-2 text-slate-500 hover:text-slate-700"
+                          onClick={() => setPrestamoItems(prev => prev.filter((_, i) => i !== idx))}
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">Fecha de devolución</label>
+
+            {/* Fecha de devolución */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2 text-slate-700">Fecha de devolución</label>
               <input
                 type="date"
                 value={fechaDev}
                 min={minDevDate}
                 onChange={handleFechaDevChange}
-                className="border px-3 py-2 rounded-lg w-full"
+                className="border border-slate-300 px-3 py-2 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              <div className="text-xs text-slate-500 mt-1">
+                Solo días hábiles. No se permiten préstamos después de las 9 PM para el día actual.
+              </div>
             </div>
-            <div className="flex justify-end gap-2">
-              <Btn color="gray" onClick={handleClosePrestamo}>Cancelar</Btn>
+
+            {/* Botones de acción */}
+            <div className="flex justify-end gap-3">
+              <Btn color="gray" onClick={handleClosePrestamo}>
+                Cancelar
+              </Btn>
               <Btn
                 color="green"
                 onClick={handleGuardarPrestamo}
                 disabled={!selectedUser || prestamoItems.length === 0 || !fechaDev}
               >
-                Guardar
+                Guardar Préstamo
               </Btn>
             </div>
           </div>
