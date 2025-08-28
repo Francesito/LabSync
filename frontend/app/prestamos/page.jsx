@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import { useAuth } from '../../lib/auth';
 import {
   obtenerPrestamosEntregados,
@@ -37,6 +38,30 @@ const formatMaterialName = (name) => {
   return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 };
 
+const normalizeName = (name) => (name || '').replace(/_/g, ' ');
+
+const Btn = ({ children, color, onClick, disabled, icon }) => {
+  const palette = {
+    green:  'bg-green-600 hover:bg-green-700 focus:ring-green-500',
+    red:    'bg-red-600 hover:bg-red-700 focus:ring-red-500',
+    blue:   'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+    gray:   'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500',
+    purple: 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
+  }[color] || 'bg-slate-600 hover:bg-slate-700 focus:ring-slate-500';
+
+  return (
+    <button
+      type="button"
+      className={`${palette} text-white text-sm rounded-lg px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-1 shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2`}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {icon && <span className="text-sm">{icon}</span>}
+      {children}
+    </button>
+  );
+};
+
 export default function Prestamos() {
   const { usuario } = useAuth();
   const [prestamos, setPrestamos] = useState([]);
@@ -52,6 +77,139 @@ export default function Prestamos() {
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 
+    const computeMinDevDate = () => {
+    const d = new Date();
+    while (d.getDay() === 0 || d.getDay() === 6) {
+      d.setDate(d.getDate() + 1);
+    }
+    return d.toISOString().split('T')[0];
+  };
+
+  const handleTipoPrestamoChange = (tipo) => {
+    setTipoPrestamo(tipo);
+    setSelectedUser(null);
+    setUserQuery('');
+    setPrestamoItems([]);
+    setItemQuery('');
+    setFechaDev(minDevDate);
+    setPendingItem(null);
+  };
+
+  useEffect(() => {
+    if (!showPrestamo) return;
+    const token = localStorage.getItem('token');
+    axios
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/usuarios`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => setUsuariosList(res.data))
+      .catch(err => console.error(err));
+  }, [showPrestamo]);
+
+  useEffect(() => {
+    if (!showPrestamo) return;
+    const token = localStorage.getItem('token');
+    const fetchItems = async () => {
+      try {
+        if (tipoPrestamo === 'alumno') {
+          const [lab, eq] = await Promise.all([
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/laboratorio`, { headers: { Authorization: `Bearer ${token}` } }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/equipos`, { headers: { Authorization: `Bearer ${token}` } })
+          ]);
+          const data = [
+            ...lab.data.map(m => ({ id: m.id, nombre: m.nombre, stock: m.cantidad_disponible, unidad: 'u', tipo: 'laboratorio' })),
+            ...eq.data.map(m => ({ id: m.id, nombre: m.nombre, stock: m.cantidad_disponible_u, unidad: 'u', tipo: 'equipo' }))
+          ];
+          setItemsList(data);
+        } else {
+          const [liq, sol] = await Promise.all([
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/liquidos`, { headers: { Authorization: `Bearer ${token}` } }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/solidos`, { headers: { Authorization: `Bearer ${token}` } })
+          ]);
+          const data = [
+            ...liq.data.map(m => ({ id: m.id, nombre: m.nombre, stock: m.cantidad_disponible_ml, unidad: 'ml', tipo: 'liquido' })),
+            ...sol.data.map(m => ({ id: m.id, nombre: m.nombre, stock: m.cantidad_disponible_g, unidad: 'g', tipo: 'solido' }))
+          ];
+          setItemsList(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchItems();
+  }, [showPrestamo, tipoPrestamo]);
+
+  useEffect(() => {
+    if (!showPrestamo) return;
+    const min = computeMinDevDate();
+    setMinDevDate(min);
+    setFechaDev(min);
+  }, [showPrestamo]);
+
+  const filteredUsers = usuariosList.filter(u =>
+    u.rol === (tipoPrestamo === 'alumno' ? 'alumno' : 'docente') &&
+    u.correo_institucional.toLowerCase().includes(userQuery.toLowerCase())
+  );
+
+  const filteredItems = itemsList.filter(i =>
+    normalizeName(i.nombre).toLowerCase().includes(itemQuery.toLowerCase())
+  );
+
+  const handleStartAddItem = (item) => {
+    setPendingItem({ ...item, cantidad: '' });
+  };
+
+  const handleConfirmAddItem = () => {
+    const qty = parseInt(pendingItem.cantidad, 10);
+    if (!qty || qty <= 0) return;
+    if (qty > pendingItem.stock) {
+      alert('Cantidad supera el stock disponible');
+      return;
+    }
+    setPrestamoItems(prev => [...prev, { ...pendingItem, nombre: normalizeName(pendingItem.nombre), cantidad: qty }]);
+    setPendingItem(null);
+    setItemQuery('');
+  };
+
+  const handleFechaDevChange = (e) => {
+    const v = e.target.value;
+    const d = new Date(v);
+    const day = d.getDay();
+    if (day === 0 || day === 6) return;
+    setFechaDev(v);
+  };
+
+  const handleClosePrestamo = () => {
+    setShowPrestamo(false);
+    setTipoPrestamo('alumno');
+    setSelectedUser(null);
+    setUserQuery('');
+    setPrestamoItems([]);
+    setItemQuery('');
+    setFechaDev('');
+    setPendingItem(null);
+  };
+
+  const handleGuardarPrestamo = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/materials/prestamo-inmediato`,
+        {
+          usuario_id: selectedUser?.id,
+          tipo: tipoPrestamo,
+          fecha_devolucion: fechaDev,
+          items: prestamoItems.map(i => ({ id: i.id, cantidad: i.cantidad, tipo: i.tipo }))
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      handleClosePrestamo();
+    } catch (err) {
+      console.error(err);
+      alert('Error al guardar préstamo');
+    }
+  };
+  
   // 1) Al montar, cargar sólo si es almacenista
   useEffect(() => {
     if (usuario === null) return; 
@@ -243,7 +401,7 @@ export default function Prestamos() {
           {/* Filtros */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             {/* Botones de estado - en una fila en móvil */}
-            <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+           <div className="flex gap-2 flex-wrap sm:flex-nowrap w-full">
               <button
                 onClick={() => setStatusFilter(statusFilter === 'vencidas' ? '' : 'vencidas')}
                 className={`px-3 py-2 text-xs sm:text-sm rounded-lg border flex-1 sm:flex-none whitespace-nowrap ${statusFilter === 'vencidas' ? 'bg-[#003579] text-white' : 'bg-white text-[#003579]'}`}
@@ -256,6 +414,11 @@ export default function Prestamos() {
               >
                 Próximas a vencer
               </button>
+               <div className="ml-auto">
+                <Btn color="green" icon="⚡" onClick={() => setShowPrestamo(true)}>
+                  Préstamo inmediato
+                </Btn>
+              </div>
             </div>
 
             {/* Select de grupo y botón limpiar en segunda fila en móvil */}
@@ -738,6 +901,117 @@ export default function Prestamos() {
                   </form>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+       {showPrestamo && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto">
+          <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 my-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Préstamo Inmediato</h3>
+              <button onClick={handleClosePrestamo}>✖️</button>
+            </div>
+            <div className="flex gap-2 mb-4">
+              <Btn color={tipoPrestamo === 'alumno' ? 'blue' : 'gray'} onClick={() => handleTipoPrestamoChange('alumno')}>
+                Alumno
+              </Btn>
+              <Btn color={tipoPrestamo === 'docente' ? 'blue' : 'gray'} onClick={() => handleTipoPrestamoChange('docente')}>
+                Docente
+              </Btn>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Usuario</label>
+              <input
+                type="text"
+                value={userQuery}
+                onChange={e => setUserQuery(e.target.value)}
+                className="w-full border px-3 py-2 rounded-lg"
+                placeholder="Buscar por correo..."
+              />
+              {userQuery && (
+                <ul className="border rounded-lg mt-2 max-h-40 overflow-y-auto">
+                  {filteredUsers.map(u => (
+                    <li
+                      key={u.id}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => { setSelectedUser(u); setUserQuery(''); }}
+                    >
+                      {u.nombre} - {u.correo_institucional}
+                      {tipoPrestamo === 'alumno' && u.grupo_nombre ? ` (${u.grupo_nombre})` : ''}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {selectedUser && (
+                <div className="mt-2 inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+                  {selectedUser.nombre}
+                  {tipoPrestamo === 'alumno' && selectedUser.grupo_nombre ? ` - ${selectedUser.grupo_nombre}` : ''}
+                  <button className="ml-2" onClick={() => setSelectedUser(null)}>✖️</button>
+                </div>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Materiales / Reactivos</label>
+              <input
+                type="text"
+                value={itemQuery}
+                onChange={e => { setItemQuery(e.target.value); setPendingItem(null); }}
+                className="w-full border px-3 py-2 rounded-lg"
+                placeholder="Buscar..."
+              />
+              {itemQuery && (
+                <ul className="border rounded-lg mt-2 max-h-40 overflow-y-auto">
+                  {filteredItems.map(it => (
+                    <li key={it.id} className="px-3 py-2 flex justify-between items-center hover:bg-gray-100">
+                      <span>{normalizeName(it.nombre)}</span>
+                      {pendingItem && pendingItem.id === it.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={pendingItem.cantidad}
+                            onChange={e => setPendingItem({ ...pendingItem, cantidad: e.target.value })}
+                            className="w-20 border px-2 py-1 rounded"
+                            placeholder="Cantidad"
+                          />
+                          <button className="text-green-600 text-sm" onClick={handleConfirmAddItem}>OK</button>
+                        </div>
+                      ) : (
+                        <button className="text-blue-600 text-sm" onClick={() => handleStartAddItem(it)}>Agregar</button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {prestamoItems.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {prestamoItems.map((it, idx) => (
+                    <span key={idx} className="bg-gray-200 px-2 py-1 rounded-full text-sm">
+                      {normalizeName(it.nombre)} - {it.cantidad} {it.unidad}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Fecha de devolución</label>
+              <input
+                type="date"
+                value={fechaDev}
+                min={minDevDate}
+                onChange={handleFechaDevChange}
+                className="border px-3 py-2 rounded-lg w-full"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Btn color="gray" onClick={handleClosePrestamo}>Cancelar</Btn>
+              <Btn
+                color="green"
+                onClick={handleGuardarPrestamo}
+                disabled={!selectedUser || prestamoItems.length === 0 || !fechaDev}
+              >
+                Guardar
+              </Btn>
             </div>
           </div>
         </div>
