@@ -114,16 +114,23 @@ const verificarMultiplesRoles = (...rolesPermitidos) => {
   };
 };
 
-const verificarAccesoStock = [
-  (req, res, next) => {
-    // Solo almacén y administradores pueden modificar stock
-    if (!req.usuario || ![3, 4].includes(req.usuario.rol_id)) {
-      return res.status(403).json({ error: 'Acceso denegado. Solo personal de almacén puede modificar stock.' });
-    }
-    next();
-  },
-  verificarPermisosAlmacen('stock') 
-];
+/**
+ * Middleware que asegura que el usuario pertenezca al personal de almacén
+ * o sea administrador y, además, posea el permiso para modificar el stock.
+ */
+const verificarAccesoStock = (req, res, next) => {
+  // Solo almacén y administradores pueden modificar stock
+  if (!req.usuario || ![3, 4].includes(req.usuario.rol_id)) {
+    return res
+      .status(403)
+      .json({
+        error: 'Acceso denegado. Solo personal de almacén puede modificar stock.'
+      });
+  }
+
+  // Ejecuta la verificación de permisos específica para el almacén
+  return verificarPermisosAlmacen('stock')(req, res, next);
+};
 
 module.exports = {
   verificarToken,
