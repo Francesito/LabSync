@@ -42,7 +42,17 @@ app.use(cors(corsOptions));
 // Manejo explícito de solicitudes preflight
 app.options('*', cors(corsOptions));
 
-app.use(express.json());
+// Seguridad básica: establecer cabeceras HTTP manualmente
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  next();
+});
+
+// Limitar tamaño de payloads JSON para prevenir ataques DoS
+app.use(express.json({ limit: '10kb' }));
 
 // ==================== RUTA DE PRUEBA ====================
 // Ruta para verificar que el backend funciona
