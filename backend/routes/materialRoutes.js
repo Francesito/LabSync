@@ -24,6 +24,14 @@ router.get('/', verificarToken, materialController.getMaterials);
 // ✅ NUEVA RUTA: Obtener docentes para selección en solicitudes
 router.get('/docentes', verificarToken, materialController.obtenerDocentesParaSolicitud);
 
+// Usuarios disponibles para préstamo inmediato
+router.get(
+  '/usuarios-prestamo',
+  verificarToken,
+  verificarRol([3, 4]),
+  materialController.getUsuariosPrestamo
+);
+
 // Obtener un material específico por ID y TIPO - LECTURA
 // Ejemplo: GET /api/materials/123?tipo=liquido
 
