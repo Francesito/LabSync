@@ -77,6 +77,18 @@ export default function Prestamos() {
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 
+    const [showPrestamo, setShowPrestamo] = useState(false);
+  const [usuariosList, setUsuariosList] = useState([]);
+  const [itemsList, setItemsList] = useState([]);
+  const [tipoPrestamo, setTipoPrestamo] = useState('alumno');
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userQuery, setUserQuery] = useState('');
+  const [prestamoItems, setPrestamoItems] = useState([]);
+  const [itemQuery, setItemQuery] = useState('');
+  const [fechaDev, setFechaDev] = useState('');
+  const [minDevDate, setMinDevDate] = useState('');
+  const [pendingItem, setPendingItem] = useState(null);
+  
     const computeMinDevDate = () => {
     const d = new Date();
     while (d.getDay() === 0 || d.getDay() === 6) {
