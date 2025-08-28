@@ -130,7 +130,7 @@ export default function Prestamos() {
     if (!showPrestamo) return;
     const token = localStorage.getItem('token');
     axios
-      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/usuarios`, {
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/usuarios-prestamo`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => setUsuariosList(res.data))
@@ -197,15 +197,14 @@ export default function Prestamos() {
   const filteredItems = itemsList.filter(item => {
     if (!itemQuery.trim()) return false;
     
-    const queryNormalized = normalizeSearch(itemQuery);
-    const itemNameNormalized = normalizeSearch(item.nombre);
-    
-    // Búsqueda más precisa: debe contener todas las palabras del query
-    const queryWords = queryNormalized.split(' ').filter(word => word.length > 0);
-    
-    return queryWords.every(word => 
-      itemNameNormalized.includes(word)
-    );
+    const queryNormalized = normalizeSearch(itemQuery).trim();
+    const itemNameNormalized = normalizeSearch(item.nombre).trim();
+
+    if (queryNormalized.includes(' ')) {
+      return itemNameNormalized === queryNormalized;
+    }
+
+    return itemNameNormalized.includes(queryNormalized);
   });
 
   const handleStartAddItem = (item) => {
