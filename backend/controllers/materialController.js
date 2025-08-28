@@ -2241,6 +2241,24 @@ const getUsuariosConPermisos = async (req, res) => {
 };
 
 
+// Usuarios disponibles para préstamo inmediato (alumnos y docentes activos)
+const getUsuariosPrestamo = async (req, res) => {
+  logRequest('getUsuariosPrestamo');
+  try {
+    const [usuarios] = await pool.query(`
+      SELECT u.id, u.nombre, u.correo_institucional, r.nombre AS rol
+      FROM Usuario u
+      JOIN Rol r ON u.rol_id = r.id
+      WHERE u.rol_id IN (1, 2) AND u.activo = TRUE
+      ORDER BY u.nombre
+    `);
+    res.json(usuarios);
+  } catch (error) {
+    console.error('[Error] getUsuariosPrestamo:', error);
+    res.status(500).json({ error: 'Error al obtener usuarios para préstamo: ' + error.message });
+  }
+};
+
 // ESTADO DEL SISTEMA (sin estado de permisos)
 const getEstadoSistema = async (req, res) => {
   logRequest('getEstadoSistema');
@@ -2619,6 +2637,7 @@ module.exports = {
   
   // Usuarios y permisos
   getUsuariosConPermisos,
+    getUsuariosPrestamo,
   
   // Sistema y administración
   getEstadoSistema,
