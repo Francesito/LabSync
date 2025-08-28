@@ -287,6 +287,19 @@ function TablaSolicitudes({
                               </Btn>
                             )}
 
+                            {/* Almacén: cancelar solicitud */}
+                          {usuario?.rol === 'almacen' &&
+                            !['entregada', 'cancelado', 'rechazada'].includes((s.estado || '').toLowerCase()) && (
+                              <Btn
+                                color="gray"
+                                icon="🗑️"
+                                onClick={() => onAccion(s.id, 'cancelar', 'cancelado')}
+                                disabled={procesandoId === s.id}
+                              >
+                                Cancelar
+                              </Btn>
+                            )}
+
                           {/* Alumno: cancelar si está en aprobación pendiente */}
                           {usuario?.rol === 'alumno' &&
                             (s.estado === 'aprobación pendiente') && (
@@ -344,12 +357,83 @@ export default function SolicitudesPage() {
   const [modalEntrega, setModalEntrega] = useState(null); // {id, items}
   const [selectedItems, setSelectedItems] = useState([]);
 
+   // Estado para préstamo inmediato
+  const [showPrestamo, setShowPrestamo] = useState(false);
+  const [tipoPrestamo, setTipoPrestamo] = useState('alumno');
+  const [usuariosList, setUsuariosList] = useState([]);
+  const [userQuery, setUserQuery] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [itemsList, setItemsList] = useState([]);
+  const [itemQuery, setItemQuery] = useState('');
+  const [prestamoItems, setPrestamoItems] = useState([]);
+  const [fechaDev, setFechaDev] = useState('');
+  const [minDevDate, setMinDevDate] = useState('');
+
+  const computeMinDevDate = () => {
+    const d = new Date();
+    while (d.getDay() === 0 || d.getDay() === 6) {
+      d.setDate(d.getDate() + 1);
+    }
+    return toLocalDateStr(d);
+  };
+
   useEffect(() => {
     if (!notice) return;
     const t = setTimeout(() => setNotice(''), 10000);
     return () => clearTimeout(t);
   }, [notice]);
 
+  useEffect(() => {
+    if (!showPrestamo) return;
+    const token = localStorage.getItem('token');
+    axios
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/usuarios`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => setUsuariosList(res.data))
+      .catch(err => console.error(err));
+  }, [showPrestamo]);
+
+  useEffect(() => {
+    if (!showPrestamo) return;
+    const token = localStorage.getItem('token');
+    const fetchItems = async () => {
+      try {
+        if (tipoPrestamo === 'alumno') {
+          const [lab, eq] = await Promise.all([
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/laboratorio`, { headers: { Authorization: `Bearer ${token}` } }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/equipos`, { headers: { Authorization: `Bearer ${token}` } })
+          ]);
+          const data = [
+            ...lab.data.map(m => ({ id: m.id, nombre: m.nombre, stock: m.cantidad_disponible, unidad: 'u', tipo: 'laboratorio' })),
+            ...eq.data.map(m => ({ id: m.id, nombre: m.nombre, stock: m.cantidad_disponible_u, unidad: 'u', tipo: 'equipo' }))
+          ];
+          setItemsList(data);
+        } else {
+          const [liq, sol] = await Promise.all([
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/liquidos`, { headers: { Authorization: `Bearer ${token}` } }),
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/solidos`, { headers: { Authorization: `Bearer ${token}` } })
+          ]);
+          const data = [
+            ...liq.data.map(m => ({ id: m.id, nombre: m.nombre, stock: m.cantidad_disponible_ml, unidad: 'ml', tipo: 'liquido' })),
+            ...sol.data.map(m => ({ id: m.id, nombre: m.nombre, stock: m.cantidad_disponible_g, unidad: 'g', tipo: 'solido' }))
+          ];
+          setItemsList(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchItems();
+  }, [showPrestamo, tipoPrestamo]);
+
+  useEffect(() => {
+    if (!showPrestamo) return;
+    const min = computeMinDevDate();
+    setMinDevDate(min);
+    setFechaDev(min);
+  }, [showPrestamo]);
+  
   useEffect(() => {
     const today = new Date();
     let day = today.getDay();
@@ -686,6 +770,56 @@ export default function SolicitudesPage() {
       .map(i => ({ item_id: i.item_id, cantidad_entregada: i.cantidad }));
     await actualizarEstado(modalEntrega.id, 'entregar', 'entregada', items);
     setModalEntrega(null);
+  };
+
+   // Helpers para préstamo inmediato
+  const filteredUsers = usuariosList.filter(u =>
+    u.rol === (tipoPrestamo === 'alumno' ? 'alumno' : 'docente') &&
+    u.correo_institucional.toLowerCase().includes(userQuery.toLowerCase())
+  );
+
+  const filteredItems = itemsList.filter(i =>
+    i.nombre.toLowerCase().includes(itemQuery.toLowerCase())
+  );
+
+  const handleAddItemPrestamo = (item) => {
+    const qty = parseInt(prompt('Cantidad'), 10);
+    if (!qty || qty <= 0) return;
+    if (qty > item.stock) {
+      alert('Cantidad supera el stock disponible');
+      return;
+    }
+    setPrestamoItems(prev => [...prev, { ...item, cantidad: qty }]);
+    setItemQuery('');
+  };
+
+  const handleFechaDevChange = (e) => {
+    const v = e.target.value;
+    const d = new Date(v);
+    const day = d.getDay();
+    if (day === 0 || day === 6) return; // evitar fines de semana
+    setFechaDev(v);
+  };
+
+  const handleGuardarPrestamo = async () => {
+    // TODO: integrar con backend para registrar el préstamo y adeudo
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/materials/prestamo-inmediato`,
+        {
+          usuario_id: selectedUser?.id,
+          tipo: tipoPrestamo,
+          fecha_devolucion: fechaDev,
+          items: prestamoItems.map(i => ({ id: i.id, cantidad: i.cantidad, tipo: i.tipo }))
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setShowPrestamo(false);
+    } catch (err) {
+      console.error(err);
+      alert('Error al guardar préstamo');
+    }
   };
   
    
@@ -1119,7 +1253,13 @@ const descargarPDF = async (vale) => {
               )}
             </div>
             
-       
+           <div className="ml-auto">
+              <Btn color="green" icon="⚡" onClick={() => setShowPrestamo(true)}>
+                Préstamo inmediato
+              </Btn>
+            </div>
+
+           
            {notice && (
             <div className="w-full sm:ml-auto">
               <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse hover:shadow-md transition-shadow duration-200 flex items-center gap-2">
@@ -1222,6 +1362,105 @@ const descargarPDF = async (vale) => {
                 <span>🚚</span>
                 Entregar ({selectedItems.length})
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+       {showPrestamo && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto">
+          <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 my-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Préstamo Inmediato</h3>
+              <button onClick={() => setShowPrestamo(false)}>✖️</button>
+            </div>
+            <div className="flex gap-2 mb-4">
+              <Btn color={tipoPrestamo === 'alumno' ? 'blue' : 'gray'} onClick={() => { setTipoPrestamo('alumno'); setSelectedUser(null); }}>
+                Alumno
+              </Btn>
+              <Btn color={tipoPrestamo === 'docente' ? 'blue' : 'gray'} onClick={() => { setTipoPrestamo('docente'); setSelectedUser(null); }}>
+                Docente
+              </Btn>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Usuario</label>
+              <input
+                type="text"
+                value={userQuery}
+                onChange={e => setUserQuery(e.target.value)}
+                className="w-full border px-3 py-2 rounded-lg"
+                placeholder="Buscar por correo..."
+              />
+              {userQuery && (
+                <ul className="border rounded-lg mt-2 max-h-40 overflow-y-auto">
+                  {filteredUsers.map(u => (
+                    <li
+                      key={u.id}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => { setSelectedUser(u); setUserQuery(''); }}
+                    >
+                      {u.nombre} - {u.correo_institucional}
+                      {tipoPrestamo === 'alumno' && u.grupo_nombre ? ` (${u.grupo_nombre})` : ''}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {selectedUser && (
+                <div className="mt-2 inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+                  {selectedUser.nombre}
+                  {tipoPrestamo === 'alumno' && selectedUser.grupo_nombre ? ` - ${selectedUser.grupo_nombre}` : ''}
+                  <button className="ml-2" onClick={() => setSelectedUser(null)}>✖️</button>
+                </div>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Materiales / Reactivos</label>
+              <input
+                type="text"
+                value={itemQuery}
+                onChange={e => setItemQuery(e.target.value)}
+                className="w-full border px-3 py-2 rounded-lg"
+                placeholder="Buscar..."
+              />
+              {itemQuery && (
+                <ul className="border rounded-lg mt-2 max-h-40 overflow-y-auto">
+                  {filteredItems.map(it => (
+                    <li key={it.id} className="px-3 py-2 flex justify-between items-center hover:bg-gray-100">
+                      <span>{it.nombre}</span>
+                      <button className="text-blue-600 text-sm" onClick={() => handleAddItemPrestamo(it)}>Agregar</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {prestamoItems.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {prestamoItems.map((it, idx) => (
+                    <span key={idx} className="bg-gray-200 px-2 py-1 rounded-full text-sm">
+                      {it.nombre} - {it.cantidad} {it.unidad}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Fecha de devolución</label>
+              <input
+                type="date"
+                value={fechaDev}
+                min={minDevDate}
+                onChange={handleFechaDevChange}
+                className="border px-3 py-2 rounded-lg w-full"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Btn color="gray" onClick={() => setShowPrestamo(false)}>Cancelar</Btn>
+              <Btn
+                color="green"
+                onClick={handleGuardarPrestamo}
+                disabled={!selectedUser || prestamoItems.length === 0 || !fechaDev}
+              >
+                Guardar
+              </Btn>
             </div>
           </div>
         </div>
