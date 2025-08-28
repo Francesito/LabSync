@@ -40,6 +40,15 @@ const formatMaterialName = (name) => {
 
 const normalizeName = (name) => (name || '').replace(/_/g, ' ');
 
+// Normaliza cadenas para búsquedas: quita acentos, convierte a minúsculas y
+// reemplaza guiones bajos por espacios para hacer coincidencias más flexibles.
+const normalizeSearch = (str) =>
+  (str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/_/g, ' ');
+
 const Btn = ({ children, color, onClick, disabled, icon }) => {
   const palette = {
     green:  'bg-green-600 hover:bg-green-700 focus:ring-green-500',
@@ -158,13 +167,16 @@ export default function Prestamos() {
     setFechaDev(min);
   }, [showPrestamo]);
 
+    const userQueryNorm = normalizeSearch(userQuery);
   const filteredUsers = usuariosList.filter(u =>
-    u.rol === (tipoPrestamo === 'alumno' ? 'alumno' : 'docente') &&
-    u.correo_institucional.toLowerCase().includes(userQuery.toLowerCase())
+    u.rol &&
+    u.rol.toLowerCase() === (tipoPrestamo === 'alumno' ? 'alumno' : 'docente') &&
+    normalizeSearch(u.correo_institucional).includes(userQueryNorm)
   );
 
+   const itemQueryNorm = normalizeSearch(itemQuery);
   const filteredItems = itemsList.filter(i =>
-    normalizeName(i.nombre).toLowerCase().includes(itemQuery.toLowerCase())
+     normalizeSearch(i.nombre).includes(itemQueryNorm)
   );
 
   const handleStartAddItem = (item) => {
