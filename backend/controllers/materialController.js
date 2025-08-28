@@ -1037,13 +1037,13 @@ const cancelSolicitud = async (req, res) => {
 
     }
     // 2) Eliminar o marcar según rol
-    if (rol_id === 1) {
-      // Si es alumno, borramos ítems y solicitud para que desaparezca del listado
+   if (rol_id === 1 || rol_id === 3) {
+      // Alumno o almacenista: eliminar completamente la solicitud e ítems
       await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
       await pool.query('DELETE FROM Solicitud WHERE id = ?', [id]);
       return res.status(200).json({ message: 'Solicitud eliminada permanentemente' });
     } else {
-      // Almacenistas siguen marcando como cancelado
+       // Otros roles solo marcan como cancelado
       await pool.query('UPDATE Solicitud SET estado = ? WHERE id = ?', ['cancelado', id]);
       return res.status(200).json({ message: 'Solicitud cancelada' });
     }
