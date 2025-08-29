@@ -92,6 +92,9 @@ export default function Prestamos() {
   const [tipoPrestamo, setTipoPrestamo] = useState('alumno');
   const [selectedUser, setSelectedUser] = useState(null);
   const [userQuery, setUserQuery] = useState('');
+    const [docentesList, setDocentesList] = useState([]);
+  const [docenteQuery, setDocenteQuery] = useState('');
+  const [selectedDocente, setSelectedDocente] = useState(null);
   const [prestamoItems, setPrestamoItems] = useState([]);
   const [itemQuery, setItemQuery] = useState('');
   const [fechaDev, setFechaDev] = useState('');
@@ -122,6 +125,8 @@ export default function Prestamos() {
     setTipoPrestamo(tipo);
     setSelectedUser(null);
     setUserQuery('');
+    setDocenteQuery('');
+    setSelectedDocente(null);
     setPrestamoItems([]);
     setItemQuery('');
     setFechaDev(minDevDate);
@@ -138,6 +143,17 @@ export default function Prestamos() {
       .then(res => setUsuariosList(res.data))
       .catch(err => console.error(err));
   }, [showPrestamo]);
+
+   useEffect(() => {
+    if (!showPrestamo || tipoPrestamo !== 'alumno') return;
+    const token = localStorage.getItem('token');
+    axios
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/docentes`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => setDocentesList(res.data))
+      .catch(err => console.error(err));
+  }, [showPrestamo, tipoPrestamo]);
 
   useEffect(() => {
     if (!showPrestamo) return;
@@ -195,6 +211,11 @@ export default function Prestamos() {
     return correoMatch;
   });
 
+    const filteredDocentes = docentesList.filter(d => {
+    if (!docenteQuery.trim()) return false;
+    return normalizeSearch(d.nombre).includes(normalizeSearch(docenteQuery));
+  });
+  
   // Filtrado mejorado de materiales - búsqueda más precisa
   const filteredItems = itemsList.filter(item => {
     if (!itemQuery.trim()) return false;
@@ -240,6 +261,8 @@ export default function Prestamos() {
     setTipoPrestamo('alumno');
     setSelectedUser(null);
     setUserQuery('');
+    setSelectedDocente(null);
+    setDocenteQuery('');
     setPrestamoItems([]);
     setItemQuery('');
     setFechaDev('');
@@ -255,11 +278,13 @@ export default function Prestamos() {
           usuario_id: selectedUser?.id,
           tipo: tipoPrestamo,
           fecha_devolucion: fechaDev,
+           docente_id: selectedDocente?.id,
           items: prestamoItems.map(i => ({ id: i.id, cantidad: i.cantidad, tipo: i.tipo }))
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       handleClosePrestamo();
+       router.refresh();
     } catch (err) {
       console.error(err);
       alert('Error al guardar préstamo');
@@ -1051,6 +1076,52 @@ export default function Prestamos() {
               )}
             </div>
 
+             {tipoPrestamo === 'alumno' && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2 text-slate-700">Docente encargado</label>
+                <input
+                  type="text"
+                  value={docenteQuery}
+                  onChange={e => setDocenteQuery(e.target.value)}
+                  className="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Buscar docente..."
+                />
+                {docenteQuery && filteredDocentes.length > 0 && (
+                  <div className="border border-slate-200 rounded-lg mt-2 max-h-40 overflow-y-auto bg-white shadow-lg">
+                    {filteredDocentes.map(d => (
+                      <div
+                        key={d.id}
+                        className="px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                        onClick={() => {
+                          setSelectedDocente(d);
+                          setDocenteQuery('');
+                        }}
+                      >
+                        <div className="font-medium text-slate-900">{d.nombre}</div>
+                        <div className="text-sm text-slate-600">{d.correo_institucional}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {docenteQuery && filteredDocentes.length === 0 && (
+                  <div className="text-sm text-slate-500 mt-2">No se encontraron docentes</div>
+                )}
+                {selectedDocente && (
+                  <div className="mt-3 inline-flex items-center bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm">
+                    <span className="font-medium">{selectedDocente.nombre}</span>
+                    <button
+                      className="ml-2 text-green-600 hover:text-green-800"
+                      onClick={() => setSelectedDocente(null)}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Selector de materiales */}
             <div className="mb-4">
               <label className="block text-sm font-medium mb-2 text-slate-700">
@@ -1161,7 +1232,7 @@ export default function Prestamos() {
               <Btn
                 color="green"
                 onClick={handleGuardarPrestamo}
-                disabled={!selectedUser || prestamoItems.length === 0 || !fechaDev}
+               disabled={!selectedUser || prestamoItems.length === 0 || !fechaDev || (tipoPrestamo === 'alumno' && !selectedDocente)}
               >
                 Guardar Préstamo
               </Btn>
