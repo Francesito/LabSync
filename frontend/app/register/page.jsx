@@ -81,7 +81,7 @@ export default function Register() {
 
   return (
  <div
-  className={`min-vh-100 d-flex font-sans position-relative auth-bg ${isLargeScreen ? 'bg-image' : 'bg-gradient'}`}
+   className="min-vh-100 w-100 d-flex font-sans position-relative auth-bg bg-image"
 >
 
       <div className="row w-100 m-0 position-relative" style={{ zIndex: 2 }}>
@@ -248,11 +248,7 @@ export default function Register() {
   background-position: center;
   background-repeat: no-repeat;
 }
-
-.bg-gradient {
-  background-image: linear-gradient(135deg, #e6f7ec 0%, #ffffff 100%);
-}
-        
+ 
         .form-control:focus {
           background-color: #ffffff !important;
           border-color: #000000 !important;
