@@ -2262,7 +2262,9 @@ const getUsuariosPrestamo = async (req, res) => {
 // Registrar préstamo inmediato para alumnos o docentes
 const prestamoInmediato = async (req, res) => {
   logRequest('prestamoInmediato');
-const { usuario_id, fecha_devolucion, items, docente_id } = req.body;
+const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion } = req.body;
+
+  const fechaRec = fecha_recoleccion || new Date().toISOString().split('T')[0];
 
   if (!usuario_id || !fecha_devolucion || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Datos incompletos para registrar préstamo' });
@@ -2301,7 +2303,7 @@ const { usuario_id, fecha_devolucion, items, docente_id } = req.body;
       const [solRes] = await connection.query(
         `INSERT INTO Solicitud
            (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, folio, grupo_id, fecha_recoleccion, fecha_devolucion)
-         VALUES (?, NOW(), ?, 'pendiente', ?, ?, ?, ?, ?, NOW(), STR_TO_DATE(?, '%Y-%m-%d'))`,
+         VALUES (?, NOW(), ?, 'pendiente', ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'))`,
         [
           usuario_id,
           'Prestamo inmediato',
@@ -2310,6 +2312,7 @@ const { usuario_id, fecha_devolucion, items, docente_id } = req.body;
           docenteSel.nombre,
           folio,
           usuarioInfo.grupo_id,
+          fechaRec,
           fecha_devolucion
         ]
       );
@@ -2339,7 +2342,7 @@ const { usuario_id, fecha_devolucion, items, docente_id } = req.body;
       const [solicitudResult] = await connection.query(
         `INSERT INTO Solicitud
            (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, folio, grupo_id, fecha_recoleccion, fecha_devolucion, fecha_entrega)
-         VALUES (?, NOW(), ?, 'entregado', ?, ?, ?, ?, ?, NOW(), STR_TO_DATE(?, '%Y-%m-%d'), NOW())`,
+     VALUES (?, NOW(), ?, 'entregado', ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'), NOW())`,
         [
           usuario_id,
           'Prestamo inmediato',
@@ -2348,6 +2351,7 @@ const { usuario_id, fecha_devolucion, items, docente_id } = req.body;
           profesorNombre,
           folio,
           usuarioInfo.grupo_id,
+           fechaRec,
           fecha_devolucion
         ]
       );
