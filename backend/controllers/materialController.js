@@ -2272,6 +2272,46 @@ const prestamoInmediato = async (req, res) => {
   try {
     await connection.beginTransaction();
 
+     // Obtener información del usuario que recibe el préstamo
+    const [usuarioRows] = await connection.query(
+      'SELECT nombre, grupo_id, rol_id FROM Usuario WHERE id = ?',
+      [usuario_id]
+    );
+    if (usuarioRows.length === 0) {
+      throw new Error('Usuario no encontrado');
+    }
+    const usuarioInfo = usuarioRows[0];
+
+    // Datos del docente o administrador que registra el préstamo
+    const [docenteRows] = await connection.query(
+      'SELECT nombre, rol_id FROM Usuario WHERE id = ?',
+      [req.usuario.id]
+    );
+    const docenteInfo = docenteRows[0] || {};
+
+    const folio = generarFolio();
+    const nombreAlumno = usuarioInfo.rol_id === 1 ? usuarioInfo.nombre : null;
+    const profesorNombre = docenteInfo.nombre || null;
+    const docenteId = docenteInfo.rol_id === 2 ? req.usuario.id : null;
+
+    // Crear registro de solicitud en estado entregado
+    const [solicitudResult] = await connection.query(
+      `INSERT INTO Solicitud
+         (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, folio, grupo_id, fecha_recoleccion, fecha_devolucion, fecha_entrega)
+       VALUES (?, NOW(), ?, 'entregado', ?, ?, ?, ?, ?, NOW(), STR_TO_DATE(?, '%Y-%m-%d'), NOW())`,
+      [
+        usuario_id,
+        'Prestamo inmediato',
+        docenteId,
+        nombreAlumno,
+        profesorNombre,
+        folio,
+        usuarioInfo.grupo_id,
+        fecha_devolucion,
+      ]
+    );
+    const solicitudId = solicitudResult.insertId;
+    
     for (const item of items) {
       const { id, cantidad, tipo } = item;
       if (!id || !cantidad || !tipo) {
@@ -2297,18 +2337,18 @@ const prestamoInmediato = async (req, res) => {
         [req.usuario.id, id, tipo, -cantidad, 'salida', 'Prestamo inmediato']
       );
 
+      // Registrar item en solicitud
+      const [itemResult] = await connection.query(
+        'INSERT INTO SolicitudItem (solicitud_id, material_id, tipo, cantidad, cantidad_devuelta) VALUES (?, ?, ?, ?, 0)',
+        [solicitudId, id, tipo, cantidad]
+      );
+      const solicitudItemId = itemResult.insertId;
+      
       // Crear adeudo para el usuario
       await connection.query(
         `INSERT INTO Adeudo (solicitud_id, solicitud_item_id, usuario_id, material_id, tipo, cantidad_pendiente, fecha_entrega)
          VALUES (?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'))`,
-        [null, null, usuario_id, id, tipo, cantidad, fecha_devolucion]
-      );
-
-       // Registrar préstamo
-      await connection.query(
-        `INSERT INTO Prestamo (usuario_id, material_id, fecha_prestamo, fecha_devolucion, estado)
-         VALUES (?, ?, NOW(), STR_TO_DATE(?, '%Y-%m-%d'), ?)`,
-        [usuario_id, id, fecha_devolucion, 'activo']
+       [solicitudId, solicitudItemId, usuario_id, id, tipo, cantidad, fecha_devolucion]
       );
     }
 
