@@ -247,6 +247,8 @@ export default function Register() {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+    min-height: 100vh;
+  min-width: 100vw;
 }
  
         .form-control:focus {
