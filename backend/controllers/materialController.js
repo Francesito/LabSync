@@ -2300,8 +2300,15 @@ const prestamoInmediato = async (req, res) => {
       // Crear adeudo para el usuario
       await connection.query(
         `INSERT INTO Adeudo (solicitud_id, solicitud_item_id, usuario_id, material_id, tipo, cantidad_pendiente, fecha_entrega)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'))`,
         [null, null, usuario_id, id, tipo, cantidad, fecha_devolucion]
+      );
+
+       // Registrar préstamo
+      await connection.query(
+        `INSERT INTO Prestamo (usuario_id, material_id, fecha_prestamo, fecha_devolucion, estado)
+         VALUES (?, ?, NOW(), STR_TO_DATE(?, '%Y-%m-%d'), ?)`,
+        [usuario_id, id, fecha_devolucion, 'activo']
       );
     }
 
