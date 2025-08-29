@@ -199,11 +199,13 @@ export default function Login() {
       <style jsx>{`
 .auth-bg {
           background-color: #ffffff;
-        background-size: contain;
-          background-position: center;
-          background-repeat: no-repeat;
-        }
-
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        min-width: 100vw;
+      }
+      
    .bg-image {
           background-image: url('/background.png');
         }
