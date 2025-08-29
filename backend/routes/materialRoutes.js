@@ -32,6 +32,15 @@ router.get(
   materialController.getUsuariosPrestamo
 );
 
+// Registrar préstamo inmediato
+router.post(
+  '/prestamo-inmediato',
+  verificarToken,
+  verificarRol([3]),
+  verificarAccesoStock,
+  materialController.prestamoInmediato
+);
+
 // Obtener un material específico por ID y TIPO - LECTURA
 // Ejemplo: GET /api/materials/123?tipo=liquido
 
