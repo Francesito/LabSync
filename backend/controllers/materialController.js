@@ -2262,7 +2262,7 @@ const getUsuariosPrestamo = async (req, res) => {
 // Registrar préstamo inmediato para alumnos o docentes
 const prestamoInmediato = async (req, res) => {
   logRequest('prestamoInmediato');
-  const { usuario_id, fecha_devolucion, items } = req.body;
+const { usuario_id, fecha_devolucion, items, docente_id } = req.body;
 
   if (!usuario_id || !fecha_devolucion || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Datos incompletos para registrar préstamo' });
@@ -2272,7 +2272,7 @@ const prestamoInmediato = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-     // Obtener información del usuario que recibe el préstamo
+     // Información del usuario que recibe el préstamo
     const [usuarioRows] = await connection.query(
       'SELECT nombre, grupo_id, rol_id FROM Usuario WHERE id = ?',
       [usuario_id]
@@ -2282,78 +2282,117 @@ const prestamoInmediato = async (req, res) => {
     }
     const usuarioInfo = usuarioRows[0];
 
-    // Datos del docente o administrador que registra el préstamo
-    const [docenteRows] = await connection.query(
-      'SELECT nombre, rol_id FROM Usuario WHERE id = ?',
-      [req.usuario.id]
-    );
-    const docenteInfo = docenteRows[0] || {};
-
     const folio = generarFolio();
-    const nombreAlumno = usuarioInfo.rol_id === 1 ? usuarioInfo.nombre : null;
-    const profesorNombre = docenteInfo.nombre || null;
-    const docenteId = docenteInfo.rol_id === 2 ? req.usuario.id : null;
 
-    // Crear registro de solicitud en estado entregado
-    const [solicitudResult] = await connection.query(
-      `INSERT INTO Solicitud
-         (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, folio, grupo_id, fecha_recoleccion, fecha_devolucion, fecha_entrega)
-       VALUES (?, NOW(), ?, 'entregado', ?, ?, ?, ?, ?, NOW(), STR_TO_DATE(?, '%Y-%m-%d'), NOW())`,
-      [
-        usuario_id,
-        'Prestamo inmediato',
-        docenteId,
-        nombreAlumno,
-        profesorNombre,
-        folio,
-        usuarioInfo.grupo_id,
-        fecha_devolucion,
-      ]
-    );
-    const solicitudId = solicitudResult.insertId;
-    
-    for (const item of items) {
-      const { id, cantidad, tipo } = item;
-      if (!id || !cantidad || !tipo) {
-        throw new Error('Item de préstamo inválido');
+   if (usuarioInfo.rol_id === 1) {
+      // Alumno: crear solicitud pendiente y notificar al docente
+      if (!docente_id) {
+        throw new Error('Docente requerido para préstamo de alumno');
+      }
+     const [docRows] = await connection.query(
+        'SELECT id, nombre FROM Usuario WHERE id = ? AND rol_id = 2',
+        [docente_id]
+      );
+      if (docRows.length === 0) {
+        throw new Error('Docente no encontrado');
+      }
+      const docenteSel = docRows[0];
+
+      const [solRes] = await connection.query(
+        `INSERT INTO Solicitud
+           (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, folio, grupo_id, fecha_recoleccion, fecha_devolucion)
+         VALUES (?, NOW(), ?, 'pendiente', ?, ?, ?, ?, ?, NOW(), STR_TO_DATE(?, '%Y-%m-%d'))`,
+        [
+          usuario_id,
+          'Prestamo inmediato',
+          docente_id,
+          usuarioInfo.nombre,
+          docenteSel.nombre,
+          folio,
+          usuarioInfo.grupo_id,
+          fecha_devolucion
+        ]
+      );
+      const solicitudId = solRes.insertId;
+
+      for (const item of items) {
+        const { id, cantidad, tipo } = item;
+        if (!id || !cantidad || !tipo) {
+          throw new Error('Item de préstamo inválido');
+        }
+        await connection.query(
+          'INSERT INTO SolicitudItem (solicitud_id, material_id, tipo, cantidad) VALUES (?,?,?,?)',
+          [solicitudId, id, tipo, cantidad]
+        );
       }
 
-      const meta = detectTableAndField(tipo);
-      if (!meta) {
-        throw new Error('Tipo de material inválido');
+      const mensajeDocente = `Tienes una nueva solicitud con Folio: ${folio} del alumno ${usuarioInfo.nombre}`;
+      await crearNotificacion(docente_id, 'solicitud_nueva', mensajeDocente);
+
+       await connection.commit();
+      return res.status(201).json({ message: 'Solicitud enviada al docente para aprobación' });
+    } else {
+      // Docente: registrar préstamo inmediato y adeudo
+      const profesorNombre = usuarioInfo.nombre;
+      const docenteId = usuario_id;
+
+      const [solicitudResult] = await connection.query(
+        `INSERT INTO Solicitud
+           (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, folio, grupo_id, fecha_recoleccion, fecha_devolucion, fecha_entrega)
+         VALUES (?, NOW(), ?, 'entregado', ?, ?, ?, ?, ?, NOW(), STR_TO_DATE(?, '%Y-%m-%d'), NOW())`,
+        [
+          usuario_id,
+          'Prestamo inmediato',
+          docenteId,
+          null,
+          profesorNombre,
+          folio,
+          usuarioInfo.grupo_id,
+          fecha_devolucion
+        ]
+      );
+     const solicitudId = solicitudResult.insertId;
+
+     for (const item of items) {
+        const { id, cantidad, tipo } = item;
+        if (!id || !cantidad || !tipo) {
+          throw new Error('Item de préstamo inválido');
+        }
+
+        const meta = detectTableAndField(tipo);
+        if (!meta) {
+          throw new Error('Tipo de material inválido');
+        }
+
+        const [[row]] = await connection.query(`SELECT ${meta.field} FROM ${meta.table} WHERE id = ?`, [id]);
+        if (!row || row[meta.field] < cantidad) {
+          throw new Error('Stock insuficiente para el material');
+        }
+
+        const nuevoStock = row[meta.field] - parseInt(cantidad);
+        await connection.query(`UPDATE ${meta.table} SET ${meta.field} = ? WHERE id = ?`, [nuevoStock, id]);
+
+        await connection.query(
+          'INSERT INTO MovimientosInventario (usuario_id, material_id, tipo, cantidad, tipo_movimiento, motivo) VALUES (?, ?, ?, ?, ?, ?)',
+          [req.usuario.id, id, tipo, -cantidad, 'salida', 'Prestamo inmediato']
+        );
+
+        const [itemResult] = await connection.query(
+          'INSERT INTO SolicitudItem (solicitud_id, material_id, tipo, cantidad, cantidad_devuelta) VALUES (?, ?, ?, ?, 0)',
+          [solicitudId, id, tipo, cantidad]
+        );
+        const solicitudItemId = itemResult.insertId;
+
+  await connection.query(
+          `INSERT INTO Adeudo (solicitud_id, solicitud_item_id, usuario_id, material_id, tipo, cantidad_pendiente, fecha_entrega)
+           VALUES (?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'))`,
+          [solicitudId, solicitudItemId, usuario_id, id, tipo, cantidad, fecha_devolucion]
+        );
       }
 
-      const [[row]] = await connection.query(`SELECT ${meta.field} FROM ${meta.table} WHERE id = ?`, [id]);
-      if (!row || row[meta.field] < cantidad) {
-        throw new Error('Stock insuficiente para el material');
-      }
-
-      const nuevoStock = row[meta.field] - parseInt(cantidad);
-      await connection.query(`UPDATE ${meta.table} SET ${meta.field} = ? WHERE id = ?`, [nuevoStock, id]);
-
-      // Registrar movimiento de salida
-      await connection.query(
-        'INSERT INTO MovimientosInventario (usuario_id, material_id, tipo, cantidad, tipo_movimiento, motivo) VALUES (?, ?, ?, ?, ?, ?)',
-        [req.usuario.id, id, tipo, -cantidad, 'salida', 'Prestamo inmediato']
-      );
-
-      // Registrar item en solicitud
-      const [itemResult] = await connection.query(
-        'INSERT INTO SolicitudItem (solicitud_id, material_id, tipo, cantidad, cantidad_devuelta) VALUES (?, ?, ?, ?, 0)',
-        [solicitudId, id, tipo, cantidad]
-      );
-      const solicitudItemId = itemResult.insertId;
-      
-      // Crear adeudo para el usuario
-      await connection.query(
-        `INSERT INTO Adeudo (solicitud_id, solicitud_item_id, usuario_id, material_id, tipo, cantidad_pendiente, fecha_entrega)
-         VALUES (?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'))`,
-       [solicitudId, solicitudItemId, usuario_id, id, tipo, cantidad, fecha_devolucion]
-      );
+      await connection.commit();
+      return res.status(201).json({ message: 'Préstamo inmediato registrado' });
     }
-
-    await connection.commit();
-    res.status(201).json({ message: 'Préstamo inmediato registrado' });
   } catch (error) {
     await connection.rollback();
     console.error('[Error] prestamoInmediato:', error);
