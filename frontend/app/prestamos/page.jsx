@@ -272,7 +272,8 @@ export default function Prestamos() {
   const handleGuardarPrestamo = async () => {
     try {
       const token = localStorage.getItem('token');
-       const hoy = new Date().toISOString().split('T')[0];
+            const now = new Date();
+      const hoy = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/materials/prestamo-inmediato`,
         {
@@ -1125,15 +1126,6 @@ export default function Prestamos() {
                     )}
                   </>
                 )}
-              </div>
-            )}
-
-             {tipoPrestamo === 'alumno' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2 text-slate-700">Fecha de recolección</label>
-                <div className="w-full border border-slate-300 px-3 py-2 rounded-lg bg-slate-50">
-                  {new Date().toLocaleDateString()}
-                </div>
               </div>
             )}
 
