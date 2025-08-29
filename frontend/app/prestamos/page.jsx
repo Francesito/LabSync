@@ -112,8 +112,10 @@ export default function Prestamos() {
     while (now.getDay() === 0 || now.getDay() === 6) {
       now.setDate(now.getDate() + 1);
     }
-    
-    return now.toISOString().split('T')[0];
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
   };
 
   const handleTipoPrestamoChange = (tipo) => {
@@ -227,7 +229,9 @@ export default function Prestamos() {
     const v = e.target.value;
     const d = new Date(v);
     const day = d.getDay();
-    if (day === 0 || day === 6) return;
+    const min = computeMinDevDate();
+    if (v < min) return;
+    if (day === 0 || day === 6) return;  
     setFechaDev(v);
   };
 
