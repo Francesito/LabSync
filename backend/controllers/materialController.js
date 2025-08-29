@@ -2259,6 +2259,63 @@ const getUsuariosPrestamo = async (req, res) => {
   }
 };
 
+// Registrar préstamo inmediato para alumnos o docentes
+const prestamoInmediato = async (req, res) => {
+  logRequest('prestamoInmediato');
+  const { usuario_id, fecha_devolucion, items } = req.body;
+
+  if (!usuario_id || !fecha_devolucion || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'Datos incompletos para registrar préstamo' });
+  }
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    for (const item of items) {
+      const { id, cantidad, tipo } = item;
+      if (!id || !cantidad || !tipo) {
+        throw new Error('Item de préstamo inválido');
+      }
+
+      const meta = detectTableAndField(tipo);
+      if (!meta) {
+        throw new Error('Tipo de material inválido');
+      }
+
+      const [[row]] = await connection.query(`SELECT ${meta.field} FROM ${meta.table} WHERE id = ?`, [id]);
+      if (!row || row[meta.field] < cantidad) {
+        throw new Error('Stock insuficiente para el material');
+      }
+
+      const nuevoStock = row[meta.field] - parseInt(cantidad);
+      await connection.query(`UPDATE ${meta.table} SET ${meta.field} = ? WHERE id = ?`, [nuevoStock, id]);
+
+      // Registrar movimiento de salida
+      await connection.query(
+        'INSERT INTO MovimientosInventario (usuario_id, material_id, tipo, cantidad, tipo_movimiento, motivo) VALUES (?, ?, ?, ?, ?, ?)',
+        [req.usuario.id, id, tipo, -cantidad, 'salida', 'Prestamo inmediato']
+      );
+
+      // Crear adeudo para el usuario
+      await connection.query(
+        `INSERT INTO Adeudo (solicitud_id, solicitud_item_id, usuario_id, material_id, tipo, cantidad_pendiente, fecha_entrega)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [null, null, usuario_id, id, tipo, cantidad, fecha_devolucion]
+      );
+    }
+
+    await connection.commit();
+    res.status(201).json({ message: 'Préstamo inmediato registrado' });
+  } catch (error) {
+    await connection.rollback();
+    console.error('[Error] prestamoInmediato:', error);
+    res.status(500).json({ error: 'Error al registrar préstamo inmediato: ' + error.message });
+  } finally {
+    connection.release();
+  }
+};
+
 // ESTADO DEL SISTEMA (sin estado de permisos)
 const getEstadoSistema = async (req, res) => {
   logRequest('getEstadoSistema');
@@ -2637,7 +2694,8 @@ module.exports = {
   
   // Usuarios y permisos
   getUsuariosConPermisos,
-    getUsuariosPrestamo,
+  getUsuariosPrestamo,
+  prestamoInmediato,
   
   // Sistema y administración
   getEstadoSistema,
