@@ -62,8 +62,8 @@ export default function Login() {
   }
 
   return (
- <div
-      className={`min-vh-100 w-100 d-flex justify-content-center align-items-center font-sans position-relative auth-bg ${isLargeScreen ? 'bg-image' : ''}`}
+<div
+      className="min-vh-100 w-100 d-flex justify-content-center align-items-center font-sans position-relative auth-bg bg-image"
     >
       {!isLargeScreen && (
         <div className="bubble-wrapper">
@@ -199,7 +199,7 @@ export default function Login() {
       <style jsx>{`
 .auth-bg {
           background-color: #ffffff;
-          background-size: cover;
+        background-size: contain;
           background-position: center;
           background-repeat: no-repeat;
         }
