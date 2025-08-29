@@ -272,13 +272,15 @@ export default function Prestamos() {
   const handleGuardarPrestamo = async () => {
     try {
       const token = localStorage.getItem('token');
+       const hoy = new Date().toISOString().split('T')[0];
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/materials/prestamo-inmediato`,
         {
           usuario_id: selectedUser?.id,
           tipo: tipoPrestamo,
           fecha_devolucion: fechaDev,
-           docente_id: selectedDocente?.id,
+        fecha_recoleccion: hoy,
+          docente_id: selectedDocente?.id,
           items: prestamoItems.map(i => ({ id: i.id, cantidad: i.cantidad, tipo: i.tipo }))
         },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -1024,41 +1026,9 @@ export default function Prestamos() {
               <label className="block text-sm font-medium mb-2 text-slate-700">
                 {tipoPrestamo === 'alumno' ? 'Alumno' : 'Docente'}
               </label>
-              <input
-                type="text"
-                value={userQuery}
-                onChange={e => setUserQuery(e.target.value)}
-                className="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Buscar por correo institucional..."
-              />
-              {userQuery && filteredUsers.length > 0 && (
-                <div className="border border-slate-200 rounded-lg mt-2 max-h-40 overflow-y-auto bg-white shadow-lg">
-                  {filteredUsers.map(u => (
-                    <div
-                      key={u.id}
-                      className="px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
-                      onClick={() => { 
-                        setSelectedUser(u); 
-                        setUserQuery(''); 
-                      }}
-                    >
-                      <div className="font-medium text-slate-900">{u.nombre}</div>
-                      <div className="text-sm text-slate-600">{u.correo_institucional}</div>
-                      {tipoPrestamo === 'alumno' && u.grupo_nombre && (
-                        <div className="text-xs text-slate-500">Grupo: {u.grupo_nombre}</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {userQuery && filteredUsers.length === 0 && (
-                <div className="text-sm text-slate-500 mt-2">No se encontraron usuarios</div>
-              )}
-              
-              {/* Usuario seleccionado */}
-              {selectedUser && (
-                <div className="mt-3 inline-flex items-center bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm">
-                  <div>
+               {selectedUser ? (
+                <div className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm w-full">
+                  <div className="flex-1">
                     <span className="font-medium">{selectedUser.nombre}</span>
                     {tipoPrestamo === 'alumno' && selectedUser.grupo_nombre && (
                       <span className="text-blue-600"> - {selectedUser.grupo_nombre}</span>
@@ -1073,42 +1043,48 @@ export default function Prestamos() {
                     </svg>
                   </button>
                 </div>
+           ) : (
+                <>
+                  <input
+                    type="text"
+                    value={userQuery}
+                    onChange={e => setUserQuery(e.target.value)}
+                    className="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Buscar por correo institucional..."
+                  />
+                  {userQuery && filteredUsers.length > 0 && (
+                    <div className="border border-slate-200 rounded-lg mt-2 max-h-40 overflow-y-auto bg-white shadow-lg">
+                      {filteredUsers.map(u => (
+                        <div
+                          key={u.id}
+                          className="px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setUserQuery('');
+                          }}
+                        >
+                          <div className="font-medium text-slate-900">{u.nombre}</div>
+                          <div className="text-sm text-slate-600">{u.correo_institucional}</div>
+                          {tipoPrestamo === 'alumno' && u.grupo_nombre && (
+                            <div className="text-xs text-slate-500">Grupo: {u.grupo_nombre}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {userQuery && filteredUsers.length === 0 && (
+                    <div className="text-sm text-slate-500 mt-2">No se encontraron usuarios</div>
+                  )}
+                </>
               )}
             </div>
 
              {tipoPrestamo === 'alumno' && (
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2 text-slate-700">Docente encargado</label>
-                <input
-                  type="text"
-                  value={docenteQuery}
-                  onChange={e => setDocenteQuery(e.target.value)}
-                  className="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Buscar docente..."
-                />
-                {docenteQuery && filteredDocentes.length > 0 && (
-                  <div className="border border-slate-200 rounded-lg mt-2 max-h-40 overflow-y-auto bg-white shadow-lg">
-                    {filteredDocentes.map(d => (
-                      <div
-                        key={d.id}
-                        className="px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
-                        onClick={() => {
-                          setSelectedDocente(d);
-                          setDocenteQuery('');
-                        }}
-                      >
-                        <div className="font-medium text-slate-900">{d.nombre}</div>
-                        <div className="text-sm text-slate-600">{d.correo_institucional}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {docenteQuery && filteredDocentes.length === 0 && (
-                  <div className="text-sm text-slate-500 mt-2">No se encontraron docentes</div>
-                )}
-                {selectedDocente && (
-                  <div className="mt-3 inline-flex items-center bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm">
-                    <span className="font-medium">{selectedDocente.nombre}</span>
+              {selectedDocente ? (
+                  <div className="inline-flex items-center bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm w-full">
+                    <span className="flex-1 font-medium">{selectedDocente.nombre}</span>
                     <button
                       className="ml-2 text-green-600 hover:text-green-800"
                       onClick={() => setSelectedDocente(null)}
@@ -1118,7 +1094,46 @@ export default function Prestamos() {
                       </svg>
                     </button>
                   </div>
+                    ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={docenteQuery}
+                      onChange={e => setDocenteQuery(e.target.value)}
+                      className="w-full border border-slate-300 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Buscar docente..."
+                    />
+                    {docenteQuery && filteredDocentes.length > 0 && (
+                      <div className="border border-slate-200 rounded-lg mt-2 max-h-40 overflow-y-auto bg-white shadow-lg">
+                        {filteredDocentes.map(d => (
+                          <div
+                            key={d.id}
+                            className="px-3 py-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0"
+                            onClick={() => {
+                              setSelectedDocente(d);
+                              setDocenteQuery('');
+                            }}
+                          >
+                            <div className="font-medium text-slate-900">{d.nombre}</div>
+                            <div className="text-sm text-slate-600">{d.correo_institucional}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {docenteQuery && filteredDocentes.length === 0 && (
+                      <div className="text-sm text-slate-500 mt-2">No se encontraron docentes</div>
+                    )}
+                  </>
                 )}
+              </div>
+            )}
+
+             {tipoPrestamo === 'alumno' && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2 text-slate-700">Fecha de recolección</label>
+                <div className="w-full border border-slate-300 px-3 py-2 rounded-lg bg-slate-50">
+                  {new Date().toLocaleDateString()}
+                </div>
               </div>
             )}
 
