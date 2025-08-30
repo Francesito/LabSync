@@ -11,7 +11,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
-  const [showBubbles, setShowBubbles] = useState(true);
+  const [showBlueOverlay, setShowBlueOverlay] = useState(true);
   const [pageLoaded, setPageLoaded] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
@@ -32,13 +32,13 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    // Animación de burbujeo inicial
+    // Animación de derretimiento inicial
     const timer = setTimeout(() => {
-      setShowBubbles(false);
+      setShowBlueOverlay(false);
       setTimeout(() => {
         setPageLoaded(true);
-      }, 300);
-    }, 2500);
+      }, 800);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -65,22 +65,10 @@ export default function Login() {
 
   return (
     <>
-      {/* Animación de burbujeo inicial */}
-      {showBubbles && (
-        <div className="bubble-container">
-          <div className="bubble-overlay">
-            {[...Array(20)].map((_, i) => (
-              <div
-                key={i}
-                className="bubble"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${2 + Math.random() * 2}s`
-                }}
-              ></div>
-            ))}
-          </div>
+      {/* Animación de derretimiento inicial */}
+      {showBlueOverlay && (
+        <div className="blue-overlay">
+          <div className="melting-effect"></div>
         </div>
       )}
 
@@ -89,21 +77,22 @@ export default function Login() {
           <div className="row w-100 m-0 min-vh-100">
             
             {/* Sección izquierda - Bienvenida con forma curva */}
-            <div className="col-12 col-lg-7 position-relative p-0 blue-section">
+            <div className="col-12 col-lg-7 position-relative p-0 left-section">
               {/* Círculo grande principal */}
               <div className="main-circle"></div>
               
-              {/* Círculo pequeño inferior derecha de la sección izquierda */}
-              <div className="bottom-right-circle"></div>
+              {/* Círculos pequeños superpuestos */}
+              <div className="small-circle-1"></div>
+              <div className="small-circle-2"></div>
               
               <div className="content-wrapper">
                 <div className="text-content">
-                  <h1 className="welcome-title">WELCOME</h1>
-                  <h2 className="headline">YOUR HEADLINE NAME</h2>
+                  <h1 className="welcome-title">BIENVENIDO</h1>
+                  <h2 className="headline">LABSYNC</h2>
                   <p className="description">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam<br />
-                    nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam<br />
-                    erat volutpat ut wisi enim ad minim quis nostrud exerci tation.
+                    Gestiona tus préstamos de materiales<br />
+                    de equipo y laboratorio de manera<br />
+                    sencilla y eficiente.
                   </p>
                 </div>
               </div>
@@ -116,8 +105,8 @@ export default function Login() {
               
               <div className="form-container">
                 <div className="mb-4">
-                  <h2 className="form-title">Sign in</h2>
-                  <p className="form-subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+                  <h2 className="form-title">Iniciar Sesión</h2>
+                  <p className="form-subtitle">Introduce tus credenciales para acceder a tu cuenta</p>
                 </div>
 
                 {error && (
@@ -128,7 +117,7 @@ export default function Login() {
                 )}
 
                 <form onSubmit={handleSubmit}>
-                  {/* Campo User Name */}
+                  {/* Campo Correo Electrónico */}
                   <div className="mb-3">
                     <div className="position-relative input-group-custom">
                       <i className="bi bi-person-fill input-icon"></i>
@@ -138,13 +127,13 @@ export default function Login() {
                         value={correo}
                         onChange={(e) => setCorreo(e.target.value)}
                         className="form-control input-custom"
-                        placeholder="User Name"
+                        placeholder="Correo Electrónico"
                         required
                       />
                     </div>
                   </div>
 
-                  {/* Campo Password */}
+                  {/* Campo Contraseña */}
                   <div className="mb-3">
                     <div className="position-relative input-group-custom">
                       <i className="bi bi-lock-fill input-icon"></i>
@@ -154,7 +143,7 @@ export default function Login() {
                         value={contrasena}
                         onChange={(e) => setContrasena(e.target.value)}
                         className="form-control input-custom"
-                        placeholder="Password"
+                        placeholder="Contraseña"
                         required
                       />
                       <button
@@ -162,12 +151,12 @@ export default function Login() {
                         className="show-btn"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? 'HIDE' : 'SHOW'}
+                        {showPassword ? 'OCULTAR' : 'MOSTRAR'}
                       </button>
                     </div>
                   </div>
 
-                  {/* Remember me y Forgot Password */}
+                  {/* Recordarme y Olvidé contraseña */}
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="form-check">
                       <input
@@ -179,35 +168,35 @@ export default function Login() {
                         onChange={(e) => setRememberMe(e.target.checked)}
                       />
                       <label className="form-check-label remember-label" htmlFor="rememberMe">
-                        Remember me
+                        Recordarme
                       </label>
                     </div>
                     <Link href="/forgot-password" className="forgot-link">
-                      Forgot Password?
+                      ¿Olvidaste tu contraseña?
                     </Link>
                   </div>
 
-                  {/* Botón Sign in */}
+                  {/* Botón Iniciar Sesión */}
                   <button type="submit" className="btn-signin">
-                    Sign in
+                    Iniciar Sesión
                   </button>
                 </form>
 
                 {/* Divisor */}
                 <div className="divider-container">
                   <div className="divider-line"></div>
-                  <span className="divider-text">Or</span>
+                  <span className="divider-text">O</span>
                   <div className="divider-line"></div>
                 </div>
 
-                {/* Botón Sign in with other */}
+                {/* Botón Registrarse */}
                 <Link href="/register" className="btn-secondary">
-                  Sign in with other
+                  Registrarse
                 </Link>
 
-                {/* Sign up link */}
+                {/* Texto de registro */}
                 <p className="signup-text">
-                  Don't have an account? <Link href="/register" className="signup-link">Sign up</Link>
+                  ¿No tienes cuenta? <Link href="/register" className="signup-link">Regístrate aquí</Link>
                 </p>
               </div>
             </div>
@@ -218,7 +207,7 @@ export default function Login() {
       <style jsx>{`
         .main-container {
           opacity: 0;
-          transition: opacity 0.5s ease-in-out;
+          transition: opacity 0.8s ease-in-out;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
@@ -226,8 +215,8 @@ export default function Login() {
           opacity: 1;
         }
 
-        /* Animación de burbujeo inicial */
-        .bubble-container {
+        /* Animación de derretimiento inicial */
+        .blue-overlay {
           position: fixed;
           top: 0;
           left: 0;
@@ -235,69 +224,43 @@ export default function Login() {
           height: 100vh;
           background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
           z-index: 9999;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          animation: bubbleDissolve 0.5s ease-out 2s forwards;
+          animation: meltDown 0.8s ease-in-out 1.5s forwards;
         }
 
-        @keyframes bubbleDissolve {
-          to {
-            opacity: 0;
-            visibility: hidden;
-          }
-        }
-
-        .bubble-overlay {
+        .melting-effect {
           position: absolute;
+          top: 0;
+          left: 0;
           width: 100%;
           height: 100%;
-          overflow: hidden;
+          background: inherit;
+          clip-path: polygon(0 0, 100% 0, 100% 0%, 0 0%);
+          animation: meltReveal 0.8s ease-in-out 1.5s forwards;
         }
 
-        .bubble {
-          position: absolute;
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
-          width: 20px;
-          height: 20px;
-          animation: bubbleRise 3s ease-in-out infinite;
-        }
-
-        .bubble:nth-child(even) {
-          background: rgba(37, 99, 235, 0.4);
-          width: 15px;
-          height: 15px;
-        }
-
-        .bubble:nth-child(3n) {
-          background: rgba(255, 255, 255, 0.5);
-          width: 25px;
-          height: 25px;
-        }
-
-        @keyframes bubbleRise {
+        @keyframes meltDown {
           0% {
-            bottom: -50px;
-            transform: translateX(0) scale(1);
-            opacity: 0;
-          }
-          10% {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
             opacity: 1;
           }
-          50% {
-            transform: translateX(20px) scale(1.2);
-          }
           100% {
-            bottom: 100vh;
-            transform: translateX(-20px) scale(0.8);
+            clip-path: polygon(0 0, 100% 0, 100% 0%, 0 0%);
             opacity: 0;
           }
         }
 
-        /* Sección azul con forma curva */
-        .blue-section {
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        @keyframes meltReveal {
+          0% {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+          }
+          100% {
+            clip-path: polygon(0 0, 100% 0, 100% 0%, 0 0%);
+          }
+        }
+
+        /* Sección izquierda con fondo blanco y círculos */}
+        .left-section {
+          background: white;
           clip-path: ellipse(120% 100% at 0% 50%);
           overflow: hidden;
         }
@@ -338,43 +301,81 @@ export default function Login() {
           max-width: 500px;
         }
 
-        /* Círculos */
+        /* Círculo grande principal */}
         .main-circle {
           position: absolute;
-          width: 350px;
-          height: 350px;
-          background: rgba(37, 99, 235, 0.3);
+          width: 400px;
+          height: 400px;
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
           border-radius: 50%;
           top: 50%;
           right: 15%;
           transform: translateY(-50%);
           z-index: 1;
+          animation: pulseGlow 4s ease-in-out infinite;
         }
 
-        .bottom-right-circle {
+        /* Círculos pequeños superpuestos */}
+        .small-circle-1 {
           position: absolute;
           width: 120px;
           height: 120px;
-          background: rgba(37, 99, 235, 0.4);
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
           border-radius: 50%;
-          bottom: 10%;
-          right: 5%;
+          bottom: 35%;
+          right: 25%;
           z-index: 2;
+          animation: float 6s ease-in-out infinite;
         }
 
-        /* Círculo en sección del formulario */
+        .small-circle-2 {
+          position: absolute;
+          width: 80px;
+          height: 80px;
+          background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+          border-radius: 50%;
+          bottom: 25%;
+          right: 20%;
+          z-index: 3;
+          animation: float 8s ease-in-out infinite reverse;
+        }
+
+        /* Círculo en sección del formulario */}
         .form-bottom-circle {
           position: absolute;
           width: 80px;
           height: 80px;
-          background: rgba(37, 99, 235, 0.1);
+          background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
           border-radius: 50%;
           bottom: 8%;
           right: 8%;
           z-index: 1;
+          animation: gentleFloat 6s ease-in-out infinite;
         }
 
-        /* Formulario */
+        @keyframes pulseGlow {
+          0%, 100% { 
+            transform: translateY(-50%) scale(1);
+            opacity: 1;
+          }
+          50% { 
+            transform: translateY(-50%) scale(1.05);
+            opacity: 0.9;
+          }
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) translateX(0px); }
+          33% { transform: translateY(-15px) translateX(8px); }
+          66% { transform: translateY(8px) translateX(-5px); }
+        }
+
+        @keyframes gentleFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+
+        /* Formulario */}
         .form-section {
           background: #f8f9fa;
         }
@@ -399,7 +400,7 @@ export default function Login() {
           font-size: 0.95rem;
         }
 
-        /* Inputs personalizados */
+        /* Inputs personalizados */}
         .input-group-custom {
           position: relative;
           margin-bottom: 1rem;
@@ -450,7 +451,7 @@ export default function Login() {
           z-index: 3;
         }
 
-        /* Remember me y Forgot Password */
+        /* Recordarme y Olvidé contraseña */}
         .form-check-input {
           background: #e5e7eb;
           border: 2px solid #d1d5db;
@@ -479,7 +480,7 @@ export default function Login() {
           color: #1d4ed8;
         }
 
-        /* Botones */
+        /* Botones */}
         .btn-signin {
           background: #2563eb;
           color: white;
@@ -523,7 +524,7 @@ export default function Login() {
           text-decoration: none;
         }
 
-        /* Divisor */
+        /* Divisor */}
         .divider-container {
           display: flex;
           align-items: center;
@@ -542,7 +543,7 @@ export default function Login() {
           font-size: 0.9rem;
         }
 
-        /* Sign up text */
+        /* Texto de registro */}
         .signup-text {
           text-align: center;
           color: #6b7280;
@@ -561,7 +562,7 @@ export default function Login() {
         }
 
         @media (max-width: 991.98px) {
-          .blue-section {
+          .left-section {
             clip-path: none;
             min-height: 40vh;
           }
@@ -580,14 +581,23 @@ export default function Login() {
           }
 
           .main-circle {
-            width: 200px;
-            height: 200px;
+            width: 250px;
+            height: 250px;
             right: 10%;
           }
 
-          .bottom-right-circle {
+          .small-circle-1 {
             width: 80px;
             height: 80px;
+            right: 20%;
+            bottom: 30%;
+          }
+
+          .small-circle-2 {
+            width: 60px;
+            height: 60px;
+            right: 15%;
+            bottom: 25%;
           }
 
           .form-bottom-circle {
