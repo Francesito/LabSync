@@ -10,13 +10,12 @@ export default function Login() {
   const [error, setError] = useState('');
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
   // Overlay azul que se "derrite" al entrar/recargar
   const [showMelt, setShowMelt] = useState(true);
   useEffect(() => {
-    const t = setTimeout(() => setShowMelt(false), 1800); // dura lo mismo que la animación
+    const t = setTimeout(() => setShowMelt(false), 1800);
     return () => clearTimeout(t);
   }, []);
 
@@ -40,53 +39,31 @@ export default function Login() {
 
   return (
     <>
-      {/* Overlay Azul que se derrite */}
       {showMelt && <div className="melt-overlay" aria-hidden="true"></div>}
 
-      <div className="main-container">
-        <div className="min-vh-100 d-flex">
-          <div className="row w-100 m-0 min-vh-100">
-            {/* IZQUIERDA: círculos y bienvenida */}
-            <div className="col-12 col-lg-7 position-relative p-0 blue-panel">
-              {/* Círculo grande de fondo */}
-              <div className="circle-big" />
-              {/* Dos círculos pequeños por encima del grande en la parte inferior */}
-              <div className="circle-small left" />
-              <div className="circle-small right" />
+      <div className="page">
+        <div className="row w-100 m-0 min-vh-100">
+          {/* IZQUIERDA: formulario centrado + círculos */}
+          <div className="col-12 col-lg-6 position-relative p-0 left-pane">
+            {/* Círculo grande (centro en 0,0 de la pantalla) */}
+            <div className="giant-circle" />
+            {/* Círculos pequeños con centro en la circunferencia del grande */}
+            <div className="small-circle a" />
+            <div className="small-circle b" />
 
-              <div className="content-wrapper">
-                <div className="text-content">
-                  <h1 className="welcome-title">BIENVENIDO</h1>
-                  <h2 className="headline">AQUÍ VA TU ENCABEZADO</h2>
-                  <p className="description">
-                    Texto de bienvenida breve para tu plataforma. Puedes describir
-                    beneficios o instrucciones iniciales en dos o tres líneas para
-                    mantener el equilibrio visual con el diseño.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* DERECHA: formulario */}
-            <div className="col-12 col-lg-5 d-flex flex-column justify-content-center align-items-start bg-white p-5 form-section position-relative">
-              {/* Círculo decorativo en el extremo inferior derecho del panel derecho */}
-              <div className="form-bottom-circle"></div>
-
-              <div className="form-container">
-                <div className="mb-4">
-                  <h2 className="form-title">Iniciar sesión</h2>
-                  <p className="form-subtitle">Accede con tu correo institucional y contraseña</p>
-                </div>
+            <div className="left-inner">
+              <div className="form-card">
+                <h2 className="form-title">Iniciar sesión</h2>
+                <p className="form-subtitle">Accede con tu correo institucional y contraseña</p>
 
                 {error && (
-                  <div className="alert alert-danger d-flex align-items-center mb-4">
+                  <div className="alert alert-danger d-flex align-items-center mb-3">
                     <i className="bi bi-exclamation-triangle-fill me-2"></i>
                     {error}
                   </div>
                 )}
 
                 <form onSubmit={handleSubmit}>
-                  {/* Usuario */}
                   <div className="mb-3">
                     <div className="position-relative input-group-custom">
                       <i className="bi bi-person-fill input-icon"></i>
@@ -103,7 +80,6 @@ export default function Login() {
                     </div>
                   </div>
 
-                  {/* Contraseña */}
                   <div className="mb-3">
                     <div className="position-relative input-group-custom">
                       <i className="bi bi-lock-fill input-icon"></i>
@@ -127,37 +103,21 @@ export default function Login() {
                     </div>
                   </div>
 
-                  {/* Recordarme + ¿Olvidaste tu contraseña? */}
-                  <div className="d-flex justify-content-between align-items-center mb-4">
-                    <label className="form-check d-flex align-items-center gap-2 m-0">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id="rememberMe"
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                      />
-                      <span className="remember-label">Recordarme</span>
-                    </label>
+                  <div className="d-flex justify-content-end mb-4">
                     <Link href="/forgot-password" className="forgot-link">
                       ¿Olvidaste tu contraseña?
                     </Link>
                   </div>
 
-                  {/* Botón primario */}
-                  <button type="submit" className="btn-signin">
-                    Iniciar sesión
-                  </button>
+                  <button type="submit" className="btn-signin">Iniciar sesión</button>
                 </form>
 
-                {/* Divisor */}
                 <div className="divider-container">
                   <div className="divider-line"></div>
                   <span className="divider-text">O</span>
                   <div className="divider-line"></div>
                 </div>
 
-                {/* Botón secundario (otro método) */}
                 <button
                   type="button"
                   className="btn-secondary"
@@ -166,14 +126,6 @@ export default function Login() {
                   Iniciar con otra cuenta
                 </button>
 
-                {/* Accesos rápidos: préstamos y más */}
-                <div className="quick-links">
-                  <Link href="/prestamos" className="quick-link">Préstamos</Link>
-                  <Link href="/solicitudes" className="quick-link">Solicitudes</Link>
-                  <Link href="/inventario" className="quick-link">Inventario</Link>
-                </div>
-
-                {/* Registro */}
                 <p className="signup-text">
                   ¿No tienes una cuenta?{' '}
                   <Link href="/register" className="signup-link">Regístrate</Link>
@@ -181,15 +133,27 @@ export default function Login() {
               </div>
             </div>
           </div>
+
+          {/* DERECHA: texto de marca */}
+          <div className="col-12 col-lg-6 d-flex align-items-center justify-content-center right-pane">
+            <div className="brand-copy">
+              <h1 className="welcome-title">LabSync.</h1>
+              <h2 className="headline">
+                Solicita préstamos para materiales y reactivos de química.
+              </h2>
+            </div>
+          </div>
         </div>
       </div>
 
       <style jsx>{`
-        .main-container {
+        :global(html, body) { background:#fff; }
+        .page {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background:#fff;
         }
 
-        /* ====== OVERLAY AZUL QUE SE DERRITE ====== */
+        /* ====== OVERLAY “DERRETIDO” ====== */
         .melt-overlay {
           position: fixed;
           inset: 0;
@@ -197,7 +161,6 @@ export default function Login() {
           z-index: 9999;
           animation: meltAway 1.8s ease-in-out forwards;
         }
-        /* “Borde derretido” con waves usando clip-path */
         @keyframes meltAway {
           0%   { clip-path: polygon(0 0,100% 0,100% 100%,0 100%); opacity: 1; }
           40%  { clip-path: polygon(0 0,100% 0,100% 85%,0 95%); }
@@ -205,7 +168,6 @@ export default function Login() {
           85%  { clip-path: polygon(0 0,100% 0,100% 40%,0 60%); }
           100% { clip-path: polygon(0 0,100% 0,100% 0,0 0); opacity: 0; }
         }
-        /* gotitas que caen para reforzar el efecto */
         .melt-overlay::after,
         .melt-overlay::before {
           content: '';
@@ -220,108 +182,83 @@ export default function Login() {
           animation: drips 1.2s ease-in-out forwards;
           filter: blur(0.5px);
         }
-        .melt-overlay::before {
-          bottom: 10px;
-          opacity: .7;
-          animation-delay: .2s;
-        }
+        .melt-overlay::before { bottom: 10px; opacity: .7; animation-delay:.2s; }
         @keyframes drips {
-          0% { transform: translateY(0); opacity: .9; }
-          100% { transform: translateY(120%); opacity: 0; }
+          0% { transform: translateY(0); opacity:.9; }
+          100% { transform: translateY(120%); opacity:0; }
         }
 
-        /* ====== PANEL IZQUIERDO (circles) ====== */
-        .blue-panel {
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-          position: relative;
-          overflow: hidden;
-        }
-        .content-wrapper {
-          height: 100%;
-          display: flex;
-          align-items: center;
-          padding-left: 8%;
+        /* ====== LADO IZQUIERDO ====== */
+        .left-pane { background:#fff; min-height: 50vh; }
+        .left-inner {
           position: relative;
           z-index: 5;
-        }
-        .text-content { color: #fff; }
-        .welcome-title {
-          font-size: 3.5rem;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          margin-bottom: 0.5rem;
-          line-height: 1.1;
-        }
-        .headline {
-          font-size: 1.5rem;
-          font-weight: 400;
-          letter-spacing: 0.05em;
-          margin-bottom: 2rem;
-          opacity: 0.9;
-        }
-        .description {
-          font-size: 1rem;
-          line-height: 1.6;
-          opacity: 0.9;
-          max-width: 520px;
+          min-height: 100vh;
+          display: grid;
+          place-items: center; /* centra el formulario vertical y horizontalmente */
+          padding: 24px;
         }
 
-        /* Círculo grande centrado a la derecha */
-        .circle-big {
-          position: absolute;
-          width: 360px;
-          height: 360px;
+        /* Círculo grande: centro en (0,0) de la pantalla */
+        .giant-circle {
+          --R: min(38vw, 560px); /* radio mayor que la mitad de la mitad izquierda */
+          position: fixed; /* relativo a la pantalla para fijar el centro en la esquina */
+          width: calc(var(--R) * 2);
+          height: calc(var(--R) * 2);
+          top: calc(-1 * var(--R));   /* para que el centro quede en 0,0 */
+          left: calc(-1 * var(--R));
           border-radius: 50%;
-          right: 14%;
-          top: 50%;
-          transform: translateY(-50%);
-          background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(255,255,255,0.08) 40%, rgba(0,0,0,0.08) 70%, rgba(0,0,0,0.18));
-          box-shadow: 0 20px 60px rgba(0,0,0,0.18) inset, 0 10px 30px rgba(0,0,0,0.15);
+          background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(255,255,255,0.08) 40%, rgba(0,0,0,0.08) 70%, rgba(0,0,0,0.18)),
+                      linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          box-shadow: 0 20px 60px rgba(0,0,0,0.18) inset, 0 10px 30px rgba(0,0,0,0.12);
           z-index: 1;
+          pointer-events: none;
         }
-        /* Dos pequeños superpuestos por ENCIMA del grande y en la parte inferior */
-        .circle-small {
-          position: absolute;
-          width: 130px;
-          height: 130px;
-          border-radius: 50%;
-          bottom: 7%;
-          background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), rgba(255,255,255,0.08) 40%, rgba(0,0,0,0.08) 70%, rgba(0,0,0,0.18));
-          box-shadow: 0 10px 30px rgba(0,0,0,0.18) inset, 0 6px 18px rgba(0,0,0,0.12);
-          z-index: 3; /* por encima del grande */
-        }
-        .circle-small.left { left: 6%; }
-        .circle-small.right { right: 4%; }
 
-        /* ====== PANEL DERECHO (form) ====== */
-        .form-section { background: #f8f9fa; }
-        .form-container {
+        /* Círculos pequeños: centros en la circunferencia del grande */
+        .small-circle {
+          --R: min(38vw, 560px);
+          --r: calc(var(--R) * 0.38);  /* radio pequeño */
+          position: fixed;
+          width: calc(var(--r) * 2);
+          height: calc(var(--r) * 2);
+          border-radius: 50%;
+          background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 40%, rgba(0,0,0,0.08) 70%, rgba(0,0,0,0.18)),
+                      linear-gradient(135deg, rgba(37,99,235,0.9), rgba(29,78,216,0.9));
+          box-shadow: 0 10px 30px rgba(0,0,0,0.18) inset, 0 6px 18px rgba(0,0,0,0.12);
+          z-index: 2;
+          pointer-events: none;
+        }
+        /* ángulos elegidos para que queden “abajo” y “hacia la derecha” sobre la circunferencia */
+        .small-circle.a {
+          /* ángulo ~65° desde el eje X, centro sobre la circunferencia */
+          top: calc(-1 * var(--r) + var(--R) * (1 - sin(25deg)));
+          left: calc(-1 * var(--r) + var(--R) * (cos(25deg)));
+        }
+        .small-circle.b {
+          /* ángulo ~320° (o -40°) */
+          top: calc(-1 * var(--r) + var(--R) * (1 - sin(40deg)));
+          left: calc(-1 * var(--r) + var(--R) * (cos(320deg)));
+        }
+
+        /* Tarjeta del formulario */
+        .form-card {
           width: 100%;
-          max-width: 400px;
-          z-index: 10;
-          position: relative;
+          max-width: 420px;
+          background: #ffffff;
+          padding: 28px;
+          border-radius: 16px;
+          box-shadow: 0 8px 30px rgba(2, 6, 23, 0.08);
         }
         .form-title {
-          font-size: 2.5rem;
-          font-weight: 600;
+          font-size: 2.2rem;
+          font-weight: 700;
           color: #1f2937;
-          margin-bottom: 0.5rem;
+          margin: 0 0 .25rem 0;
         }
-        .form-subtitle { color: #6b7280; margin-bottom: 2rem; font-size: 0.95rem; }
+        .form-subtitle { color: #6b7280; margin-bottom: 1.5rem; font-size: .95rem; }
 
-        .form-bottom-circle {
-          position: absolute;
-          width: 90px;
-          height: 90px;
-          background: rgba(37, 99, 235, 0.12);
-          border-radius: 50%;
-          bottom: 8%;
-          right: 8%;
-          z-index: 1;
-        }
-
-        /* Inputs */
-        .input-group-custom { position: relative; margin-bottom: 1rem; }
+        .input-group-custom { position: relative; }
         .input-icon {
           position: absolute;
           left: 16px;
@@ -341,7 +278,7 @@ export default function Login() {
           transition: all 0.3s ease;
           width: 100%;
         }
-        .input-custom:focus { background: #d1d5db; outline: none; box-shadow: none; }
+        .input-custom:focus { background: #d1d5db; outline: none; }
         .input-custom::placeholder { color: #6b7280; }
 
         .show-btn {
@@ -359,20 +296,11 @@ export default function Login() {
           letter-spacing: .02em;
         }
 
-        /* Recordarme / Olvidaste */
-        .form-check-input {
-          background: #e5e7eb;
-          border: 2px solid #d1d5db;
-          border-radius: 4px;
-        }
-        .form-check-input:checked { background: #2563eb; border-color: #2563eb; }
-        .remember-label { color: #6b7280; font-size: 0.9rem; }
         .forgot-link { color: #2563eb; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
         .forgot-link:hover { color: #1d4ed8; }
 
-        /* Botones */
         .btn-signin {
-          background: #0f4aa8; /* un poco más oscuro que #2563eb para imitar el mock */
+          background: #0f4aa8;
           color: #fff;
           border: none;
           border-radius: 12px;
@@ -380,7 +308,7 @@ export default function Login() {
           font-size: 1rem;
           font-weight: 700;
           width: 100%;
-          margin-bottom: 2rem;
+          margin-bottom: 1.6rem;
           cursor: pointer;
           transition: all 0.3s ease;
         }
@@ -399,49 +327,42 @@ export default function Login() {
           text-align: center;
           cursor: pointer;
           transition: all 0.3s ease;
-          margin-bottom: 1.25rem;
+          margin-bottom: 1rem;
         }
         .btn-secondary:hover { background: #f9fafb; border-color: #9ca3af; }
 
-        /* Divisor */
-        .divider-container { display: flex; align-items: center; margin: 1.5rem 0; }
+        .divider-container { display: flex; align-items: center; margin: 1.4rem 0; }
         .divider-line { flex: 1; height: 1px; background: #d1d5db; }
         .divider-text { margin: 0 1rem; color: #6b7280; font-size: 0.9rem; }
 
-        /* Quick links (préstamos, etc.) */
-        .quick-links {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: .5rem;
-          margin-bottom: 1.25rem;
-        }
-        .quick-link {
-          display: inline-block;
-          padding: .6rem .75rem;
-          border: 1px dashed #d1d5db;
-          border-radius: 10px;
-          text-align: center;
-          font-size: .9rem;
-          color: #374151;
-          text-decoration: none;
-        }
-        .quick-link:hover { background: #f3f4f6; }
-
-        /* Registro */
         .signup-text { text-align: center; color: #6b7280; font-size: 0.95rem; margin: 0; }
         .signup-link { color: #2563eb; font-weight: 700; text-decoration: none; }
         .signup-link:hover { color: #1d4ed8; }
 
-        /* Responsive para igualar proporciones del mock */
+        /* ====== LADO DERECHO: texto ====== */
+        .right-pane { background:#fff; text-align:center; padding: 32px; }
+        .brand-copy { max-width: 560px; }
+        .welcome-title {
+          font-size: 3.4rem;
+          font-weight: 800;
+          letter-spacing: .06em;
+          margin-bottom: .6rem;
+          color: #111827;
+        }
+        .headline {
+          font-size: 1.35rem;
+          font-weight: 500;
+          color: #4b5563;
+        }
+
+        /* Responsive */
         @media (max-width: 991.98px) {
-          .content-wrapper { padding: 2rem; text-align: center; }
-          .welcome-title { font-size: 2.5rem; }
-          .headline { font-size: 1.25rem; }
-          .circle-big { width: 240px; height: 240px; right: 10%; }
-          .circle-small { width: 90px; height: 90px; }
-          .circle-small.left { left: 8%; }
-          .circle-small.right { right: 6%; }
-          .form-bottom-circle { width: 70px; height: 70px; }
+          .left-inner { min-height: 60vh; }
+          .form-card { box-shadow: none; padding: 24px; }
+          .welcome-title { font-size: 2.6rem; }
+          .headline { font-size: 1.1rem; }
+          .giant-circle { --R: min(60vw, 420px); }
+          .small-circle { --r: calc(var(--R) * 0.38); }
         }
       `}</style>
     </>
