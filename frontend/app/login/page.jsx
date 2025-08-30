@@ -13,6 +13,7 @@ export default function Login() {
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [showBubbles, setShowBubbles] = useState(true);
   const [pageLoaded, setPageLoaded] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -84,133 +85,130 @@ export default function Login() {
       )}
 
       <div className={`main-container ${pageLoaded ? 'page-loaded' : ''}`}>
-        <div className="min-vh-100 d-flex font-sans">
+        <div className="min-vh-100 d-flex">
           <div className="row w-100 m-0 min-vh-100">
             
-            {/* Sección izquierda - Bienvenida */}
-            <div className="col-12 col-lg-7 d-flex flex-column justify-content-center align-items-center position-relative p-0 blue-section">
+            {/* Sección izquierda - Bienvenida con forma curva */}
+            <div className="col-12 col-lg-7 position-relative p-0 blue-section">
               {/* Círculo grande principal */}
               <div className="main-circle"></div>
               
-              {/* Círculos superiores superpuestos */}
-              <div className="small-circle-1"></div>
-              <div className="small-circle-2"></div>
+              {/* Círculo pequeño inferior derecha de la sección izquierda */}
+              <div className="bottom-right-circle"></div>
               
-              {/* Círculos decorativos adicionales */}
-              <div className="decoration-circle decoration-1"></div>
-              <div className="decoration-circle decoration-2"></div>
-              <div className="decoration-circle decoration-3"></div>
-              
-              <div className="text-center text-white position-relative" style={{ zIndex: 5 }}>
-                <h1 className="display-3 fw-bold mb-3" style={{ fontSize: '3.5rem', letterSpacing: '0.1em' }}>
-                  BIENVENIDO
-                </h1>
-                <h2 className="h2 fw-semibold mb-4" style={{ fontSize: '2rem', letterSpacing: '0.15em' }}>
-                  LABSYNC
-                </h2>
-                <p className="lead mx-auto" style={{ maxWidth: '400px', fontSize: '1.1rem', lineHeight: '1.6' }}>
-                  Gestiona tus préstamos de materiales<br />
-                  de equipo y laboratorio de manera<br />
-                  sencilla.
-                </p>
+              <div className="content-wrapper">
+                <div className="text-content">
+                  <h1 className="welcome-title">WELCOME</h1>
+                  <h2 className="headline">YOUR HEADLINE NAME</h2>
+                  <p className="description">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam<br />
+                    nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam<br />
+                    erat volutpat ut wisi enim ad minim quis nostrud exerci tation.
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* Sección derecha - Formulario */}
-            <div className="col-12 col-lg-5 d-flex flex-column justify-content-center align-items-center bg-white p-4 p-md-5 position-relative">
-              {/* Círculo pequeño inferior derecha */}
-              <div className="right-circle"></div>
+            <div className="col-12 col-lg-5 d-flex flex-column justify-content-center align-items-start bg-white p-5 form-section position-relative">
+              {/* Círculo pequeño en la esquina inferior derecha */}
+              <div className="form-bottom-circle"></div>
               
-              <div className="w-100" style={{ maxWidth: '450px' }}>
+              <div className="form-container">
                 <div className="mb-4">
-                  <h2 className="fw-bold text-dark mb-2" style={{ fontSize: '2rem' }}>Iniciar Sesión</h2>
-                  <p className="text-muted">Introduce tus credenciales para iniciar sesión.</p>
+                  <h2 className="form-title">Sign in</h2>
+                  <p className="form-subtitle">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
                 </div>
 
                 {error && (
-                  <div className="alert alert-danger d-flex align-items-center mb-4 rounded-3 shadow-sm">
+                  <div className="alert alert-danger d-flex align-items-center mb-4">
                     <i className="bi bi-exclamation-triangle-fill me-2"></i>
                     {error}
                   </div>
                 )}
 
                 <form onSubmit={handleSubmit}>
-                  {/* Campo Email */}
-                  <div className="mb-4">
-                    <label htmlFor="correo" className="form-label fw-semibold text-dark mb-2">
-                      Nombre Completo
-                    </label>
-                    <div className="position-relative">
-                      <i className="bi bi-person-fill position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" 
-                         style={{ fontSize: '1.1rem', zIndex: 3 }}></i>
+                  {/* Campo User Name */}
+                  <div className="mb-3">
+                    <div className="position-relative input-group-custom">
+                      <i className="bi bi-person-fill input-icon"></i>
                       <input
                         type="email"
                         id="correo"
                         value={correo}
                         onChange={(e) => setCorreo(e.target.value)}
-                        className="form-control custom-input"
-                        placeholder="ejemplo@utsjr.edu.mx"
+                        className="form-control input-custom"
+                        placeholder="User Name"
                         required
                       />
                     </div>
                   </div>
 
-                  {/* Campo Contraseña */}
-                  <div className="mb-4">
-                    <label htmlFor="contrasena" className="form-label fw-semibold text-dark mb-2">
-                      Contraseña
-                    </label>
-                    <div className="position-relative">
-                      <i className="bi bi-lock-fill position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" 
-                         style={{ fontSize: '1.1rem', zIndex: 3 }}></i>
+                  {/* Campo Password */}
+                  <div className="mb-3">
+                    <div className="position-relative input-group-custom">
+                      <i className="bi bi-lock-fill input-icon"></i>
                       <input
                         type={showPassword ? 'text' : 'password'}
                         id="contrasena"
                         value={contrasena}
                         onChange={(e) => setContrasena(e.target.value)}
-                        className="form-control custom-input"
-                        placeholder="Ingresa tu contraseña"
+                        className="form-control input-custom"
+                        placeholder="Password"
                         required
                       />
                       <button
                         type="button"
-                        className="btn position-absolute top-50 end-0 translate-middle-y me-3 p-0 border-0 bg-transparent text-primary fw-semibold"
+                        className="show-btn"
                         onClick={() => setShowPassword(!showPassword)}
-                        style={{ fontSize: '0.85rem', zIndex: 3 }}
                       >
                         {showPassword ? 'HIDE' : 'SHOW'}
                       </button>
                     </div>
                   </div>
 
-                  {/* Enlace Olvidaste contraseña */}
-                  <div className="mb-4 text-end">
-                    <Link href="/forgot-password" className="text-primary text-decoration-none fw-semibold">
-                      ¿Olvidaste tu contraseña?
+                  {/* Remember me y Forgot Password */}
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div className="form-check">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        value=""
+                        id="rememberMe"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                      />
+                      <label className="form-check-label remember-label" htmlFor="rememberMe">
+                        Remember me
+                      </label>
+                    </div>
+                    <Link href="/forgot-password" className="forgot-link">
+                      Forgot Password?
                     </Link>
                   </div>
 
-                  {/* Botón Iniciar Sesión */}
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary w-100 fw-semibold mb-4 custom-btn-primary"
-                  >
-                    Iniciar Sesión
+                  {/* Botón Sign in */}
+                  <button type="submit" className="btn-signin">
+                    Sign in
                   </button>
                 </form>
 
                 {/* Divisor */}
-                <div className="text-center mb-4 position-relative">
-                  <hr className="text-muted" />
-                  <span className="bg-white px-3 text-muted position-absolute top-50 start-50 translate-middle">
-                    Or
-                  </span>
+                <div className="divider-container">
+                  <div className="divider-line"></div>
+                  <span className="divider-text">Or</span>
+                  <div className="divider-line"></div>
                 </div>
 
-                {/* Botón Registrarse */}
-                <Link href="/register" className="btn btn-outline-secondary w-100 fw-semibold text-decoration-none">
-                  Registrarse
+                {/* Botón Sign in with other */}
+                <Link href="/register" className="btn-secondary">
+                  Sign in with other
                 </Link>
+
+                {/* Sign up link */}
+                <p className="signup-text">
+                  Don't have an account? <Link href="/register" className="signup-link">Sign up</Link>
+                </p>
               </div>
             </div>
           </div>
@@ -221,6 +219,7 @@ export default function Login() {
         .main-container {
           opacity: 0;
           transition: opacity 0.5s ease-in-out;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         .main-container.page-loaded {
@@ -234,7 +233,7 @@ export default function Login() {
           left: 0;
           width: 100vw;
           height: 100vh;
-          background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%);
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
           z-index: 9999;
           display: flex;
           align-items: center;
@@ -266,7 +265,7 @@ export default function Login() {
         }
 
         .bubble:nth-child(even) {
-          background: rgba(59, 130, 246, 0.4);
+          background: rgba(37, 99, 235, 0.4);
           width: 15px;
           height: 15px;
         }
@@ -296,196 +295,304 @@ export default function Login() {
           }
         }
 
+        /* Sección azul con forma curva */
         .blue-section {
-          background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%);
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          clip-path: ellipse(120% 100% at 0% 50%);
           overflow: hidden;
         }
 
-        /* Círculo grande principal */
+        .content-wrapper {
+          height: 100%;
+          display: flex;
+          align-items: center;
+          padding-left: 8%;
+          position: relative;
+          z-index: 5;
+        }
+
+        .text-content {
+          color: white;
+        }
+
+        .welcome-title {
+          font-size: 3.5rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          margin-bottom: 0.5rem;
+          line-height: 1.1;
+        }
+
+        .headline {
+          font-size: 1.5rem;
+          font-weight: 400;
+          letter-spacing: 0.05em;
+          margin-bottom: 2rem;
+          opacity: 0.9;
+        }
+
+        .description {
+          font-size: 1rem;
+          line-height: 1.6;
+          opacity: 0.8;
+          max-width: 500px;
+        }
+
+        /* Círculos */
         .main-circle {
           position: absolute;
-          width: 400px;
-          height: 400px;
-          background: rgba(59, 130, 246, 0.3);
+          width: 350px;
+          height: 350px;
+          background: rgba(37, 99, 235, 0.3);
           border-radius: 50%;
           top: 50%;
-          left: 20%;
+          right: 15%;
           transform: translateY(-50%);
-          animation: pulseGlow 4s ease-in-out infinite;
           z-index: 1;
         }
 
-        /* Círculos superiores superpuestos */
-        .small-circle-1 {
+        .bottom-right-circle {
           position: absolute;
           width: 120px;
           height: 120px;
-          background: rgba(255, 255, 255, 0.2);
+          background: rgba(37, 99, 235, 0.4);
           border-radius: 50%;
-          top: 25%;
-          left: 15%;
-          animation: float 6s ease-in-out infinite;
+          bottom: 10%;
+          right: 5%;
           z-index: 2;
         }
 
-        .small-circle-2 {
+        /* Círculo en sección del formulario */
+        .form-bottom-circle {
           position: absolute;
           width: 80px;
           height: 80px;
-          background: rgba(30, 64, 175, 0.4);
+          background: rgba(37, 99, 235, 0.1);
           border-radius: 50%;
-          top: 20%;
-          left: 22%;
-          animation: float 8s ease-in-out infinite reverse;
-          z-index: 3;
-        }
-
-        /* Círculos decorativos adicionales */
-        .decoration-circle {
-          position: absolute;
-          border-radius: 50%;
-          opacity: 0.15;
-        }
-
-        .decoration-1 {
-          width: 60px;
-          height: 60px;
-          background: rgba(255, 255, 255, 0.3);
-          bottom: 20%;
-          left: 10%;
-          animation: float 7s ease-in-out infinite;
-        }
-
-        .decoration-2 {
-          width: 90px;
-          height: 90px;
-          background: rgba(59, 130, 246, 0.4);
-          top: 15%;
-          right: 10%;
-          animation: float 9s ease-in-out infinite reverse;
-        }
-
-        .decoration-3 {
-          width: 45px;
-          height: 45px;
-          background: rgba(255, 255, 255, 0.4);
-          bottom: 35%;
-          right: 15%;
-          animation: float 5s ease-in-out infinite;
-        }
-
-        /* Círculo pequeño en sección derecha */
-        .right-circle {
-          position: absolute;
-          width: 80px;
-          height: 80px;
-          background: rgba(59, 130, 246, 0.1);
-          border-radius: 50%;
-          bottom: 15%;
-          right: 15%;
-          animation: gentleFloat 6s ease-in-out infinite;
+          bottom: 8%;
+          right: 8%;
           z-index: 1;
         }
 
-        @keyframes pulseGlow {
-          0%, 100% { 
-            transform: translateY(-50%) scale(1);
-            opacity: 0.3;
-          }
-          50% { 
-            transform: translateY(-50%) scale(1.05);
-            opacity: 0.4;
-          }
+        /* Formulario */
+        .form-section {
+          background: #f8f9fa;
         }
 
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          33% { transform: translateY(-15px) translateX(8px); }
-          66% { transform: translateY(8px) translateX(-5px); }
+        .form-container {
+          width: 100%;
+          max-width: 400px;
+          z-index: 10;
+          position: relative;
         }
 
-        @keyframes gentleFloat {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
+        .form-title {
+          font-size: 2.5rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin-bottom: 0.5rem;
         }
 
-        .custom-input {
-          padding: 14px 20px 14px 45px;
-          border: 2px solid #e5e7eb;
-          border-radius: 12px;
-          font-size: 16px;
-          transition: all 0.3s ease;
-          background: #f9fafb;
+        .form-subtitle {
+          color: #6b7280;
+          margin-bottom: 2rem;
+          font-size: 0.95rem;
         }
 
-        .custom-input:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-          background: white;
+        /* Inputs personalizados */
+        .input-group-custom {
+          position: relative;
+          margin-bottom: 1rem;
         }
 
-        .custom-input::placeholder {
-          color: #9ca3af;
+        .input-icon {
+          position: absolute;
+          left: 16px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #6b7280;
+          font-size: 1.1rem;
+          z-index: 3;
         }
 
-        .custom-btn-primary {
-          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        .input-custom {
+          background: #e5e7eb;
           border: none;
           border-radius: 12px;
-          padding: 14px;
-          font-size: 16px;
+          padding: 16px 20px 16px 48px;
+          font-size: 1rem;
+          color: #374151;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+          width: 100%;
         }
 
-        .custom-btn-primary:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        .input-custom:focus {
+          background: #d1d5db;
+          outline: none;
+          box-shadow: none;
         }
 
-        .btn-outline-secondary {
+        .input-custom::placeholder {
+          color: #6b7280;
+        }
+
+        .show-btn {
+          position: absolute;
+          right: 16px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          color: #2563eb;
+          font-weight: 600;
+          font-size: 0.85rem;
+          cursor: pointer;
+          z-index: 3;
+        }
+
+        /* Remember me y Forgot Password */
+        .form-check-input {
+          background: #e5e7eb;
+          border: 2px solid #d1d5db;
+          border-radius: 4px;
+        }
+
+        .form-check-input:checked {
+          background: #2563eb;
+          border-color: #2563eb;
+        }
+
+        .remember-label {
+          color: #6b7280;
+          font-size: 0.9rem;
+          margin-left: 0.5rem;
+        }
+
+        .forgot-link {
+          color: #2563eb;
+          text-decoration: none;
+          font-size: 0.9rem;
+          font-weight: 500;
+        }
+
+        .forgot-link:hover {
+          color: #1d4ed8;
+        }
+
+        /* Botones */
+        .btn-signin {
+          background: #2563eb;
+          color: white;
+          border: none;
+          border-radius: 12px;
+          padding: 16px;
+          font-size: 1rem;
+          font-weight: 600;
+          width: 100%;
+          margin-bottom: 2rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .btn-signin:hover {
+          background: #1d4ed8;
+          transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+          display: block;
+          background: white;
+          color: #374151;
           border: 2px solid #d1d5db;
           border-radius: 12px;
-          padding: 14px;
-          font-size: 16px;
+          padding: 16px;
+          font-size: 1rem;
+          font-weight: 500;
+          width: 100%;
+          text-align: center;
+          text-decoration: none;
+          cursor: pointer;
           transition: all 0.3s ease;
-          background: white;
+          margin-bottom: 1.5rem;
         }
 
-        .btn-outline-secondary:hover {
-          background: #f3f4f6;
+        .btn-secondary:hover {
+          background: #f9fafb;
           border-color: #9ca3af;
-          transform: translateY(-1px);
+          color: #374151;
+          text-decoration: none;
+        }
+
+        /* Divisor */
+        .divider-container {
+          display: flex;
+          align-items: center;
+          margin: 2rem 0;
+        }
+
+        .divider-line {
+          flex: 1;
+          height: 1px;
+          background: #d1d5db;
+        }
+
+        .divider-text {
+          margin: 0 1rem;
+          color: #6b7280;
+          font-size: 0.9rem;
+        }
+
+        /* Sign up text */
+        .signup-text {
+          text-align: center;
+          color: #6b7280;
+          font-size: 0.95rem;
+          margin: 0;
+        }
+
+        .signup-link {
+          color: #2563eb;
+          font-weight: 600;
+          text-decoration: none;
+        }
+
+        .signup-link:hover {
+          color: #1d4ed8;
         }
 
         @media (max-width: 991.98px) {
           .blue-section {
-            min-height: 300px;
+            clip-path: none;
+            min-height: 40vh;
           }
           
-          .main-circle {
-            width: 250px;
-            height: 250px;
-            left: 10%;
+          .content-wrapper {
+            padding: 2rem;
+            text-align: center;
           }
 
-          .small-circle-1 {
+          .welcome-title {
+            font-size: 2.5rem;
+          }
+
+          .headline {
+            font-size: 1.25rem;
+          }
+
+          .main-circle {
+            width: 200px;
+            height: 200px;
+            right: 10%;
+          }
+
+          .bottom-right-circle {
             width: 80px;
             height: 80px;
-            left: 10%;
           }
 
-          .small-circle-2 {
+          .form-bottom-circle {
             width: 60px;
             height: 60px;
-            left: 15%;
-          }
-
-          .right-circle {
-            width: 60px;
-            height: 60px;
-            bottom: 10%;
-            right: 10%;
           }
         }
       `}</style>
