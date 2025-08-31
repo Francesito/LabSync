@@ -208,7 +208,7 @@ export default function Auth() {
               <div className="grupo-selection">
                 <label className="grupo-label">Selecciona tu Grupo:</label>
                 <div className="grupos-grid">
-                  {grupos.slice(0, 4).map((grupo) => (
+                  {grupos.slice(0, 2).map((grupo) => (
                     <button
                       key={grupo.id}
                       type="button"
@@ -220,9 +220,39 @@ export default function Auth() {
                     </button>
                   ))}
                 </div>
-                {grupos.length > 4 && (
+                {grupos.length > 2 && (
                   <div className="grupos-grid-second-row">
-                    {grupos.slice(4, 7).map((grupo) => (
+                    {grupos.slice(2, 4).map((grupo) => (
+                      <button
+                        key={grupo.id}
+                        type="button"
+                        onClick={() => handleGrupoSelect(grupo.id.toString())}
+                        className={`grupo-btn ${grupoId === grupo.id.toString() ? 'selected' : ''}`}
+                        disabled={loading}
+                      >
+                        {grupo.nombre}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {grupos.length > 4 && (
+                  <div className="grupos-grid-third-row">
+                    {grupos.slice(4, 6).map((grupo) => (
+                      <button
+                        key={grupo.id}
+                        type="button"
+                        onClick={() => handleGrupoSelect(grupo.id.toString())}
+                        className={`grupo-btn ${grupoId === grupo.id.toString() ? 'selected' : ''}`}
+                        disabled={loading}
+                      >
+                        {grupo.nombre}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {grupos.length > 6 && (
+                  <div className="grupos-grid-fourth-row">
+                    {grupos.slice(6, 7).map((grupo) => (
                       <button
                         key={grupo.id}
                         type="button"
@@ -796,41 +826,184 @@ export default function Auth() {
           }
         }
 
-        @media (max-width: 570px) {
+        @media (max-width: 768px) {
           .container {
             overflow: hidden;
             height: 100vh;
             max-height: 100vh;
-          }
-
-          form {
-            padding: 0 1.5rem;
-          }
-
-          .image {
-            display: none;
-          }
-          
-          .panel .content {
-            padding: 0.5rem 1rem;
-          }
-          
-          .panel {
-            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           }
 
           .container:before {
-            bottom: 72%;
-            left: 50%;
-            width: 100vw;
-            height: 100vh;
+            display: none;
           }
 
-          .container.sign-up-mode:before {
-            bottom: 28%;
-            left: 50%;
+          .panels-container {
+            display: none;
           }
 
+          .forms-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          }
+
+          .signin-signup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            transition: none;
+          }
+
+          form {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+
+          .title {
+            color: #2d3748;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 700;
+          }
+
+          .input-field {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            margin: 0.8rem 0;
+            transition: all 0.3s ease;
+          }
+
+          .input-field:focus-within {
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+          }
+
+          .input-field i {
+            color: #667eea;
+            font-size: 1rem;
+          }
+
+          .input-field input {
+            color: #2d3748;
+            font-weight: 500;
+          }
+
+          .input-field input::placeholder {
+            color: #718096;
+          }
+
+          .show-password-btn {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.7rem;
+          }
+
+          .forgot-password-link {
+            color: #667eea;
+            font-weight: 600;
+          }
+
+          .forgot-password-link:hover {
+            color: #764ba2;
+          }
+
+          .grupo-selection {
+            margin: 1.5rem 0;
+          }
+
+          .grupo-label {
+            color: #2d3748;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+          }
+
+          .grupos-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+          }
+
+          .grupos-grid-second-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+          }
+
+          .grupos-grid-third-row {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 0.8rem;
+            justify-items: center;
+          }
+
+          .grupo-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            color: #4a5568;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.8rem 0.5rem;
+            border-radius: 12px;
+            min-height: 45px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.1);
+          }
+
+          .grupo-btn:hover:not(:disabled) {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+          }
+
+          .grupo-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+          }
+
+          .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 100%;
+            max-width: 200px;
+            height: 50px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin: 1.5rem 0 1rem 0;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+          }
+
+          .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+          }
+
+          .error-alert {
+            background: rgba(248, 215, 218, 0.9);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+          }
+
+          /* Ajustes específicos para 7 grupos */
           .grupos-grid {
             grid-template-columns: repeat(2, 1fr);
           }
@@ -839,9 +1012,64 @@ export default function Auth() {
             grid-template-columns: repeat(2, 1fr);
           }
 
+          .grupos-grid-third-row {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .grupos-grid-fourth-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+            justify-items: center;
+          }
+
+          .grupos-grid-fourth-row .grupo-btn {
+            max-width: 200px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .signin-signup {
+            width: 95%;
+            max-width: 350px;
+          }
+
+          form {
+            padding: 1.8rem 1.2rem;
+          }
+
+          .title {
+            font-size: 1.6rem;
+            margin-bottom: 1.2rem;
+          }
+
+          .input-field {
+            height: 50px;
+            margin: 0.6rem 0;
+          }
+
+          .input-field i {
+            font-size: 0.9rem;
+          }
+
+          .input-field input {
+            font-size: 1rem;
+          }
+
+          .grupo-label {
+            font-size: 0.9rem;
+          }
+
           .grupo-btn {
             font-size: 0.75rem;
-            padding: 6px 8px;
+            padding: 0.7rem 0.4rem;
+            min-height: 42px;
+          }
+
+          .btn {
+            height: 45px;
+            font-size: 0.85rem;
+            margin: 1.2rem 0 0.8rem 0;
           }
         }
       `}</style>
