@@ -45,10 +45,11 @@ export default function Login() {
         <div className="row w-100 m-0 min-vh-100">
           {/* IZQUIERDA (7/12): círculos y copy dentro del círculo grande */}
           <div className="col-12 col-lg-7 position-relative p-0 left-pane">
-            {/* Círculo grande (centro en 0,0 de la pantalla) */}
+            {/* Círculo grande principal */}
             <div className="giant-circle" />
-            {/* Contenedor del copy centrado dentro del círculo grande */}
-            <div className="giant-circle-center">
+            
+            {/* Contenedor del texto centrado dentro del círculo grande */}
+            <div className="text-center-container">
               <div className="brand-copy">
                 <h1 className="brand-title">LabSync.</h1>
                 <h2 className="brand-subtitle">
@@ -57,10 +58,11 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Círculo pequeño con centro en esquina inferior izquierda */}
+            {/* Círculo pequeño en la parte inferior izquierda */}
             <div className="small-circle bottom-left" />
-            {/* Círculo pequeño con centro sobre la circunferencia del grande */}
-            <div className="small-circle on-giant" />
+            
+            {/* Círculo mediano en la parte superior derecha del área izquierda */}
+            <div className="medium-circle top-right" />
           </div>
 
           {/* DERECHA (5/12): formulario centrado */}
@@ -154,7 +156,7 @@ export default function Login() {
         :global(html, body) { background:#fff; }
         .page { background:#fff; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
 
-        /* ===== Overlay de “derretido” ===== */
+        /* ===== Overlay de "derretido" ===== */
         .melt-overlay{
           position:fixed; inset:0; z-index:9999;
           background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);
@@ -179,76 +181,78 @@ export default function Login() {
         @keyframes drips{0%{transform:translateY(0);opacity:.9}100%{transform:translateY(120%);opacity:0}}
 
         /* ===== Layout panes ===== */
-        .left-pane{position:relative; background:#fff; min-height:50vh; overflow:hidden;}
-        .right-pane{background:#fff; min-height:50vh;}
+        .left-pane{
+          position:relative; background:#fff; min-height:100vh; overflow:hidden;
+          display:flex; align-items:center; justify-content:center;
+        }
+        .right-pane{background:#fff; min-height:100vh;}
         .form-wrap{min-height:100vh; display:grid; place-items:center; padding:32px;}
         .form-card{
           width:100%; max-width:420px; background:#fff; padding:28px;
           border-radius:16px; box-shadow:0 8px 30px rgba(2,6,23,.08);
         }
 
-        /* ===== Círculo grande =====
-           Centro en (0,0) de la pantalla. Debe ser MUY grande para albergar el copy centrado. */
+        /* ===== Círculo grande principal =====
+           Centrado en el área izquierda con el texto dentro */
         .giant-circle{
-          --R: min(58vw, 720px); /* radio grande (más grande que la mitad de la mitad izquierda) */
-          position:fixed;
-          width:calc(var(--R) * 2); height:calc(var(--R) * 2);
-          top:calc(-1 * var(--R)); left:calc(-1 * var(--R)); /* centro en (0,0) */
+          position:absolute;
+          width:min(70vw, 600px); height:min(70vw, 600px);
+          top:50%; left:50%; transform:translate(-50%, -50%);
           border-radius:50%;
           background:
             radial-gradient(circle at 30% 30%, rgba(255,255,255,.25), rgba(255,255,255,.08) 42%, rgba(0,0,0,.08) 70%, rgba(0,0,0,.16)),
             linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);
           box-shadow:0 20px 60px rgba(0,0,0,.18) inset, 0 10px 30px rgba(0,0,0,.12);
-          z-index:1; pointer-events:none;
+          z-index:1;
         }
 
-        /* Contenedor del texto centrado exactamente dentro del círculo */
-        .giant-circle-center{
-          --R: min(58vw, 720px);
-          position:fixed;
-          width:calc(var(--R) * 2); height:calc(var(--R) * 2);
-          top:calc(-1 * var(--R)); left:calc(-1 * var(--R));
-          display:grid; place-items:center; text-align:center;
-          z-index:2; pointer-events:none;
+        /* Contenedor del texto centrado dentro del círculo */
+        .text-center-container{
+          position:absolute;
+          top:50%; left:50%; transform:translate(-50%, -50%);
+          width:min(60vw, 500px); height:min(60vw, 500px);
+          display:flex; align-items:center; justify-content:center;
+          text-align:center; z-index:2; pointer-events:none;
         }
-        .brand-copy{ padding:24px; max-width:calc(var(--R) * 1.6); }
+        
+        .brand-copy{ 
+          padding:24px; max-width:80%; 
+        }
         .brand-title{
-          color:#fff; font-size:clamp(2.2rem, 5vw, 4rem);
-          font-weight:800; letter-spacing:.06em; margin:0 0 .4rem 0;
+          color:#fff; font-size:clamp(2.5rem, 6vw, 4.5rem);
+          font-weight:800; letter-spacing:.06em; margin:0 0 .6rem 0;
           text-shadow:0 2px 10px rgba(0,0,0,.15);
         }
         .brand-subtitle{
-          color:#f3f4f6; font-size:clamp(1rem, 2.2vw, 1.35rem);
-          font-weight:500; margin:0 auto; line-height:1.35;
-          text-shadow:0 1px 6px rgba(0,0,0,.15);
+          color:#f3f4f6; font-size:clamp(1rem, 2.4vw, 1.4rem);
+          font-weight:500; margin:0 auto; line-height:1.4;
+          text-shadow:0 1px 6px rgba(0,0,0,.15); max-width:90%;
         }
 
-        /* ===== Círculos pequeños ===== */
-        .small-circle{
-          position:fixed; border-radius:50%;
+        /* ===== Círculo pequeño inferior izquierdo ===== */
+        .small-circle.bottom-left{
+          position:absolute;
+          width:min(25vw, 200px); height:min(25vw, 200px);
+          bottom:-12.5vw; left:-12.5vw; /* la mitad del tamaño para centrarlo en la esquina */
+          border-radius:50%;
           background:
             radial-gradient(circle at 30% 30%, rgba(255,255,255,.30), rgba(255,255,255,.08) 40%, rgba(0,0,0,.08) 70%, rgba(0,0,0,.16)),
             linear-gradient(135deg, rgba(37,99,235,.95), rgba(29,78,216,.95));
           box-shadow:0 10px 30px rgba(0,0,0,.18) inset, 0 6px 18px rgba(0,0,0,.12);
-          z-index:2; pointer-events:none;
+          z-index:2;
         }
 
-        /* 1) Centro en esquina inferior izquierda de la pantalla */
-        .small-circle.bottom-left{
-          --r1: min(16vw, 170px); /* un poco más pequeño */
-          width:calc(var(--r1) * 2); height:calc(var(--r1) * 2);
-          left:calc(-1 * var(--r1)); bottom:calc(-1 * var(--r1)); /* centro en (0, 100vh) */
-        }
-
-        /* 2) Centro sobre la circunferencia del círculo grande (ángulo 330°) */
-        .small-circle.on-giant{
-          --R: min(58vw, 720px); /* radio del grande */
-          --r2: min(13vw, 140px); /* más pequeño para que no toque al otro */
-          width:calc(var(--r2) * 2); height:calc(var(--r2) * 2);
-          /* Convertimos el centro (0,0) y aplicamos posición en la circunferencia con cos/sin */
-          /* top/left del borde = centro - radio */
-          top: calc(-1 * var(--r2) + var(--R) * ( -sin(30deg) + 1));   /* 330° => -30° en seno */
-          left: calc(-1 * var(--r2) + var(--R) * (  cos(330deg) ));
+        /* ===== Círculo mediano superior derecho ===== */
+        .medium-circle.top-right{
+          position:absolute;
+          width:min(35vw, 280px); height:min(35vw, 280px);
+          top:-17.5vw; right:-17.5vw; /* la mitad del tamaño para centrarlo en la esquina */
+          border-radius:50%;
+          background:
+            radial-gradient(circle at 30% 30%, rgba(255,255,255,.25), rgba(255,255,255,.08) 42%, rgba(0,0,0,.08) 70%, rgba(0,0,0,.16)),
+            linear-gradient(135deg, rgba(37,99,235,.90), rgba(29,78,216,.90));
+          box-shadow:0 15px 40px rgba(0,0,0,.18) inset, 0 8px 24px rgba(0,0,0,.12);
+          z-index:1;
         }
 
         /* ===== Formulario (derecha) ===== */
@@ -299,14 +303,44 @@ export default function Login() {
 
         /* ===== Responsive ===== */
         @media (max-width: 991.98px){
+          .left-pane{ min-height:60vh; }
           .form-wrap{ min-height:60vh; padding:24px; }
           .form-card{ box-shadow:none; padding:24px; }
-          .giant-circle{ --R: min(85vw, 600px); }
-          .giant-circle-center{ --R: min(85vw, 600px); }
-          .small-circle.bottom-left{ --r1: min(22vw, 150px); }
-          .small-circle.on-giant{ --R: min(85vw, 600px); --r2: min(18vw, 130px); }
-          .brand-title{ font-size:clamp(2rem, 10vw, 3.2rem); }
-          .brand-subtitle{ font-size:clamp(0.95rem, 3.6vw, 1.2rem); }
+          
+          .giant-circle{ 
+            width:min(85vw, 500px); height:min(85vw, 500px); 
+          }
+          .text-center-container{
+            width:min(75vw, 450px); height:min(75vw, 450px);
+          }
+          .small-circle.bottom-left{ 
+            width:min(30vw, 150px); height:min(30vw, 150px);
+            bottom:-15vw; left:-15vw;
+          }
+          .medium-circle.top-right{ 
+            width:min(40vw, 200px); height:min(40vw, 200px);
+            top:-20vw; right:-20vw;
+          }
+          
+          .brand-title{ font-size:clamp(2rem, 8vw, 3.5rem); }
+          .brand-subtitle{ font-size:clamp(0.95rem, 3.2vw, 1.25rem); }
+        }
+
+        @media (max-width: 575.98px){
+          .giant-circle{ 
+            width:min(95vw, 400px); height:min(95vw, 400px); 
+          }
+          .text-center-container{
+            width:min(85vw, 350px); height:min(85vw, 350px);
+          }
+          .small-circle.bottom-left{ 
+            width:min(35vw, 120px); height:min(35vw, 120px);
+            bottom:-17.5vw; left:-17.5vw;
+          }
+          .medium-circle.top-right{ 
+            width:min(45vw, 160px); height:min(45vw, 160px);
+            top:-22.5vw; right:-22.5vw;
+          }
         }
       `}</style>
     </>
