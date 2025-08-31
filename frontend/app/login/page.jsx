@@ -314,7 +314,7 @@ body {
           font-family: "Poppins", sans-serif;
         }
 
-   .container {
+ .container {
   position: fixed;
   top: 0;
   left: 0;
@@ -322,9 +322,8 @@ body {
   height: 100vh;
   background-color: #fff;
   overflow: hidden;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; /* Agregar esto */
+  margin: 0; /* Agregar esto */
+  padding: 0; /* Agregar esto */
 }
 
         .forms-container {
@@ -574,7 +573,6 @@ body {
   transition: 1.8s ease-in-out;
   border-radius: 50%;
   z-index: 6;
-  overflow: hidden; /* Agregar esto */
 }
 
         .image {
@@ -637,7 +635,7 @@ body {
         /* ANIMATION */
        .container.sign-up-mode:before {
   transform: translate(100%, -50%);
-  right: 40%; /* Cambiar de 52% a 40% para cubrir mejor el espacio */
+  right: 52%; /* Cambiar de 52% a 40% para cubrir mejor el espacio */
 }
 
         .container.sign-up-mode .left-panel .image,
