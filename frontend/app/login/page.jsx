@@ -208,7 +208,7 @@ export default function Auth() {
               <div className="grupo-selection">
                 <label className="grupo-label">Selecciona tu Grupo:</label>
                 <div className="grupos-grid">
-                  {grupos.slice(0, 2).map((grupo) => (
+                  {grupos.slice(0, 4).map((grupo) => (
                     <button
                       key={grupo.id}
                       type="button"
@@ -220,39 +220,9 @@ export default function Auth() {
                     </button>
                   ))}
                 </div>
-                {grupos.length > 2 && (
-                  <div className="grupos-grid-second-row">
-                    {grupos.slice(2, 4).map((grupo) => (
-                      <button
-                        key={grupo.id}
-                        type="button"
-                        onClick={() => handleGrupoSelect(grupo.id.toString())}
-                        className={`grupo-btn ${grupoId === grupo.id.toString() ? 'selected' : ''}`}
-                        disabled={loading}
-                      >
-                        {grupo.nombre}
-                      </button>
-                    ))}
-                  </div>
-                )}
                 {grupos.length > 4 && (
-                  <div className="grupos-grid-third-row">
-                    {grupos.slice(4, 6).map((grupo) => (
-                      <button
-                        key={grupo.id}
-                        type="button"
-                        onClick={() => handleGrupoSelect(grupo.id.toString())}
-                        className={`grupo-btn ${grupoId === grupo.id.toString() ? 'selected' : ''}`}
-                        disabled={loading}
-                      >
-                        {grupo.nombre}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {grupos.length > 6 && (
-                  <div className="grupos-grid-fourth-row">
-                    {grupos.slice(6, 7).map((grupo) => (
+                  <div className="grupos-grid-second-row">
+                    {grupos.slice(4, 7).map((grupo) => (
                       <button
                         key={grupo.id}
                         type="button"
@@ -325,9 +295,7 @@ export default function Auth() {
           padding: 0 !important;
           width: 100% !important;
           max-width: 100% !important;
-          overflow: hidden !important;
-          height: 100vh !important;
-          max-height: 100vh !important;
+          overflow-x: hidden !important;
         }
 
         html {
@@ -343,12 +311,11 @@ export default function Auth() {
         body {
           margin: 0 !important;
           padding: 0 !important;
-          height: 100vh !important;
-          max-height: 100vh !important;
+          min-height: 100vh;
           width: 100% !important;
           max-width: 100% !important;
           font-family: "Poppins", sans-serif;
-          overflow: hidden !important;
+          overflow-x: hidden !important;
         }
 
         body,
@@ -361,8 +328,6 @@ export default function Auth() {
           width: 100%;
           min-width: 100%;
           max-width: 100%;
-          height: 100vh;
-          max-height: 100vh;
           min-height: 100vh;
           background-color: #fff;
           overflow: hidden;
@@ -426,11 +391,6 @@ export default function Auth() {
           font-size: 2.2rem;
           color: #444;
           margin-bottom: 10px;
-        }
-
-        /* En modo registro, el título debe ser negro */
-        .container.sign-up-mode .title {
-          color: #000;
         }
 
         .error-alert {
@@ -531,11 +491,6 @@ export default function Auth() {
           text-align: left;
         }
 
-        /* En modo registro, el label debe ser negro */
-        .container.sign-up-mode .grupo-label {
-          color: #000;
-        }
-
         .grupos-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
@@ -619,13 +574,14 @@ export default function Auth() {
         .container:before {
           content: "";
           position: absolute;
-          height: 100vh;
-          width: 100vw;
-          top: 0;
-          right: 50%;
+          height: 2000px;
+          width: 2000px;
+          top: -10%;
+          right: 48%;
+          transform: translateY(-50%);
           background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
           transition: 1.8s ease-in-out;
-          border-radius: 0;
+          border-radius: 50%;
           z-index: 6;
         }
 
@@ -688,7 +644,8 @@ export default function Auth() {
 
         /* ANIMATION */
         .container.sign-up-mode:before {
-          right: 0%;
+          transform: translate(100%, -50%);
+          right: 52%;
         }
 
         .container.sign-up-mode .left-panel .image,
@@ -715,9 +672,9 @@ export default function Auth() {
 
         @media (max-width: 870px) {
           .container {
-            height: 100vh;
-            max-height: 100vh;
-            overflow: hidden;
+            overflow: visible;
+            min-height: 100vh;
+            height: auto;
           }
 
           .signin-signup {
@@ -781,10 +738,10 @@ export default function Auth() {
           }
 
           .container:before {
-            width: 100vw;
-            height: 100vh;
+            width: 1500px;
+            height: 1500px;
             transform: translateX(-50%);
-            left: 50%;
+            left: 30%;
             bottom: 68%;
             right: initial;
             top: initial;
@@ -826,250 +783,51 @@ export default function Auth() {
           }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 570px) {
           .container {
-            overflow: hidden;
-            height: 100vh;
-            max-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 100vh;
+            height: auto;
+          }
+
+          form {
+            padding: 0 1.5rem;
+          }
+
+          .image {
+            display: none;
+          }
+          
+          .panel .content {
+            padding: 0.5rem 1rem;
+          }
+          
+          .panel {
+            padding: 1.5rem;
           }
 
           .container:before {
-            display: none;
-          }
-
-          .panels-container {
-            display: none;
-          }
-
-          .forms-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          }
-
-          .signin-signup {
-            position: absolute;
-            top: 50%;
+            bottom: 72%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 400px;
-            transition: none;
           }
 
-          form {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2rem 1.5rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+          .container.sign-up-mode:before {
+            bottom: 28%;
+            left: 50%;
           }
 
-          .title {
-            color: #2d3748;
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            font-weight: 700;
-          }
-
-          .input-field {
-            background: rgba(255, 255, 255, 0.8);
-            border: 2px solid rgba(102, 126, 234, 0.1);
-            margin: 0.8rem 0;
-            transition: all 0.3s ease;
-          }
-
-          .input-field:focus-within {
-            border-color: #667eea;
-            background: rgba(255, 255, 255, 0.95);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
-          }
-
-          .input-field i {
-            color: #667eea;
-            font-size: 1rem;
-          }
-
-          .input-field input {
-            color: #2d3748;
-            font-weight: 500;
-          }
-
-          .input-field input::placeholder {
-            color: #718096;
-          }
-
-          .show-password-btn {
-            color: #667eea;
-            font-weight: 600;
-            font-size: 0.7rem;
-          }
-
-          .forgot-password-link {
-            color: #667eea;
-            font-weight: 600;
-          }
-
-          .forgot-password-link:hover {
-            color: #764ba2;
-          }
-
-          .grupo-selection {
-            margin: 1.5rem 0;
-          }
-
-          .grupo-label {
-            color: #2d3748;
-            font-weight: 700;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            text-align: center;
-          }
-
-          .grupos-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.8rem;
-            margin-bottom: 0.8rem;
-          }
-
-          .grupos-grid-second-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.8rem;
-            margin-bottom: 0.8rem;
-          }
-
-          .grupos-grid-third-row {
-            display: grid;
-            grid-template-columns: repeat(1, 1fr);
-            gap: 0.8rem;
-            justify-items: center;
-          }
-
-          .grupo-btn {
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(102, 126, 234, 0.3);
-            color: #4a5568;
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 0.8rem 0.5rem;
-            border-radius: 12px;
-            min-height: 45px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.1);
-          }
-
-          .grupo-btn:hover:not(:disabled) {
-            background: rgba(102, 126, 234, 0.1);
-            border-color: #667eea;
-            color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
-          }
-
-          .grupo-btn.selected {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: #667eea;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-          }
-
-          .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            width: 100%;
-            max-width: 200px;
-            height: 50px;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin: 1.5rem 0 1rem 0;
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-            transition: all 0.3s ease;
-          }
-
-          .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
-          }
-
-          .error-alert {
-            background: rgba(248, 215, 218, 0.9);
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            border-radius: 12px;
-            backdrop-filter: blur(5px);
-          }
-
-          /* Ajustes específicos para 7 grupos */
           .grupos-grid {
             grid-template-columns: repeat(2, 1fr);
           }
 
           .grupos-grid-second-row {
             grid-template-columns: repeat(2, 1fr);
-          }
-
-          .grupos-grid-third-row {
-            grid-template-columns: repeat(2, 1fr);
-          }
-
-          .grupos-grid-fourth-row {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.8rem;
-            justify-items: center;
-          }
-
-          .grupos-grid-fourth-row .grupo-btn {
-            max-width: 200px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .signin-signup {
-            width: 95%;
-            max-width: 350px;
-          }
-
-          form {
-            padding: 1.8rem 1.2rem;
-          }
-
-          .title {
-            font-size: 1.6rem;
-            margin-bottom: 1.2rem;
-          }
-
-          .input-field {
-            height: 50px;
-            margin: 0.6rem 0;
-          }
-
-          .input-field i {
-            font-size: 0.9rem;
-          }
-
-          .input-field input {
-            font-size: 1rem;
-          }
-
-          .grupo-label {
-            font-size: 0.9rem;
           }
 
           .grupo-btn {
             font-size: 0.75rem;
-            padding: 0.7rem 0.4rem;
-            min-height: 42px;
-          }
-
-          .btn {
-            height: 45px;
-            font-size: 0.85rem;
-            margin: 1.2rem 0 0.8rem 0;
+            padding: 6px 8px;
           }
         }
       `}</style>
