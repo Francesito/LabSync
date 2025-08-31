@@ -4,21 +4,49 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 
-export default function Login() {
-  const [correo, setCorreo] = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [error, setError] = useState('');
-  const [mostrarContrasena, setMostrarContrasena] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
+export default function Auth() {
+  // Estados compartidos
   const [isSignUp, setIsSignUp] = useState(false);
+  const [error, setError] = useState('');
+  const [redirecting, setRedirecting] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  // Estados para Login
+  const [correoLogin, setCorreoLogin] = useState('');
+  const [contrasenaLogin, setContrasenaLogin] = useState('');
+  const [mostrarContrasenaLogin, setMostrarContrasenaLogin] = useState(false);
+
+  // Estados para Register
+  const [nombre, setNombre] = useState('');
+  const [correoRegister, setCorreoRegister] = useState('');
+  const [contrasenaRegister, setContrasenaRegister] = useState('');
+  const [grupoId, setGrupoId] = useState('');
+  const [grupos, setGrupos] = useState([]);
+  const [showPasswordRegister, setShowPasswordRegister] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Cargar grupos al montar el componente
+  useEffect(() => {
+    const cargarGrupos = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/grupos`);
+        setGrupos(response.data);
+      } catch (err) {
+        console.error('Error al cargar grupos:', err);
+        setError('Error al cargar los grupos disponibles');
+      }
+    };
+
+    cargarGrupos();
+  }, []);
+
+  // Handle Login
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
       const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        correo_institucional: correo,
-        contrasena,
+        correo_institucional: correoLogin,
+        contrasena: contrasenaLogin,
       });
       localStorage.setItem('token', data.token);
       localStorage.setItem('nombre', data.nombre);
@@ -29,6 +57,40 @@ export default function Login() {
     }
   };
 
+  // Handle Register
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!grupoId) {
+      setError('Por favor selecciona tu grupo');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
+        nombre,
+        correo_institucional: correoRegister,
+        contrasena: contrasenaRegister,
+        grupo_id: parseInt(grupoId),
+        rol: 'alumno',
+      });
+      
+      alert('Usuario registrado. Verifica tu correo.');
+      router.push('/login');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al registrar usuario');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGrupoSelect = (id) => {
+    setGrupoId(id);
+  };
+
   if (redirecting) return <div className="min-vh-100 bg-white" />;
 
   return (
@@ -37,21 +99,12 @@ export default function Login() {
         <div className="forms-container">
           <div className="signin-signup">
             {/* Formulario de Login */}
-            <form onSubmit={handleSubmit} className="sign-in-form">
+            <form onSubmit={handleLoginSubmit} className="sign-in-form">
               <h2 className="title">Iniciar Sesión</h2>
               
-              {error && (
-                <div className="alert alert-danger d-flex align-items-center mb-3" style={{
-                  backgroundColor: '#f8d7da',
-                  borderColor: '#f5c6cb',
-                  color: '#721c24',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  width: '100%',
-                  maxWidth: '380px'
-                }}>
-                  <i className="bi bi-exclamation-triangle-fill me-2"></i>
+              {error && !isSignUp && (
+                <div className="error-alert">
+                  <i className="fas fa-exclamation-triangle"></i>
                   {error}
                 </div>
               )}
@@ -60,8 +113,8 @@ export default function Login() {
                 <i className="fas fa-user"></i>
                 <input 
                   type="email"
-                  value={correo}
-                  onChange={(e) => setCorreo(e.target.value)}
+                  value={correoLogin}
+                  onChange={(e) => setCorreoLogin(e.target.value)}
                   placeholder="Correo institucional"
                   required
                   autoComplete="username"
@@ -71,9 +124,9 @@ export default function Login() {
               <div className="input-field">
                 <i className="fas fa-lock"></i>
                 <input 
-                  type={mostrarContrasena ? 'text' : 'password'}
-                  value={contrasena}
-                  onChange={(e) => setContrasena(e.target.value)}
+                  type={mostrarContrasenaLogin ? 'text' : 'password'}
+                  value={contrasenaLogin}
+                  onChange={(e) => setContrasenaLogin(e.target.value)}
                   placeholder="Contraseña"
                   required
                   autoComplete="current-password"
@@ -81,9 +134,9 @@ export default function Login() {
                 <button
                   type="button"
                   className="show-password-btn"
-                  onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                  onClick={() => setMostrarContrasenaLogin(!mostrarContrasenaLogin)}
                 >
-                  {mostrarContrasena ? 'OCULTAR' : 'MOSTRAR'}
+                  {mostrarContrasenaLogin ? 'OCULTAR' : 'MOSTRAR'}
                 </button>
               </div>
               
@@ -96,22 +149,100 @@ export default function Login() {
               </div>
             </form>
 
-            {/* Formulario de Registro (placeholder) */}
-            <form className="sign-up-form">
+            {/* Formulario de Registro */}
+            <form onSubmit={handleRegisterSubmit} className="sign-up-form">
               <h2 className="title">Crear Cuenta</h2>
+              
+              {error && isSignUp && (
+                <div className="error-alert">
+                  <i className="fas fa-exclamation-triangle"></i>
+                  {error}
+                </div>
+              )}
+
               <div className="input-field">
                 <i className="fas fa-user"></i>
-                <input type="text" placeholder="Nombre completo" />
+                <input 
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  placeholder="Nombre completo"
+                  required
+                  disabled={loading}
+                />
               </div>
+
               <div className="input-field">
                 <i className="fas fa-envelope"></i>
-                <input type="email" placeholder="Correo institucional" />
+                <input 
+                  type="email"
+                  value={correoRegister}
+                  onChange={(e) => setCorreoRegister(e.target.value)}
+                  placeholder="Correo institucional"
+                  required
+                  disabled={loading}
+                />
               </div>
+              
               <div className="input-field">
                 <i className="fas fa-lock"></i>
-                <input type="password" placeholder="Contraseña" />
+                <input 
+                  type={showPasswordRegister ? 'text' : 'password'}
+                  value={contrasenaRegister}
+                  onChange={(e) => setContrasenaRegister(e.target.value)}
+                  placeholder="Contraseña"
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  className="show-password-btn"
+                  onClick={() => setShowPasswordRegister(!showPasswordRegister)}
+                  disabled={loading}
+                >
+                  {showPasswordRegister ? 'OCULTAR' : 'MOSTRAR'}
+                </button>
               </div>
-              <input type="submit" className="btn" value="Registrarse" />
+
+              {/* Selección de Grupos */}
+              <div className="grupo-selection">
+                <label className="grupo-label">Selecciona tu Grupo:</label>
+                <div className="grupos-grid">
+                  {grupos.slice(0, 4).map((grupo) => (
+                    <button
+                      key={grupo.id}
+                      type="button"
+                      onClick={() => handleGrupoSelect(grupo.id.toString())}
+                      className={`grupo-btn ${grupoId === grupo.id.toString() ? 'selected' : ''}`}
+                      disabled={loading}
+                    >
+                      {grupo.nombre}
+                    </button>
+                  ))}
+                </div>
+                {grupos.length > 4 && (
+                  <div className="grupos-grid-second-row">
+                    {grupos.slice(4, 7).map((grupo) => (
+                      <button
+                        key={grupo.id}
+                        type="button"
+                        onClick={() => handleGrupoSelect(grupo.id.toString())}
+                        className={`grupo-btn ${grupoId === grupo.id.toString() ? 'selected' : ''}`}
+                        disabled={loading}
+                      >
+                        {grupo.nombre}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <input 
+                type="submit" 
+                className="btn" 
+                value={loading ? "Creando..." : "Registrarse"}
+                disabled={loading}
+              />
             </form>
           </div>
         </div>
@@ -125,7 +256,10 @@ export default function Login() {
               </p>
               <button 
                 className="btn transparent" 
-                onClick={() => setIsSignUp(true)}
+                onClick={() => {
+                  setIsSignUp(true);
+                  setError('');
+                }}
               >
                 Registrarse
               </button>
@@ -140,7 +274,10 @@ export default function Login() {
               </p>
               <button 
                 className="btn transparent"
-                onClick={() => setIsSignUp(false)}
+                onClick={() => {
+                  setIsSignUp(false);
+                  setError('');
+                }}
               >
                 Iniciar Sesión
               </button>
@@ -159,6 +296,12 @@ export default function Login() {
           box-sizing: border-box;
         }
 
+        html, body {
+          height: 100%;
+          width: 100%;
+          overflow-x: hidden;
+        }
+
         body,
         input {
           font-family: "Poppins", sans-serif;
@@ -166,9 +309,9 @@ export default function Login() {
 
         .container {
           position: relative;
-          width: 100%;
+          width: 100vw;
+          height: 100vh;
           background-color: #fff;
-          min-height: 100vh;
           overflow: hidden;
         }
 
@@ -213,10 +356,34 @@ export default function Login() {
           z-index: 2;
         }
 
+        .container.sign-up-mode form.sign-up-form {
+          opacity: 1;
+          z-index: 2;
+        }
+
+        .container.sign-up-mode form.sign-in-form {
+          opacity: 0;
+          z-index: 1;
+        }
+
         .title {
           font-size: 2.2rem;
           color: #444;
           margin-bottom: 10px;
+        }
+
+        .error-alert {
+          max-width: 380px;
+          width: 100%;
+          background-color: #f8d7da;
+          color: #721c24;
+          padding: 12px 16px;
+          border-radius: 8px;
+          font-size: 14px;
+          margin: 10px 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         .input-field {
@@ -288,6 +455,67 @@ export default function Login() {
           color: #1d4ed8;
         }
 
+        .grupo-selection {
+          width: 100%;
+          max-width: 380px;
+          margin: 20px 0;
+        }
+
+        .grupo-label {
+          display: block;
+          color: #444;
+          font-weight: 600;
+          font-size: 1rem;
+          margin-bottom: 12px;
+          text-align: left;
+        }
+
+        .grupos-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+
+        .grupos-grid-second-row {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+        }
+
+        .grupo-btn {
+          padding: 8px 12px;
+          border: 2px solid #ddd;
+          border-radius: 25px;
+          background: #fff;
+          color: #444;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-align: center;
+          min-height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .grupo-btn:hover:not(:disabled) {
+          border-color: #5995fd;
+          color: #5995fd;
+        }
+
+        .grupo-btn.selected {
+          background: #5995fd;
+          border-color: #5995fd;
+          color: #fff;
+        }
+
+        .grupo-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
         .btn {
           width: 150px;
           background-color: #5995fd;
@@ -303,8 +531,13 @@ export default function Login() {
           transition: 0.5s;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
           background-color: #4d84e2;
+        }
+
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
 
         .panels-container {
@@ -401,16 +634,6 @@ export default function Login() {
 
         .container.sign-up-mode .signin-signup {
           left: 25%;
-        }
-
-        .container.sign-up-mode form.sign-up-form {
-          opacity: 1;
-          z-index: 2;
-        }
-
-        .container.sign-up-mode form.sign-in-form {
-          opacity: 0;
-          z-index: 1;
         }
 
         .container.sign-up-mode .right-panel .image,
@@ -527,6 +750,14 @@ export default function Login() {
             top: 5%;
             transform: translate(-50%, 0);
           }
+
+          .grupos-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .grupos-grid-second-row {
+            grid-template-columns: repeat(2, 1fr);
+          }
         }
 
         @media (max-width: 570px) {
@@ -552,6 +783,19 @@ export default function Login() {
           .container.sign-up-mode:before {
             bottom: 28%;
             left: 50%;
+          }
+
+          .grupos-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .grupos-grid-second-row {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .grupo-btn {
+            font-size: 0.75rem;
+            padding: 6px 8px;
           }
         }
       `}</style>
