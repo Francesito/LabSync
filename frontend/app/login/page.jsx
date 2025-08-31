@@ -40,24 +40,6 @@ export default function Auth() {
     cargarGrupos();
   }, []);
 
-  // Función para limpiar formularios
-  const limpiarFormularios = () => {
-    // Limpiar login
-    setCorreoLogin('');
-    setContrasenaLogin('');
-    setMostrarContrasenaLogin(false);
-    
-    // Limpiar register
-    setNombre('');
-    setCorreoRegister('');
-    setContrasenaRegister('');
-    setGrupoId('');
-    setShowPasswordRegister(false);
-    
-    // Limpiar errores
-    setError('');
-  };
-
   // Handle Login
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -97,11 +79,7 @@ export default function Auth() {
       });
       
       alert('Usuario registrado. Verifica tu correo.');
-      
-      // Limpiar formularios y cambiar a login
-      limpiarFormularios();
-      setIsSignUp(false);
-      
+      router.push('/login');
     } catch (err) {
       setError(err.response?.data?.error || 'Error al registrar usuario');
     } finally {
@@ -312,18 +290,18 @@ export default function Auth() {
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap");
 
-        html, body, #__next, [data-nextjs-scroll-focus-boundary] {
-          height: 100% !important;
-          width: 100% !important;
-          margin: 0 !important;
-          padding: 0 !important;
-        }
+     html, body, #__next, [data-nextjs-scroll-focus-boundary] {
+  height: 100vh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important; /* Cambiar de overflow-x: hidden a overflow: hidden */
+}
 
-        body {
-          margin: 0 !important;
-          padding: 0 !important;
-          font-family: "Poppins", sans-serif;
-        }
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
         * {
           margin: 0;
@@ -335,16 +313,18 @@ export default function Auth() {
         input {
           font-family: "Poppins", sans-serif;
         }
-
-        .container {
-          position: relative;
-          width: 100vw;
-          min-height: 100vh;
-          background-color: #fff;
-          overflow-x: hidden;
-          margin: 0;
-          padding: 0;
-        }
+.container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;
+  height: 100vh;
+  background-color: #fff;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
 
         .forms-container {
           position: absolute;
@@ -581,19 +561,19 @@ export default function Auth() {
           grid-template-columns: repeat(2, 1fr);
         }
 
-        .container:before {
-          content: "";
-          position: absolute;
-          height: 2000px;
-          width: 2000px;
-          top: -10%;
-          right: 48%;
-          transform: translateY(-50%);
-          background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
-          transition: 1.8s ease-in-out;
-          border-radius: 50%;
-          z-index: 6;
-        }
+    .container:before {
+  content: "";
+  position: absolute;
+  height: 2000px;
+  width: 2000px;
+  top: -10%;
+  right: 48%;
+  transform: translateY(-50%);
+  background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
+  transition: 1.8s ease-in-out;
+  border-radius: 50%;
+  z-index: 6;
+}
 
         .image {
           width: 100%;
@@ -653,10 +633,10 @@ export default function Auth() {
         }
 
         /* ANIMATION */
-        .container.sign-up-mode:before {
-          transform: translate(100%, -50%);
-          right: 52%;
-        }
+       .container.sign-up-mode:before {
+  transform: translate(100%, -50%);
+  right: 52%; /* Cambiar de 52% a 40% para cubrir mejor el espacio */
+}
 
         .container.sign-up-mode .left-panel .image,
         .container.sign-up-mode .left-panel .content {
@@ -680,49 +660,33 @@ export default function Auth() {
           pointer-events: all;
         }
 
-        /* RESPONSIVE DESIGN */
         @media (max-width: 870px) {
           .container {
-            min-height: 100vh;
-            height: auto;
-            overflow-x: hidden;
-            overflow-y: auto;
+            min-height: 800px;
+            height: 100vh;
           }
-          
           .signin-signup {
             width: 100%;
-            top: auto;
-            bottom: 0;
-            left: 0;
-            transform: none;
-            position: fixed;
-            height: auto;
-            max-height: 70vh;
-            overflow-y: auto;
+            top: 95%;
+            transform: translate(-50%, -100%);
             transition: 1s 0.8s ease-in-out;
-            z-index: 1000;
           }
 
+          .signin-signup,
           .container.sign-up-mode .signin-signup {
-            left: 0;
-          }
-
-          form {
-            padding: 2rem 1.5rem;
-            min-height: auto;
+            left: 50%;
           }
 
           .panels-container {
             grid-template-columns: 1fr;
             grid-template-rows: 1fr 2fr 1fr;
-            height: 100vh;
           }
 
           .panel {
             flex-direction: row;
             justify-content: space-around;
             align-items: center;
-            padding: 2rem 8%;
+            padding: 2.5rem 8%;
             grid-column: 1 / 2;
           }
 
@@ -735,7 +699,7 @@ export default function Auth() {
           }
 
           .image {
-            width: 150px;
+            width: 200px;
             transition: transform 0.9s ease-in-out;
             transition-delay: 0.6s;
           }
@@ -751,7 +715,7 @@ export default function Auth() {
           }
 
           .panel p {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             padding: 0.5rem 0;
           }
 
@@ -765,7 +729,7 @@ export default function Auth() {
             width: 1500px;
             height: 1500px;
             transform: translateX(-50%);
-            left: 50%;
+            left: 30%;
             bottom: 68%;
             right: initial;
             top: initial;
@@ -793,6 +757,11 @@ export default function Auth() {
             transform: translateY(300px);
           }
 
+          .container.sign-up-mode .signin-signup {
+            top: 5%;
+            transform: translate(-50%, 0);
+          }
+
           .grupos-grid {
             grid-template-columns: repeat(2, 1fr);
           }
@@ -800,152 +769,44 @@ export default function Auth() {
           .grupos-grid-second-row {
             grid-template-columns: repeat(2, 1fr);
           }
-
-          .title {
-            font-size: 1.8rem;
-          }
         }
 
-        @media (max-width: 600px) {
-          .container {
-            width: 100vw;
-            padding: 0;
-            margin: 0;
-          }
-
-          .signin-signup {
-            width: 100vw;
-            max-height: 80vh;
-            padding: 0;
-          }
-
+        @media (max-width: 570px) {
           form {
-            padding: 1.5rem 1rem;
-            width: 100%;
-          }
-
-          .input-field {
-            max-width: 100%;
-            margin: 8px 0;
-          }
-
-          .grupo-selection {
-            max-width: 100%;
-          }
-
-          .error-alert {
-            max-width: 100%;
+            padding: 0 1.5rem;
           }
 
           .image {
             display: none;
           }
-          
           .panel .content {
             padding: 0.5rem 1rem;
-            text-align: center;
           }
-
-          .panel {
-            padding: 1rem;
-            justify-content: center;
+          .container {
+            padding: 1.5rem;
           }
 
           .container:before {
-            bottom: 70%;
+            bottom: 72%;
             left: 50%;
           }
 
           .container.sign-up-mode:before {
-            bottom: 30%;
+            bottom: 28%;
             left: 50%;
           }
 
           .grupos-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
           }
 
           .grupos-grid-second-row {
             grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
           }
 
           .grupo-btn {
-            font-size: 0.7rem;
-            padding: 8px 6px;
-            min-height: 35px;
-          }
-
-          .title {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-          }
-
-          .panel h3 {
-            font-size: 1rem;
-          }
-
-          .panel p {
             font-size: 0.75rem;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .signin-signup {
-            max-height: 85vh;
-          }
-
-          form {
-            padding: 1rem 0.8rem;
-          }
-
-          .input-field {
-            height: 50px;
-            margin: 6px 0;
-          }
-
-          .input-field input {
-            font-size: 1rem;
-          }
-
-          .btn {
-            width: 140px;
-            height: 45px;
-            font-size: 0.9rem;
-          }
-
-          .grupo-btn {
-            font-size: 0.65rem;
-            padding: 6px 4px;
-            min-height: 32px;
-          }
-
-          .title {
-            font-size: 1.3rem;
-          }
-
-          .grupos-grid,
-          .grupos-grid-second-row {
-            gap: 4px;
-          }
-        }
-
-        /* Asegurar scroll en móviles */
-        @media (max-width: 870px) {
-          body {
-            overflow-y: auto !important;
-            height: auto !important;
-          }
-          
-          html {
-            overflow-y: auto !important;
-            height: auto !important;
-          }
-          
-          .container {
-            position: relative !important;
-            overflow-y: visible !important;
+            padding: 6px 8px;
           }
         }
       `}</style>
