@@ -672,16 +672,19 @@ export default function Auth() {
 
         @media (max-width: 870px) {
           .container {
-            overflow: visible;
+            overflow: hidden;
             min-height: 100vh;
-            height: auto;
+            height: 100vh;
           }
 
           .signin-signup {
             width: 100%;
-            top: 95%;
-            transform: translate(-50%, -100%);
+            top: 50%;
+            transform: translate(-50%, -50%);
             transition: 1s 0.8s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
           .signin-signup,
@@ -732,9 +735,9 @@ export default function Auth() {
           }
 
           .btn.transparent {
-            width: 110px;
-            height: 35px;
-            font-size: 0.7rem;
+            width: 120px;
+            height: 40px;
+            font-size: 0.75rem;
           }
 
           .container:before {
@@ -770,29 +773,42 @@ export default function Auth() {
           }
 
           .container.sign-up-mode .signin-signup {
-            top: 5%;
-            transform: translate(-50%, 0);
+            top: 50%;
+            transform: translate(-50%, -50%);
           }
 
           .grupos-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
           }
 
           .grupos-grid-second-row {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
+          }
+
+          .grupo-btn {
+            font-size: 0.7rem;
+            padding: 6px 4px;
+            min-height: 35px;
           }
         }
 
         @media (max-width: 570px) {
           .container {
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: hidden;
             min-height: 100vh;
-            height: auto;
+            height: 100vh;
           }
 
           form {
             padding: 0 1.5rem;
+          }
+
+          .signin-signup {
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
           .image {
@@ -817,17 +833,29 @@ export default function Auth() {
             left: 50%;
           }
 
+          .container.sign-up-mode .signin-signup {
+            top: 50%;
+            transform: translate(-50%, -50%);
+          }
+
           .grupos-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
           }
 
           .grupos-grid-second-row {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
           }
 
           .grupo-btn {
-            font-size: 0.75rem;
-            padding: 6px 8px;
+            font-size: 0.65rem;
+            padding: 4px 2px;
+            min-height: 32px;
+          }
+
+          .btn.transparent {
+            width: 140px;
+            height: 45px;
+            font-size: 0.8rem;
           }
         }
       `}</style>
