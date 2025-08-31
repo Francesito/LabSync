@@ -309,12 +309,19 @@ body {
           box-sizing: border-box;
         }
 
-        html, body {
+     html, body {
   height: 100vh !important;
   width: 100vw !important;
   margin: 0 !important;
   padding: 0 !important;
-  overflow-x: hidden !important;
+  overflow: hidden !important;
+}
+
+#__next {
+  height: 100vh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
         body,
@@ -323,12 +330,14 @@ body {
         }
 
         .container {
-          position: relative;
-          width: 100vw;
-          height: 100vh;
-          background-color: #fff;
-          overflow: hidden;
-        }
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #fff;
+  overflow: hidden;
+}
 
         .forms-container {
           position: absolute;
