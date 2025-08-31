@@ -290,12 +290,12 @@ export default function Auth() {
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap");
 
-     html, body, #__next, [data-nextjs-scroll-focus-boundary] {
-  height: 100dvh !important;   /* en vez de 100vh */
-  width: 100dvw !important;    /* en vez de 100vw */
+      html, body, #__next, [data-nextjs-scroll-focus-boundary] {
+  height: 100vh !important;
+  width: 100vw !important;
   margin: 0 !important;
   padding: 0 !important;
-  overflow: hidden !important; /* nada de scroll horizontal */
+  overflow-x: hidden !important;
 }
 
 body {
@@ -329,11 +329,12 @@ body {
           font-family: "Poppins", sans-serif;
         }
 
-       .container {
+        .container {
   position: fixed;
-  inset: 0;           /* equivale a top/left/right/bottom:0 */
-  width: 100%;
-  height: 100%;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background-color: #fff;
   overflow: hidden;
 }
@@ -346,17 +347,17 @@ body {
           left: 0;
         }
 
-      .signin-signup {
-  position: absolute;
-  top: 50%;
-  left: 75%;
-  transform: translate(-50%, -50%);
-  width: 50%;
-  transition: 1s 0.7s ease-in-out;
-  display: grid;
-  grid-template-columns: 1fr;
-  z-index: 5;
-}
+        .signin-signup {
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          left: 75%;
+          width: 50%;
+          transition: 1s 0.7s ease-in-out;
+          display: grid;
+          grid-template-columns: 1fr;
+          z-index: 5;
+        }
 
         form {
           display: flex;
@@ -574,20 +575,18 @@ body {
         }
 
         .container:before {
-  content: "";
-  position: absolute;
-  /* hazlo más grande para que no se queden “laterales” sin cubrir */
-  width: 2600px;        /* antes 2000px */
-  height: 2600px;       /* antes 2000px */
-  top: 50%;
-  right: 52%;           /* punto de partida */
-  transform: translate(50%, -50%); /* lo empuja hacia la derecha */
-  background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
-  border-radius: 50%;
-  transition: 1.8s ease-in-out;
-  z-index: 6;
-}
-
+          content: "";
+          position: absolute;
+          height: 2000px;
+          width: 2000px;
+          top: -10%;
+          right: 48%;
+          transform: translateY(-50%);
+          background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
+          transition: 1.8s ease-in-out;
+          border-radius: 50%;
+          z-index: 6;
+        }
 
         .image {
           width: 100%;
@@ -750,11 +749,11 @@ body {
             transition: 2s ease-in-out;
           }
 
-         .container.sign-up-mode:before {
-  right: 48%;                    /* invierte el lado */
-  transform: translate(-50%, -50%);
-}
-
+          .container.sign-up-mode:before {
+            transform: translate(-50%, 100%);
+            bottom: 32%;
+            right: initial;
+          }
 
           .container.sign-up-mode .left-panel .image,
           .container.sign-up-mode .left-panel .content {
@@ -791,12 +790,8 @@ body {
           }
 
           .image {
-  width: 100%;
-  height: auto;
-  max-width: 100%;
-  display: block;
-}
-
+            display: none;
+          }
           .panel .content {
             padding: 0.5rem 1rem;
           }
