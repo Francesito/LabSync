@@ -295,7 +295,9 @@ export default function Auth() {
           padding: 0 !important;
           width: 100% !important;
           max-width: 100% !important;
-          overflow-x: hidden !important;
+          overflow: hidden !important;
+          height: 100vh !important;
+          max-height: 100vh !important;
         }
 
         html {
@@ -311,11 +313,12 @@ export default function Auth() {
         body {
           margin: 0 !important;
           padding: 0 !important;
-          min-height: 100vh;
+          height: 100vh !important;
+          max-height: 100vh !important;
           width: 100% !important;
           max-width: 100% !important;
           font-family: "Poppins", sans-serif;
-          overflow-x: hidden !important;
+          overflow: hidden !important;
         }
 
         body,
@@ -328,6 +331,8 @@ export default function Auth() {
           width: 100%;
           min-width: 100%;
           max-width: 100%;
+          height: 100vh;
+          max-height: 100vh;
           min-height: 100vh;
           background-color: #fff;
           overflow: hidden;
@@ -391,6 +396,11 @@ export default function Auth() {
           font-size: 2.2rem;
           color: #444;
           margin-bottom: 10px;
+        }
+
+        /* En modo registro, el título debe ser negro */
+        .container.sign-up-mode .title {
+          color: #000;
         }
 
         .error-alert {
@@ -491,6 +501,11 @@ export default function Auth() {
           text-align: left;
         }
 
+        /* En modo registro, el label debe ser negro */
+        .container.sign-up-mode .grupo-label {
+          color: #000;
+        }
+
         .grupos-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
@@ -574,14 +589,13 @@ export default function Auth() {
         .container:before {
           content: "";
           position: absolute;
-          height: 2000px;
-          width: 2000px;
-          top: -10%;
-          right: 48%;
-          transform: translateY(-50%);
+          height: 100vh;
+          width: 100vw;
+          top: 0;
+          right: 50%;
           background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
           transition: 1.8s ease-in-out;
-          border-radius: 50%;
+          border-radius: 0;
           z-index: 6;
         }
 
@@ -644,8 +658,7 @@ export default function Auth() {
 
         /* ANIMATION */
         .container.sign-up-mode:before {
-          transform: translate(100%, -50%);
-          right: 52%;
+          right: 0%;
         }
 
         .container.sign-up-mode .left-panel .image,
@@ -672,9 +685,9 @@ export default function Auth() {
 
         @media (max-width: 870px) {
           .container {
-            overflow: visible;
-            min-height: 100vh;
-            height: auto;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
           }
 
           .signin-signup {
@@ -738,10 +751,10 @@ export default function Auth() {
           }
 
           .container:before {
-            width: 1500px;
-            height: 1500px;
+            width: 100vw;
+            height: 100vh;
             transform: translateX(-50%);
-            left: 30%;
+            left: 50%;
             bottom: 68%;
             right: initial;
             top: initial;
@@ -785,10 +798,9 @@ export default function Auth() {
 
         @media (max-width: 570px) {
           .container {
-            overflow-y: auto;
-            overflow-x: hidden;
-            min-height: 100vh;
-            height: auto;
+            overflow: hidden;
+            height: 100vh;
+            max-height: 100vh;
           }
 
           form {
@@ -810,6 +822,8 @@ export default function Auth() {
           .container:before {
             bottom: 72%;
             left: 50%;
+            width: 100vw;
+            height: 100vh;
           }
 
           .container.sign-up-mode:before {
