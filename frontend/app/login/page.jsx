@@ -313,17 +313,17 @@ body {
         input {
           font-family: "Poppins", sans-serif;
         }
-
- .container {
+.container {
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 100vw;
   height: 100vh;
   background-color: #fff;
   overflow: hidden;
-  margin: 0; /* Agregar esto */
-  padding: 0; /* Agregar esto */
+  margin: 0;
+  padding: 0;
 }
 
         .forms-container {
@@ -561,14 +561,14 @@ body {
           grid-template-columns: repeat(2, 1fr);
         }
 
-      .container:before {
+    .container:before {
   content: "";
   position: absolute;
   height: 2000px;
   width: 2000px;
-  top: -10%;
+  top: 50%;
   right: 48%;
-  transform: translateY(-50%);
+  transform: translate(50%, -50%);
   background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
   transition: 1.8s ease-in-out;
   border-radius: 50%;
