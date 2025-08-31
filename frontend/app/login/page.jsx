@@ -789,9 +789,6 @@ export default function Auth() {
             overflow-x: hidden;
             min-height: 100vh;
             height: auto;
-            padding-bottom: 2rem;
-            width: 100%;
-            max-width: 100%;
           }
 
           form {
@@ -804,47 +801,20 @@ export default function Auth() {
           
           .panel .content {
             padding: 0.5rem 1rem;
-            text-align: center;
-            width: 100%;
-            padding-right: 1rem;
           }
           
           .panel {
-            justify-content: center;
-            align-items: center;
             padding: 1.5rem;
-            flex-direction: column;
-            width: 100%;
-            max-width: 100%;
           }
 
           .container:before {
-            bottom: 70%;
+            bottom: 72%;
             left: 50%;
-            transform: translate(-50%, 0);
-            width: 100%;
-            height: 100vh;
           }
 
           .container.sign-up-mode:before {
-            bottom: 30%;
+            bottom: 28%;
             left: 50%;
-            transform: translate(-50%, 0);
-          }
-
-          .signin-signup {
-            width: 95%;
-            max-width: 95%;
-          }
-
-          .container.sign-up-mode .signin-signup {
-            top: 10%;
-            transform: translate(-50%, 0);
-          }
-
-          .signin-signup {
-            top: 90%;
-            transform: translate(-50%, -100%);
           }
 
           .grupos-grid {
@@ -858,29 +828,6 @@ export default function Auth() {
           .grupo-btn {
             font-size: 0.75rem;
             padding: 6px 8px;
-          }
-
-          .title {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-          }
-
-          .input-field {
-            max-width: 100%;
-            margin: 15px 0;
-          }
-
-          .grupo-selection {
-            max-width: 100%;
-            margin: 25px 0;
-          }
-
-          .error-alert {
-            max-width: 100%;
-          }
-
-          .forgot-password-container {
-            max-width: 100%;
           }
         }
       `}</style>
