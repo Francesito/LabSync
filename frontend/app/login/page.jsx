@@ -290,12 +290,12 @@ export default function Auth() {
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap");
 
-      html, body, #__next, [data-nextjs-scroll-focus-boundary] {
+     html, body, #__next, [data-nextjs-scroll-focus-boundary] {
   height: 100vh !important;
   width: 100vw !important;
   margin: 0 !important;
   padding: 0 !important;
-  overflow-x: hidden !important;
+  overflow: hidden !important; /* Cambiar de overflow-x: hidden a overflow: hidden */
 }
 
 body {
@@ -309,27 +309,12 @@ body {
           box-sizing: border-box;
         }
 
-     html, body {
-  height: 100vh !important;
-  width: 100vw !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-}
-
-#__next {
-  height: 100vh !important;
-  width: 100vw !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
         body,
         input {
           font-family: "Poppins", sans-serif;
         }
 
-        .container {
+     .container {
   position: fixed;
   top: 0;
   left: 0;
@@ -337,6 +322,8 @@ body {
   height: 100vh;
   background-color: #fff;
   overflow: hidden;
+  margin: 0; /* Agregar esto */
+  padding: 0; /* Agregar esto */
 }
 
         .forms-container {
