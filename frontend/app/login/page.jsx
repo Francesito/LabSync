@@ -290,6 +290,19 @@ export default function Auth() {
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap");
 
+      html, body, #__next, [data-nextjs-scroll-focus-boundary] {
+  height: 100vh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
         * {
           margin: 0;
           padding: 0;
@@ -297,10 +310,12 @@ export default function Auth() {
         }
 
         html, body {
-          height: 100%;
-          width: 100%;
-          overflow-x: hidden;
-        }
+  height: 100vh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
 
         body,
         input {
