@@ -264,7 +264,7 @@ export default function Auth() {
                 Registrarse
               </button>
             </div>
-            <img src="/img/log.svg" className="image" alt="Login illustration" />
+            <img src="/log.png" className="image" alt="Login illustration" />
           </div>
           <div className="panel right-panel">
             <div className="content">
@@ -282,7 +282,7 @@ export default function Auth() {
                 Iniciar Sesión
               </button>
             </div>
-            <img src="/img/register.svg" className="image" alt="Register illustration" />
+            <img src="/register.png" className="image" alt="Register illustration" />
           </div>
         </div>
       </div>
