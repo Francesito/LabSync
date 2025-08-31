@@ -290,18 +290,17 @@ export default function Auth() {
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap");
 
-     html, body, #__next, [data-nextjs-scroll-focus-boundary] {
-  height: 100vh !important;
-  width: 100vw !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important; /* Cambiar de overflow-x: hidden a overflow: hidden */
-}
+        html, body, #__next, [data-nextjs-scroll-focus-boundary] {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
 
-body {
-  margin: 0 !important;
-  padding: 0 !important;
-}
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          min-height: 100vh;
+          font-family: "Poppins", sans-serif;
+        }
 
         * {
           margin: 0;
@@ -313,18 +312,16 @@ body {
         input {
           font-family: "Poppins", sans-serif;
         }
-.container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100vw;
-  height: 100vh;
-  background-color: #fff;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-}
+
+        .container {
+          position: relative;
+          width: 100vw;
+          min-height: 100vh;
+          background-color: #fff;
+          overflow: hidden;
+          margin: 0;
+          padding: 0;
+        }
 
         .forms-container {
           position: absolute;
@@ -561,19 +558,19 @@ body {
           grid-template-columns: repeat(2, 1fr);
         }
 
-    .container:before {
-  content: "";
-  position: absolute;
-  height: 2000px;
-  width: 2000px;
-  top: -10%;
-  right: 48%;
-  transform: translateY(-50%);
-  background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
-  transition: 1.8s ease-in-out;
-  border-radius: 50%;
-  z-index: 6;
-}
+        .container:before {
+          content: "";
+          position: absolute;
+          height: 2000px;
+          width: 2000px;
+          top: -10%;
+          right: 48%;
+          transform: translateY(-50%);
+          background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
+          transition: 1.8s ease-in-out;
+          border-radius: 50%;
+          z-index: 6;
+        }
 
         .image {
           width: 100%;
@@ -633,10 +630,10 @@ body {
         }
 
         /* ANIMATION */
-       .container.sign-up-mode:before {
-  transform: translate(100%, -50%);
-  right: 52%; /* Cambiar de 52% a 40% para cubrir mejor el espacio */
-}
+        .container.sign-up-mode:before {
+          transform: translate(100%, -50%);
+          right: 52%;
+        }
 
         .container.sign-up-mode .left-panel .image,
         .container.sign-up-mode .left-panel .content {
@@ -662,9 +659,11 @@ body {
 
         @media (max-width: 870px) {
           .container {
-            min-height: 800px;
-            height: 100vh;
+            overflow: visible;
+            min-height: 100vh;
+            height: auto;
           }
+
           .signin-signup {
             width: 100%;
             top: 95%;
@@ -772,6 +771,14 @@ body {
         }
 
         @media (max-width: 570px) {
+          .container {
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 100vh;
+            height: auto;
+            padding-bottom: 2rem;
+          }
+
           form {
             padding: 0 1.5rem;
           }
@@ -779,21 +786,47 @@ body {
           .image {
             display: none;
           }
+          
           .panel .content {
             padding: 0.5rem 1rem;
+            text-align: center;
+            width: 100%;
+            padding-right: 1rem;
           }
-          .container {
+          
+          .panel {
+            justify-content: center;
+            align-items: center;
             padding: 1.5rem;
+            flex-direction: column;
           }
 
           .container:before {
-            bottom: 72%;
+            bottom: 70%;
             left: 50%;
+            transform: translate(-50%, 0);
+            width: 120vw;
+            height: 120vw;
           }
 
           .container.sign-up-mode:before {
-            bottom: 28%;
+            bottom: 30%;
             left: 50%;
+            transform: translate(-50%, 0);
+          }
+
+          .signin-signup {
+            width: 95%;
+          }
+
+          .container.sign-up-mode .signin-signup {
+            top: 10%;
+            transform: translate(-50%, 0);
+          }
+
+          .signin-signup {
+            top: 90%;
+            transform: translate(-50%, -100%);
           }
 
           .grupos-grid {
@@ -807,6 +840,29 @@ body {
           .grupo-btn {
             font-size: 0.75rem;
             padding: 6px 8px;
+          }
+
+          .title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+          }
+
+          .input-field {
+            max-width: 100%;
+            margin: 15px 0;
+          }
+
+          .grupo-selection {
+            max-width: 100%;
+            margin: 25px 0;
+          }
+
+          .error-alert {
+            max-width: 100%;
+          }
+
+          .forgot-password-container {
+            max-width: 100%;
           }
         }
       `}</style>
