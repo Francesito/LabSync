@@ -566,9 +566,9 @@ body {
   position: absolute;
   height: 2000px;
   width: 2000px;
-  top: 50%;
+  top: -10%;
   right: 48%;
-  transform: translate(50%, -50%);
+  transform: translateY(-50%);
   background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
   transition: 1.8s ease-in-out;
   border-radius: 50%;
