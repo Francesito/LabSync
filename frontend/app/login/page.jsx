@@ -293,19 +293,29 @@ export default function Auth() {
         html, body, #__next, [data-nextjs-scroll-focus-boundary] {
           margin: 0 !important;
           padding: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+        }
+
+        html {
+          box-sizing: border-box;
+        }
+
+        *, *:before, *:after {
+          box-sizing: inherit;
+          margin: 0;
+          padding: 0;
         }
 
         body {
           margin: 0 !important;
           padding: 0 !important;
           min-height: 100vh;
+          width: 100% !important;
+          max-width: 100% !important;
           font-family: "Poppins", sans-serif;
-        }
-
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
+          overflow-x: hidden !important;
         }
 
         body,
@@ -315,12 +325,15 @@ export default function Auth() {
 
         .container {
           position: relative;
-          width: 100vw;
+          width: 100%;
+          min-width: 100%;
+          max-width: 100%;
           min-height: 100vh;
           background-color: #fff;
           overflow: hidden;
           margin: 0;
           padding: 0;
+          box-sizing: border-box;
         }
 
         .forms-container {
@@ -777,6 +790,8 @@ export default function Auth() {
             min-height: 100vh;
             height: auto;
             padding-bottom: 2rem;
+            width: 100%;
+            max-width: 100%;
           }
 
           form {
@@ -799,14 +814,16 @@ export default function Auth() {
             align-items: center;
             padding: 1.5rem;
             flex-direction: column;
+            width: 100%;
+            max-width: 100%;
           }
 
           .container:before {
             bottom: 70%;
             left: 50%;
             transform: translate(-50%, 0);
-            width: 120vw;
-            height: 120vw;
+            width: 100%;
+            height: 100vh;
           }
 
           .container.sign-up-mode:before {
@@ -817,6 +834,7 @@ export default function Auth() {
 
           .signin-signup {
             width: 95%;
+            max-width: 95%;
           }
 
           .container.sign-up-mode .signin-signup {
