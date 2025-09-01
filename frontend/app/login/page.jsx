@@ -386,6 +386,7 @@ export default function Auth() {
   opacity: 1;
   position: relative;
   pointer-events: all;
+   margin-top: 32px !important; 
 }
 
      .container.sign-up-mode form.sign-up-form {
@@ -848,12 +849,12 @@ export default function Auth() {
           }
 
           .container:before {
-            bottom: 72%;
+            bottom: 65% !important;
             left: 50%;
           }
 
           .container.sign-up-mode:before {
-            bottom: 28%;
+            bottom: 22% !important; 
             left: 50%;
           }
 
