@@ -834,6 +834,21 @@ export default function Auth() {
             justify-content: center;
           }
 
+          .panels-container .btn.transparent {
+    pointer-events: auto !important;
+    position: relative;            /* asegura área clickeable correcta */
+  }
+
+   .forms-container { z-index: 8 !important; }
+  .signin-signup   { z-index: 9 !important; }
+  .container.sign-up-mode form.sign-up-form { z-index: 10 !important; }
+}
+
+         .panels-container {
+    z-index: 7 !important;         /* por debajo de .signin-signup (9) y del form (10) */
+    pointer-events: none !important;
+  }
+
           .image {
             display: none;
           }
