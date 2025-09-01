@@ -22,6 +22,7 @@ export default function Auth() {
   const [contrasenaRegister, setContrasenaRegister] = useState('');
   const [grupoId, setGrupoId] = useState('');
   const [grupos, setGrupos] = useState([]);
+  const [selectedGrupo, setSelectedGrupo] = useState(null);
   const [showPasswordRegister, setShowPasswordRegister] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -87,8 +88,14 @@ export default function Auth() {
     }
   };
 
-  const handleGrupoSelect = (id) => {
+  const handleGrupoSelect = (id, nombre) => {
     setGrupoId(id);
+    setSelectedGrupo({ id, nombre });
+  };
+
+  const handleRemoveGrupo = () => {
+    setGrupoId('');
+    setSelectedGrupo(null);
   };
 
   if (redirecting) return <div className="min-vh-100 bg-white" />;
@@ -207,32 +214,38 @@ export default function Auth() {
               {/* Selección de Grupos */}
               <div className="grupo-selection">
                 <label className="grupo-label">Selecciona tu Grupo:</label>
-                <div className="grupos-grid">
-                  {grupos.slice(0, 4).map((grupo) => (
+                
+                {/* Grupo seleccionado como etiqueta */}
+                {selectedGrupo && (
+                  <div className="selected-grupo-tag">
+                    <span>{selectedGrupo.nombre}</span>
                     <button
-                      key={grupo.id}
                       type="button"
-                      onClick={() => handleGrupoSelect(grupo.id.toString())}
-                      className={`grupo-btn ${grupoId === grupo.id.toString() ? 'selected' : ''}`}
+                      className="remove-grupo-btn"
+                      onClick={handleRemoveGrupo}
                       disabled={loading}
                     >
-                      {grupo.nombre}
+                      ✕
                     </button>
-                  ))}
-                </div>
-                {grupos.length > 4 && (
-                  <div className="grupos-grid-second-row">
-                    {grupos.slice(4, 7).map((grupo) => (
-                      <button
-                        key={grupo.id}
-                        type="button"
-                        onClick={() => handleGrupoSelect(grupo.id.toString())}
-                        className={`grupo-btn ${grupoId === grupo.id.toString() ? 'selected' : ''}`}
-                        disabled={loading}
-                      >
-                        {grupo.nombre}
-                      </button>
-                    ))}
+                  </div>
+                )}
+
+                {/* Mostrar botones solo si no hay grupo seleccionado */}
+                {!selectedGrupo && (
+                  <div className="grupos-container">
+                    <div className="grupos-grid-mobile">
+                      {grupos.map((grupo) => (
+                        <button
+                          key={grupo.id}
+                          type="button"
+                          onClick={() => handleGrupoSelect(grupo.id.toString(), grupo.nombre)}
+                          className="grupo-btn"
+                          disabled={loading}
+                        >
+                          {grupo.nombre}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -368,44 +381,38 @@ export default function Auth() {
           grid-row: 1 / 2;
         }
 
-      form.sign-up-form {
-  opacity: 0;
-  z-index: 1;
-  position: absolute;    /* <--- IMPORTANTE */
-  top: 0;
-  left: 0;
-  width: 100%;
-  pointer-events: none;  /* no clickeable */
-}
+        form.sign-up-form {
+          opacity: 0;
+          z-index: 1;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          pointer-events: none;
+        }
 
-       form.sign-in-form {
-  z-index: 2;
-  opacity: 1;
-  position: relative;
-  pointer-events: all;
-}
+        form.sign-in-form {
+          z-index: 2;
+          opacity: 1;
+          position: relative;
+          pointer-events: all;
+        }
 
-.container.sign-up-mode form.sign-up-form {
-  z-index: 2;
-  opacity: 1;
-  position: relative;
-  pointer-events: all;
-}
-
-        .container.sign-up-mode form.sign-in-form {
-  opacity: 0;
-  z-index: 1;
-  position: absolute;    /* <--- IMPORTANTE */
-  top: 0;
-  left: 0;
-  width: 100%;
-  pointer-events: none;
-}
-
+        .container.sign-up-mode form.sign-up-form {
+          z-index: 2;
+          opacity: 1;
+          position: relative;
+          pointer-events: all;
+        }
 
         .container.sign-up-mode form.sign-in-form {
           opacity: 0;
           z-index: 1;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          pointer-events: none;
         }
 
         .title {
@@ -512,6 +519,39 @@ export default function Auth() {
           text-align: left;
         }
 
+        .selected-grupo-tag {
+          display: inline-flex;
+          align-items: center;
+          background: #5995fd;
+          color: white;
+          padding: 8px 12px;
+          border-radius: 25px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          margin-bottom: 15px;
+          gap: 8px;
+        }
+
+        .remove-grupo-btn {
+          background: none;
+          border: none;
+          color: white;
+          font-size: 14px;
+          cursor: pointer;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          transition: background-color 0.3s ease;
+        }
+
+        .remove-grupo-btn:hover:not(:disabled) {
+          background-color: rgba(255, 255, 255, 0.2);
+        }
+
         .grupos-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
@@ -522,6 +562,13 @@ export default function Auth() {
         .grupos-grid-second-row {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+        }
+
+        /* Estilos para mobile - Grid de 4 columnas */
+        .grupos-grid-mobile {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
           gap: 8px;
         }
 
@@ -545,12 +592,6 @@ export default function Auth() {
         .grupo-btn:hover:not(:disabled) {
           border-color: #5995fd;
           color: #5995fd;
-        }
-
-        .grupo-btn.selected {
-          background: #5995fd;
-          border-color: #5995fd;
-          color: #fff;
         }
 
         .grupo-btn:disabled {
@@ -709,6 +750,16 @@ export default function Auth() {
             justify-content: center;
           }
 
+          /* Formulario de login más abajo en mobile */
+          .sign-in-form {
+            margin-top: 80px;
+          }
+
+          /* Formulario de registro más arriba en mobile */
+          .sign-up-form {
+            margin-top: -80px;
+          }
+
           .container.sign-up-mode .signin-signup {
             left: 50%;
             transform: translate(-50%, -50%);
@@ -800,12 +851,10 @@ export default function Auth() {
             transform: translate(-50%, -50%);
           }
 
-          .grupos-grid {
-            grid-template-columns: repeat(3, 1fr);
-          }
-
-          .grupos-grid-second-row {
-            grid-template-columns: repeat(3, 1fr);
+          /* Mantener grid de 4 columnas en mobile */
+          .grupos-grid-mobile {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
           }
 
           .grupo-btn {
@@ -833,6 +882,15 @@ export default function Auth() {
             display: flex;
             align-items: center;
             justify-content: center;
+          }
+
+          /* Ajustar posición de formularios en pantallas muy pequeñas */
+          .sign-in-form {
+            margin-top: 100px;
+          }
+
+          .sign-up-form {
+            margin-top: -100px;
           }
 
           .image {
@@ -863,16 +921,14 @@ export default function Auth() {
             transform: translate(-50%, -50%);
           }
 
-          .grupos-grid {
-            grid-template-columns: repeat(3, 1fr);
-          }
-
-          .grupos-grid-second-row {
+          /* Mantener grid de 4 columnas incluso en pantallas pequeñas */
+          .grupos-grid-mobile {
             grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
           }
 
           .grupo-btn {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             padding: 4px 2px;
             min-height: 32px;
           }
