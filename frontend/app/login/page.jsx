@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 
-
 export default function Auth() {
   // Estados compartidos
   const [isSignUp, setIsSignUp] = useState(false);
@@ -25,7 +24,6 @@ export default function Auth() {
   const [grupos, setGrupos] = useState([]);
   const [showPasswordRegister, setShowPasswordRegister] = useState(false);
   const [loading, setLoading] = useState(false);
-  
 
   // Cargar grupos al montar el componente
   useEffect(() => {
@@ -271,6 +269,9 @@ export default function Auth() {
           <div className="panel right-panel">
             <div className="content">
               <h3>¿Ya tienes cuenta?</h3>
+              <p>
+                Inicia sesión para acceder a tu cuenta y gestionar tus préstamos
+              </p>
               <button 
                 className="btn transparent"
                 onClick={() => {
@@ -367,7 +368,7 @@ export default function Auth() {
           grid-row: 1 / 2;
         }
 
-       form.sign-up-form {
+      form.sign-up-form {
   opacity: 0;
   z-index: 1;
   position: absolute;    /* <--- IMPORTANTE */
@@ -377,23 +378,21 @@ export default function Auth() {
   pointer-events: none;  /* no clickeable */
 }
 
-
        form.sign-in-form {
   z-index: 2;
   opacity: 1;
   position: relative;
   pointer-events: all;
-   margin-top: 32px !important; 
 }
 
-     .container.sign-up-mode form.sign-up-form {
+.container.sign-up-mode form.sign-up-form {
   z-index: 2;
   opacity: 1;
   position: relative;
   pointer-events: all;
 }
 
-      .container.sign-up-mode form.sign-in-form {
+        .container.sign-up-mode form.sign-in-form {
   opacity: 0;
   z-index: 1;
   position: absolute;    /* <--- IMPORTANTE */
@@ -402,6 +401,12 @@ export default function Auth() {
   width: 100%;
   pointer-events: none;
 }
+
+
+        .container.sign-up-mode form.sign-in-form {
+          opacity: 0;
+          z-index: 1;
+        }
 
         .title {
           font-size: 2.2rem;
@@ -542,11 +547,11 @@ export default function Auth() {
           color: #5995fd;
         }
 
-     .grupo-btn.selected {
-  background: #5995fd;
-  border-color: #5995fd;
-  color: #fff !important;  /* fuerza el texto en blanco */
-}
+        .grupo-btn.selected {
+          background: #5995fd;
+          border-color: #5995fd;
+          color: #fff;
+        }
 
         .grupo-btn:disabled {
           opacity: 0.6;
@@ -693,18 +698,21 @@ export default function Auth() {
             height: 100vh;
           }
 
-       .signin-signup {
-    left: 50% !important;               /* antes estaba en 75% */
-    transform: translate(-50%, -50%) !important;
-    width: 100% !important;
-    max-width: 520px;                   /* opcional: ancho máximo del form */
-  }
+          .signin-signup {
+            width: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
 
-
-         .container.sign-up-mode .signin-signup {
-    left: 50% !important;               /* evita que en modo registro se mueva */
-    transform: translate(-50%, -50%) !important;
-  }
+          .container.sign-up-mode .signin-signup {
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
 
           .panels-container {
             grid-template-columns: 1fr;
@@ -814,13 +822,6 @@ export default function Auth() {
             height: 100vh;
           }
 
-
-            .container.sign-up-mode form.sign-up-form {
-    position: relative !important;
-    top: -48px !important;       /* ajusta -40/-60 según te guste */
-    transform: none !important;  /* quita el centrado vertical */
-  }
-  
           form {
             padding: 0 1.5rem;
           }
@@ -834,21 +835,6 @@ export default function Auth() {
             justify-content: center;
           }
 
-          .panels-container .btn.transparent {
-    pointer-events: auto !important;
-    position: relative;            /* asegura área clickeable correcta */
-  }
-
-   .forms-container { z-index: 8 !important; }
-  .signin-signup   { z-index: 9 !important; }
-  .container.sign-up-mode form.sign-up-form { z-index: 10 !important; }
-}
-
-         .panels-container {
-    z-index: 7 !important;         /* por debajo de .signin-signup (9) y del form (10) */
-    pointer-events: none !important;
-  }
-
           .image {
             display: none;
           }
@@ -861,73 +847,35 @@ export default function Auth() {
             padding: 1.5rem;
           }
 
-           .container:before {
-    bottom: 72% !important;   /* antes 65% */
-    left: 50%;
-  }
- .container.sign-up-mode:before {
-    width: 2000px !important;
-    height: 2000px !important;
-    bottom: 0 !important;
-    left: 50% !important;
-    transform: translate(-50%, 0) !important;
-    background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%) !important;
-    z-index: 3 !important;   /* <= debajo del form */
-  }
+          .container:before {
+            bottom: 72%;
+            left: 50%;
+          }
 
+          .container.sign-up-mode:before {
+            bottom: 28%;
+            left: 50%;
+          }
 
-  /* Sube el formulario por encima de la bola */
-  .forms-container { z-index: 8 !important; }
-  .signin-signup { z-index: 9 !important; }
-  .container.sign-up-mode form.sign-up-form { z-index: 10 !important; }
-
-  /* Estilo SOLO del formulario de registro en móviles (lo que pediste antes) */
-  .container.sign-up-mode form.sign-up-form .input-field {
-    background: transparent !important;
-    border: 1.5px solid #fff !important;
-  }
-  .container.sign-up-mode form.sign-up-form .input-field input {
-    color: #fff !important;
-  }
-  .container.sign-up-mode form.sign-up-form .input-field input::placeholder,
-  .container.sign-up-mode form.sign-up-form .input-field input::-webkit-input-placeholder {
-    color: #fff !important;
-    opacity: 0.85;
-  }
-  .container.sign-up-mode form.sign-up-form .input-field i,
-  .container.sign-up-mode form.sign-up-form .show-password-btn {
-    color: #fff !important;
-  }
-  .container.sign-up-mode form.sign-up-form .title {
-    color: #000 !important;
-  }
-  .container.sign-up-mode form.sign-up-form .btn {
-    background: transparent !important;
-    border: 2px solid #fff !important;
-    color: #fff !important;
-  }
-  .container.sign-up-mode form.sign-up-form .btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.12) !important;
-  }
-  
           .container.sign-up-mode .signin-signup {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
           }
 
-          .grupos-grid,
-  .grupos-grid-second-row {
-    grid-template-columns: repeat(4, 1fr) !important;  /* 4 por fila */
-    gap: 6px !important;
-  }
+          .grupos-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
 
-           .grupo-btn {
-    padding: 4px 6px !important;
-    font-size: 0.62rem !important;
-    min-height: 28px !important;
-    border-radius: 20px !important;
-  }
+          .grupos-grid-second-row {
+            grid-template-columns: repeat(4, 1fr);
+          }
+
+          .grupo-btn {
+            font-size: 0.65rem;
+            padding: 4px 2px;
+            min-height: 32px;
+          }
 
           .btn.transparent {
             width: 140px;
