@@ -1,24 +1,15 @@
-// Handle Login
-  const handleLoginSubmit = async () => {
-    try {
-      // Simulación de login exitoso
-      console.log('Login:', { correoLogin, contrasenaLogin });
-      alert('Login exitoso');
-    } catch (err) {
-      setError('Error al iniciar sesión');
-    }
-  };
-
-  // Handle Register
-  const handleRegisterSubmit = async () => {
-    if (!grupo'use client';
+'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import axios from 'axios';
 
 export default function Auth() {
   // Estados compartidos
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [redirecting, setRedirecting] = useState(false);
+  const router = useRouter();
 
   // Estados para Login
   const [correoLogin, setCorreoLogin] = useState('');
@@ -30,31 +21,46 @@ export default function Auth() {
   const [correoRegister, setCorreoRegister] = useState('');
   const [contrasenaRegister, setContrasenaRegister] = useState('');
   const [grupoId, setGrupoId] = useState('');
-  const [grupos, setGrupos] = useState([
-    { id: 1, nombre: 'QFB-A' },
-    { id: 2, nombre: 'QFB-B' },
-    { id: 3, nombre: 'IQ-A' },
-    { id: 4, nombre: 'IQ-B' },
-    { id: 5, nombre: 'QA-A' },
-    { id: 6, nombre: 'QA-B' },
-    { id: 7, nombre: 'OTRO' }
-  ]);
+  const [grupos, setGrupos] = useState([]);
   const [showPasswordRegister, setShowPasswordRegister] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Cargar grupos al montar el componente
+  useEffect(() => {
+    const cargarGrupos = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/grupos`);
+        setGrupos(response.data);
+      } catch (err) {
+        console.error('Error al cargar grupos:', err);
+        setError('Error al cargar los grupos disponibles');
+      }
+    };
+
+    cargarGrupos();
+  }, []);
+
   // Handle Login
-  const handleLoginSubmit = async () => {
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
     try {
-      // Simulación de login exitoso
-      console.log('Login:', { correoLogin, contrasenaLogin });
-      alert('Login exitoso');
+      const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+        correo_institucional: correoLogin,
+        contrasena: contrasenaLogin,
+      });
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('nombre', data.nombre);
+      setRedirecting(true);
+      router.replace('/catalog');
     } catch (err) {
-      setError('Error al iniciar sesión');
+      setError(err.response?.data?.error || 'Error al iniciar sesión');
     }
   };
 
   // Handle Register
-  const handleRegisterSubmit = async () => {
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    
     if (!grupoId) {
       setError('Por favor selecciona tu grupo');
       return;
@@ -64,12 +70,18 @@ export default function Auth() {
     setError('');
 
     try {
-      // Simulación de registro exitoso
-      console.log('Register:', { nombre, correoRegister, contrasenaRegister, grupoId });
-      alert('Usuario registrado exitosamente');
-      setIsSignUp(false);
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
+        nombre,
+        correo_institucional: correoRegister,
+        contrasena: contrasenaRegister,
+        grupo_id: parseInt(grupoId),
+        rol: 'alumno',
+      });
+      
+      alert('Usuario registrado. Verifica tu correo.');
+      router.push('/login');
     } catch (err) {
-      setError('Error al registrar usuario');
+      setError(err.response?.data?.error || 'Error al registrar usuario');
     } finally {
       setLoading(false);
     }
@@ -83,36 +95,14 @@ export default function Auth() {
 
   return (
     <>
-      <div className="auth-container">
-        <div className="auth-card">
-          <div className="auth-toggle">
-            <button 
-              className={`toggle-btn ${!isSignUp ? 'active' : ''}`}
-              onClick={() => {
-                setIsSignUp(false);
-                setError('');
-              }}
-            >
-              Iniciar Sesión
-            </button>
-            <button 
-              className={`toggle-btn ${isSignUp ? 'active' : ''}`}
-              onClick={() => {
-                setIsSignUp(true);
-                setError('');
-              }}
-            >
-              Registrarse
-            </button>
-          </div>
-
-          {/* Formulario de Login */}
-          {!isSignUp && (
-            <div className="auth-form">
-              <h2 className="form-title">Bienvenido de vuelta</h2>
-              <p className="form-subtitle">Inicia sesión en tu cuenta</p>
+      <div className={`container ${isSignUp ? 'sign-up-mode' : ''}`}>
+        <div className="forms-container">
+          <div className="signin-signup">
+            {/* Formulario de Login */}
+            <form onSubmit={handleLoginSubmit} className="sign-in-form">
+              <h2 className="title">Iniciar Sesión</h2>
               
-              {error && (
+              {error && !isSignUp && (
                 <div className="error-alert">
                   <i className="fas fa-exclamation-triangle"></i>
                   {error}
@@ -126,6 +116,8 @@ export default function Auth() {
                   value={correoLogin}
                   onChange={(e) => setCorreoLogin(e.target.value)}
                   placeholder="Correo institucional"
+                  required
+                  autoComplete="username"
                 />
               </div>
               
@@ -136,6 +128,8 @@ export default function Auth() {
                   value={contrasenaLogin}
                   onChange={(e) => setContrasenaLogin(e.target.value)}
                   placeholder="Contraseña"
+                  required
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -146,25 +140,20 @@ export default function Auth() {
                 </button>
               </div>
               
+              <input type="submit" className="btn solid" value="Iniciar Sesión" />
+              
               <div className="forgot-password-container">
-                <a href="/forgot-password" className="forgot-password-link">
+                <Link href="/forgot-password" className="forgot-password-link">
                   ¿Olvidaste tu contraseña?
-                </a>
+                </Link>
               </div>
-              
-              <button onClick={handleLoginSubmit} className="submit-btn">
-                Iniciar Sesión
-              </button>
-            </div>
-          )}
+            </form>
 
-          {/* Formulario de Registro */}
-          {isSignUp && (
-            <div className="auth-form">
-              <h2 className="form-title">Crear cuenta</h2>
-              <p className="form-subtitle">Únete a LabSync</p>
+            {/* Formulario de Registro */}
+            <form onSubmit={handleRegisterSubmit} className="sign-up-form">
+              <h2 className="title">Crear Cuenta</h2>
               
-              {error && (
+              {error && isSignUp && (
                 <div className="error-alert">
                   <i className="fas fa-exclamation-triangle"></i>
                   {error}
@@ -178,6 +167,7 @@ export default function Auth() {
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   placeholder="Nombre completo"
+                  required
                   disabled={loading}
                 />
               </div>
@@ -189,6 +179,7 @@ export default function Auth() {
                   value={correoRegister}
                   onChange={(e) => setCorreoRegister(e.target.value)}
                   placeholder="Correo institucional"
+                  required
                   disabled={loading}
                 />
               </div>
@@ -200,6 +191,7 @@ export default function Auth() {
                   value={contrasenaRegister}
                   onChange={(e) => setContrasenaRegister(e.target.value)}
                   placeholder="Contraseña"
+                  required
                   disabled={loading}
                 />
                 <button
@@ -245,263 +237,299 @@ export default function Auth() {
                 )}
               </div>
               
-              <button 
-                onClick={handleRegisterSubmit} 
-                className="submit-btn"
+              <input 
+                type="submit" 
+                className="btn" 
+                value={loading ? "Creando..." : "Registrarse"}
                 disabled={loading}
+              />
+            </form>
+          </div>
+        </div>
+
+        <div className="panels-container">
+          <div className="panel left-panel">
+            <div className="content">
+              <h3>¿Nuevo en LabSync?</h3>
+              <p>
+                Regístrate para solicitar préstamos de materiales y reactivos de química
+              </p>
+              <button 
+                className="btn transparent" 
+                onClick={() => {
+                  setIsSignUp(true);
+                  setError('');
+                }}
               >
-                {loading ? "Creando..." : "Registrarse"}
+                Registrarse
               </button>
             </div>
-          )}
+            <img src="/log.png" className="image" alt="Login illustration" />
+          </div>
+          <div className="panel right-panel">
+            <div className="content">
+              <h3>¿Ya tienes cuenta?</h3>
+              <p>
+                Inicia sesión para acceder a tu cuenta y gestionar tus préstamos
+              </p>
+              <button 
+                className="btn transparent"
+                onClick={() => {
+                  setIsSignUp(false);
+                  setError('');
+                }}
+              >
+                Iniciar Sesión
+              </button>
+            </div>
+            <img src="/register.png" className="image" alt="Register illustration" />
+          </div>
         </div>
       </div>
 
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap");
-        @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
 
-        * {
+        html, body, #__next, [data-nextjs-scroll-focus-boundary] {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+        }
+
+        html {
+          box-sizing: border-box;
+        }
+
+        *, *:before, *:after {
+          box-sizing: inherit;
+          margin: 0;
+          padding: 0;
+        }
+
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          min-height: 100vh;
+          width: 100% !important;
+          max-width: 100% !important;
+          font-family: "Poppins", sans-serif;
+          overflow-x: hidden !important;
+        }
+
+        body,
+        input {
+          font-family: "Poppins", sans-serif;
+        }
+
+        .container {
+          position: relative;
+          width: 100%;
+          min-width: 100%;
+          max-width: 100%;
+          min-height: 100vh;
+          background-color: #fff;
+          overflow: hidden;
           margin: 0;
           padding: 0;
           box-sizing: border-box;
         }
 
-        body {
-          font-family: "Poppins", sans-serif;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .auth-container {
-          width: 100%;
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-        }
-
-        .auth-card {
-          background: #fff;
-          border-radius: 20px;
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-          width: 100%;
-          max-width: 450px;
-          padding: 40px;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .auth-card::before {
-          content: '';
+        .forms-container {
           position: absolute;
+          width: 100%;
+          height: 100%;
           top: 0;
           left: 0;
-          right: 0;
-          height: 5px;
-          background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         }
 
-        .auth-toggle {
+        .signin-signup {
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          left: 75%;
+          width: 50%;
+          transition: 1s 0.7s ease-in-out;
+          display: grid;
+          grid-template-columns: 1fr;
+          z-index: 5;
+        }
+
+        form {
           display: flex;
-          background: #f8f9fa;
-          border-radius: 50px;
-          padding: 4px;
-          margin-bottom: 30px;
-          position: relative;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          padding: 0rem 5rem;
+          transition: all 0.2s 0.7s;
+          overflow: hidden;
+          grid-column: 1 / 2;
+          grid-row: 1 / 2;
         }
 
-        .toggle-btn {
-          flex: 1;
-          padding: 12px 20px;
-          border: none;
-          background: transparent;
-          color: #666;
-          font-weight: 600;
-          font-size: 14px;
-          border-radius: 46px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          position: relative;
+        form.sign-up-form {
+          opacity: 0;
+          z-index: 1;
+        }
+
+        form.sign-in-form {
           z-index: 2;
         }
 
-        .toggle-btn.active {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: #fff;
-          box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        .container.sign-up-mode form.sign-up-form {
+          opacity: 1;
+          z-index: 2;
         }
 
-        .auth-form {
-          width: 100%;
+        .container.sign-up-mode form.sign-in-form {
+          opacity: 0;
+          z-index: 1;
         }
 
-        .form-title {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #333;
-          text-align: center;
-          margin-bottom: 8px;
-        }
-
-        .form-subtitle {
-          color: #666;
-          text-align: center;
-          margin-bottom: 30px;
-          font-size: 14px;
+        .title {
+          font-size: 2.2rem;
+          color: #444;
+          margin-bottom: 10px;
         }
 
         .error-alert {
+          max-width: 380px;
           width: 100%;
-          background-color: #fee;
-          color: #c53030;
+          background-color: #f8d7da;
+          color: #721c24;
           padding: 12px 16px;
-          border-radius: 10px;
+          border-radius: 8px;
           font-size: 14px;
-          margin-bottom: 20px;
+          margin: 10px 0;
           display: flex;
           align-items: center;
           gap: 8px;
-          border-left: 4px solid #c53030;
         }
 
         .input-field {
+          max-width: 380px;
           width: 100%;
-          background-color: #f8f9fa;
-          margin-bottom: 20px;
+          background-color: #f0f0f0;
+          margin: 10px 0;
           height: 55px;
-          border-radius: 15px;
-          display: flex;
-          align-items: center;
-          padding: 0 20px;
+          border-radius: 55px;
+          display: grid;
+          grid-template-columns: 15% 85%;
+          padding: 0 0.4rem;
           position: relative;
-          border: 2px solid transparent;
-          transition: all 0.3s ease;
-        }
-
-        .input-field:focus-within {
-          border-color: #667eea;
-          background-color: #fff;
-          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .input-field i {
-          color: #666;
-          font-size: 18px;
-          margin-right: 15px;
-          min-width: 20px;
+          text-align: center;
+          line-height: 55px;
+          color: #acacac;
+          transition: 0.5s;
+          font-size: 1.1rem;
         }
 
         .input-field input {
           background: none;
           outline: none;
           border: none;
-          flex: 1;
-          font-weight: 500;
-          font-size: 15px;
+          line-height: 1;
+          font-weight: 600;
+          font-size: 1.1rem;
           color: #333;
         }
 
         .input-field input::placeholder {
-          color: #999;
-          font-weight: 400;
+          color: #aaa;
+          font-weight: 500;
         }
 
         .show-password-btn {
+          position: absolute;
+          right: 16px;
+          top: 50%;
+          transform: translateY(-50%);
           background: none;
           border: none;
-          color: #667eea;
-          font-weight: 600;
-          font-size: 12px;
+          color: #2563eb;
+          font-weight: 700;
+          font-size: 0.75rem;
           cursor: pointer;
-          padding: 5px;
-          margin-left: 10px;
-        }
-
-        .show-password-btn:hover {
-          color: #5a67d8;
+          z-index: 10;
         }
 
         .forgot-password-container {
           width: 100%;
+          max-width: 380px;
           display: flex;
           justify-content: flex-end;
-          margin-bottom: 25px;
+          margin: 10px 0 20px 0;
         }
 
         .forgot-password-link {
-          color: #667eea;
+          color: #2563eb;
           text-decoration: none;
-          font-size: 14px;
+          font-size: 0.9rem;
           font-weight: 500;
         }
 
         .forgot-password-link:hover {
-          color: #5a67d8;
-          text-decoration: underline;
+          color: #1d4ed8;
         }
 
         .grupo-selection {
           width: 100%;
-          margin-bottom: 25px;
+          max-width: 380px;
+          margin: 20px 0;
         }
 
         .grupo-label {
           display: block;
-          color: #333;
+          color: #444;
           font-weight: 600;
-          font-size: 15px;
-          margin-bottom: 15px;
+          font-size: 1rem;
+          margin-bottom: 12px;
           text-align: left;
         }
 
         .grupos-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 10px;
-          margin-bottom: 10px;
+          gap: 8px;
+          margin-bottom: 8px;
         }
 
         .grupos-grid-second-row {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 10px;
+          gap: 8px;
         }
 
         .grupo-btn {
-          padding: 10px 8px;
-          border: 2px solid #e2e8f0;
-          border-radius: 10px;
+          padding: 8px 12px;
+          border: 2px solid #ddd;
+          border-radius: 25px;
           background: #fff;
-          color: #666;
-          font-size: 13px;
+          color: #444;
+          font-size: 0.85rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
           text-align: center;
-          min-height: 45px;
+          min-height: 40px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
         .grupo-btn:hover:not(:disabled) {
-          border-color: #667eea;
-          color: #667eea;
-          transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+          border-color: #5995fd;
+          color: #5995fd;
         }
 
         .grupo-btn.selected {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          border-color: #667eea;
+          background: #5995fd;
+          border-color: #5995fd;
           color: #fff;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
 
         .grupo-btn:disabled {
@@ -509,92 +537,329 @@ export default function Auth() {
           cursor: not-allowed;
         }
 
-        .submit-btn {
-          width: 100%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn {
+          width: 150px;
+          background-color: #5995fd;
           border: none;
           outline: none;
-          height: 55px;
-          border-radius: 15px;
+          height: 49px;
+          border-radius: 49px;
           color: #fff;
+          text-transform: uppercase;
           font-weight: 600;
-          font-size: 16px;
+          margin: 10px 0;
           cursor: pointer;
-          transition: all 0.3s ease;
-          margin-top: 10px;
+          transition: 0.5s;
         }
 
-        .submit-btn:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        .btn:hover:not(:disabled) {
+          background-color: #4d84e2;
         }
 
-        .submit-btn:disabled {
+        .btn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
-          transform: none;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-          .auth-container {
-            padding: 15px;
+        .panels-container {
+          position: absolute;
+          height: 100%;
+          width: 100%;
+          top: 0;
+          left: 0;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .container:before {
+          content: "";
+          position: absolute;
+          height: 2000px;
+          width: 2000px;
+          top: -10%;
+          right: 48%;
+          transform: translateY(-50%);
+          background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
+          transition: 1.8s ease-in-out;
+          border-radius: 50%;
+          z-index: 6;
+        }
+
+        .image {
+          width: 100%;
+          transition: transform 1.1s ease-in-out;
+          transition-delay: 0.4s;
+        }
+
+        .panel {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          justify-content: space-around;
+          text-align: center;
+          z-index: 6;
+        }
+
+        .left-panel {
+          pointer-events: all;
+          padding: 3rem 17% 2rem 12%;
+        }
+
+        .right-panel {
+          pointer-events: none;
+          padding: 3rem 12% 2rem 17%;
+        }
+
+        .panel .content {
+          color: #fff;
+          transition: transform 0.9s ease-in-out;
+          transition-delay: 0.6s;
+        }
+
+        .panel h3 {
+          font-weight: 600;
+          line-height: 1;
+          font-size: 1.5rem;
+        }
+
+        .panel p {
+          font-size: 0.95rem;
+          padding: 0.7rem 0;
+        }
+
+        .btn.transparent {
+          margin: 0;
+          background: none;
+          border: 2px solid #fff;
+          width: 130px;
+          height: 41px;
+          font-weight: 600;
+          font-size: 0.8rem;
+        }
+
+        .right-panel .image,
+        .right-panel .content {
+          transform: translateX(800px);
+        }
+
+        /* ANIMATION */
+        .container.sign-up-mode:before {
+          transform: translate(100%, -50%);
+          right: 52%;
+        }
+
+        .container.sign-up-mode .left-panel .image,
+        .container.sign-up-mode .left-panel .content {
+          transform: translateX(-800px);
+        }
+
+        .container.sign-up-mode .signin-signup {
+          left: 25%;
+        }
+
+        .container.sign-up-mode .right-panel .image,
+        .container.sign-up-mode .right-panel .content {
+          transform: translateX(0%);
+        }
+
+        .container.sign-up-mode .left-panel {
+          pointer-events: none;
+        }
+
+        .container.sign-up-mode .right-panel {
+          pointer-events: all;
+        }
+
+        @media (max-width: 870px) {
+          .container {
+            overflow: hidden;
+            min-height: 100vh;
+            height: 100vh;
           }
 
-          .auth-card {
-            padding: 30px 25px;
-            max-width: 400px;
+          .signin-signup {
+            width: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
-          .form-title {
-            font-size: 1.75rem;
+          .container.sign-up-mode .signin-signup {
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+
+          .panels-container {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr 2fr 1fr;
+          }
+
+          .panel {
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+            padding: 2.5rem 8%;
+            grid-column: 1 / 2;
+          }
+
+          .right-panel {
+            grid-row: 3 / 4;
+          }
+
+          .left-panel {
+            grid-row: 1 / 2;
+          }
+
+          .image {
+            width: 200px;
+            transition: transform 0.9s ease-in-out;
+            transition-delay: 0.6s;
+          }
+
+          .panel .content {
+            padding-right: 15%;
+            transition: transform 0.9s ease-in-out;
+            transition-delay: 0.8s;
+          }
+
+          .panel h3 {
+            font-size: 1.2rem;
+          }
+
+          .panel p {
+            font-size: 0.7rem;
+            padding: 0.5rem 0;
+          }
+
+          .btn.transparent {
+            width: 120px;
+            height: 40px;
+            font-size: 0.75rem;
+          }
+
+          .container:before {
+            width: 1500px;
+            height: 1500px;
+            transform: translateX(-50%);
+            left: 30%;
+            bottom: 68%;
+            right: initial;
+            top: initial;
+            transition: 2s ease-in-out;
+          }
+
+          .container.sign-up-mode:before {
+            transform: translate(-50%, 100%);
+            bottom: 32%;
+            right: initial;
+          }
+
+          .container.sign-up-mode .left-panel .image,
+          .container.sign-up-mode .left-panel .content {
+            transform: translateY(-300px);
+          }
+
+          .container.sign-up-mode .right-panel .image,
+          .container.sign-up-mode .right-panel .content {
+            transform: translateY(0px);
+          }
+
+          .right-panel .image,
+          .right-panel .content {
+            transform: translateY(300px);
+          }
+
+          .container.sign-up-mode .signin-signup {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
           }
 
           .grupos-grid {
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
           }
 
           .grupos-grid-second-row {
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
           }
 
           .grupo-btn {
-            font-size: 11px;
-            padding: 8px 6px;
-            min-height: 40px;
+            font-size: 0.7rem;
+            padding: 6px 4px;
+            min-height: 35px;
           }
         }
 
-        @media (max-width: 480px) {
-          .auth-card {
-            padding: 25px 20px;
-            margin: 10px;
+        @media (max-width: 570px) {
+          .container {
+            overflow: hidden;
+            min-height: 100vh;
+            height: 100vh;
           }
 
-          .form-title {
-            font-size: 1.5rem;
+          form {
+            padding: 0 1.5rem;
           }
 
-          .input-field {
-            height: 50px;
-            padding: 0 15px;
+          .signin-signup {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
-          .input-field i {
-            margin-right: 12px;
+          .image {
+            display: none;
+          }
+          
+          .panel .content {
+            padding: 0.5rem 1rem;
+          }
+          
+          .panel {
+            padding: 1.5rem;
           }
 
-          .submit-btn {
-            height: 50px;
-            font-size: 15px;
+          .container:before {
+            bottom: 72%;
+            left: 50%;
+          }
+
+          .container.sign-up-mode:before {
+            bottom: 28%;
+            left: 50%;
+          }
+
+          .container.sign-up-mode .signin-signup {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+
+          .grupos-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+
+          .grupos-grid-second-row {
+            grid-template-columns: repeat(4, 1fr);
           }
 
           .grupo-btn {
-            font-size: 10px;
-            padding: 6px 4px;
-            min-height: 35px;
+            font-size: 0.65rem;
+            padding: 4px 2px;
+            min-height: 32px;
+          }
+
+          .btn.transparent {
+            width: 140px;
+            height: 45px;
+            font-size: 0.8rem;
           }
         }
       `}</style>
