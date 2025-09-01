@@ -24,6 +24,8 @@ export default function ReportesPage() {
   const [showGruposModal, setShowGruposModal] = useState(false);
   const [grupoDetalle, setGrupoDetalle] = useState(null);
   const [showGrupoAdeudosModal, setShowGrupoAdeudosModal] = useState(false);
+
+    const [ordenDesc, setOrdenDesc] = useState(false);
   
   const [inventarioLiquidos, setInventarioLiquidos] = useState({ meses: [], datos: [] });
   const [showLiquidosModal, setShowLiquidosModal] = useState(false);
@@ -35,6 +37,10 @@ export default function ReportesPage() {
   const [searchLiquidos, setSearchLiquidos] = useState('');
   const [searchSolidos, setSearchSolidos] = useState('');
 
+    const gruposOrdenados = [...grupos].sort((a, b) =>
+    ordenDesc ? b.adeudos.length - a.adeudos.length : a.adeudos.length - b.adeudos.length
+  );
+  
   useEffect(() => {
     obtenerResiduos()
       .then((data) => {
@@ -288,12 +294,21 @@ export default function ReportesPage() {
                 <div className="table-responsive">
                   <table className="table table-sm table-hover table-bordered">
                     <thead className="table-teal">
-                      <tr>
-                        <th className="text-start">Nombre</th>
-                      </tr>
+                     <tr>
+                          <th className="text-start">
+                            Nombre
+                            <button
+                              onClick={() => setOrdenDesc(!ordenDesc)}
+                              className="btn btn-link btn-sm p-0 ms-2"
+                              aria-label="Ordenar"
+                            >
+                              <i className={`bi ${ordenDesc ? 'bi-sort-down' : 'bi-sort-up'}`}></i>
+                            </button>
+                          </th>
+                        </tr>
                     </thead>
                     <tbody>
-                      {grupos.slice(0, 5).map((g, idx) => (
+                    {gruposOrdenados.slice(0, 5).map((g, idx) => (
                         <tr
                           key={idx}
                           className={`animate-row cursor-pointer ${grupoDetalle?.nombre === g.nombre ? 'table-active' : ''}`}
@@ -604,7 +619,7 @@ export default function ReportesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {grupos.map((g, idx) => (
+                  {gruposOrdenados.map((g, idx) => (
                     <tr
                       key={idx}
                       className="animate-row cursor-pointer"
