@@ -814,6 +814,12 @@ export default function Auth() {
             height: 100vh;
           }
 
+            .container.sign-up-mode form.sign-up-form {
+    position: relative !important;
+    top: -48px !important;       /* ajusta -40/-60 según te guste */
+    transform: none !important;  /* quita el centrado vertical */
+  }
+  
           form {
             padding: 0 1.5rem;
           }
