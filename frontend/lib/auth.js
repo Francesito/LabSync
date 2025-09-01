@@ -80,7 +80,7 @@ export function AuthProvider({ children }) {
       const token = localStorage.getItem('token');
       
       // Rutas públicas que no requieren autenticación
-      const rutasPublicas = ['/login', '/register', '/forgot-password'];
+      const rutasPublicas = ['/login', '/register', '/forgot-password', '/logout'];
       const esRutaPublica = rutasPublicas.includes(pathname) || 
                            pathname.startsWith('/reset-password') || 
                            pathname.startsWith('/verificar');
