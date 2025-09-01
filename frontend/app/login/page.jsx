@@ -98,7 +98,15 @@ export default function Auth() {
     setSelectedGrupo(null);
   };
 
-  if (redirecting) return <div className="min-vh-100 bg-white" />;
+ if (redirecting)
+    return (
+      <div className="min-vh-100 bg-white d-flex justify-content-center align-items-center">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status"></div>
+          <p className="text-primary">Iniciando sesión...</p>
+        </div>
+      </div>
+    );
 
   return (
     <>
