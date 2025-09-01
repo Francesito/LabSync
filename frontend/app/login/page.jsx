@@ -24,6 +24,7 @@ export default function Auth() {
   const [grupos, setGrupos] = useState([]);
   const [showPasswordRegister, setShowPasswordRegister] = useState(false);
   const [loading, setLoading] = useState(false);
+  
 
   // Cargar grupos al montar el componente
   useEffect(() => {
