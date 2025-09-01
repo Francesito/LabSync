@@ -542,11 +542,11 @@ export default function Auth() {
           color: #5995fd;
         }
 
-        .grupo-btn.selected {
-          background: #5995fd;
-          border-color: #5995fd;
-          color: #fff;
-        }
+     .grupo-btn.selected {
+  background: #5995fd;
+  border-color: #5995fd;
+  color: #fff !important;  /* fuerza el texto en blanco */
+}
 
         .grupo-btn:disabled {
           opacity: 0.6;
@@ -851,7 +851,7 @@ export default function Auth() {
   }
 
          .container.sign-up-mode:before {
-    bottom: 30% !important;   /* antes 22% */
+    bottom: 15% !important;  /* más abajo que el 30% anterior */
     left: 50%;
   }
 
