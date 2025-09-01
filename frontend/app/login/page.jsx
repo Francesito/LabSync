@@ -845,15 +845,15 @@ export default function Auth() {
             padding: 1.5rem;
           }
 
-          .container:before {
-            bottom: 65% !important;
-            left: 50%;
-          }
+           .container:before {
+    bottom: 72% !important;   /* antes 65% */
+    left: 50%;
+  }
 
-          .container.sign-up-mode:before {
-            bottom: 22% !important; 
-            left: 50%;
-          }
+         .container.sign-up-mode:before {
+    bottom: 30% !important;   /* antes 22% */
+    left: 50%;
+  }
 
           .container.sign-up-mode .signin-signup {
             top: 50%;
@@ -861,19 +861,18 @@ export default function Auth() {
             transform: translate(-50%, -50%);
           }
 
-          .grupos-grid {
-            grid-template-columns: repeat(3, 1fr);
-          }
+          .grupos-grid,
+  .grupos-grid-second-row {
+    grid-template-columns: repeat(4, 1fr) !important;  /* 4 por fila */
+    gap: 6px !important;
+  }
 
-          .grupos-grid-second-row {
-            grid-template-columns: repeat(4, 1fr);
-          }
-
-          .grupo-btn {
-            font-size: 0.65rem;
-            padding: 4px 2px;
-            min-height: 32px;
-          }
+           .grupo-btn {
+    padding: 4px 6px !important;
+    font-size: 0.62rem !important;
+    min-height: 28px !important;
+    border-radius: 20px !important;
+  }
 
           .btn.transparent {
             width: 140px;
