@@ -677,21 +677,18 @@ export default function Auth() {
             height: 100vh;
           }
 
-          .signin-signup {
-            width: 100%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
+       .signin-signup {
+    left: 50% !important;               /* antes estaba en 75% */
+    transform: translate(-50%, -50%) !important;
+    width: 100% !important;
+    max-width: 520px;                   /* opcional: ancho máximo del form */
+  }
 
-          .container.sign-up-mode .signin-signup {
-            left: 50%;
-            transform: translate(-50%, -50%);
-          }
+
+         .container.sign-up-mode .signin-signup {
+    left: 50% !important;               /* evita que en modo registro se mueva */
+    transform: translate(-50%, -50%) !important;
+  }
 
           .panels-container {
             grid-template-columns: 1fr;
