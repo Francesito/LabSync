@@ -92,7 +92,6 @@ export default function ReportesPage() {
         });
        const filtered = all.filter(
           (g) =>
-            g.adeudos.length > 0 &&
             g.nombre &&
             !['sin grupo', 'docente'].includes(g.nombre.toLowerCase())
         );
