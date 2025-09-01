@@ -368,24 +368,40 @@ export default function Auth() {
           grid-row: 1 / 2;
         }
 
-        form.sign-up-form {
-          opacity: 0;
-          z-index: 1;
-        }
+       form.sign-up-form {
+  opacity: 0;
+  z-index: 1;
+  position: absolute;    /* <--- IMPORTANTE */
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;  /* no clickeable */
+}
 
-        form.sign-in-form {
-          z-index: 2;
-        }
 
-        .container.sign-up-mode form.sign-up-form {
-          opacity: 1;
-          z-index: 2;
-        }
+       form.sign-in-form {
+  z-index: 2;
+  opacity: 1;
+  position: relative;
+  pointer-events: all;
+}
 
-        .container.sign-up-mode form.sign-in-form {
-          opacity: 0;
-          z-index: 1;
-        }
+     .container.sign-up-mode form.sign-up-form {
+  z-index: 2;
+  opacity: 1;
+  position: relative;
+  pointer-events: all;
+}
+
+      .container.sign-up-mode form.sign-in-form {
+  opacity: 0;
+  z-index: 1;
+  position: absolute;    /* <--- IMPORTANTE */
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+}
 
         .title {
           font-size: 2.2rem;
