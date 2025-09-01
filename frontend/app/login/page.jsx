@@ -857,11 +857,16 @@ export default function Auth() {
     left: 50% !important;
     transform: translate(-50%, 0) !important;
     background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%) !important;
+    z-index: 3 !important;   /* <= debajo del form */
   }
 
 
-    /* ===== SOLO AFECTA AL FORMULARIO DE REGISTRO ===== */
-  /* Inputs con bordes y texto blancos, placeholder blanco, ícono blanco */
+  /* Sube el formulario por encima de la bola */
+  .forms-container { z-index: 8 !important; }
+  .signin-signup { z-index: 9 !important; }
+  .container.sign-up-mode form.sign-up-form { z-index: 10 !important; }
+
+  /* Estilo SOLO del formulario de registro en móviles (lo que pediste antes) */
   .container.sign-up-mode form.sign-up-form .input-field {
     background: transparent !important;
     border: 1.5px solid #fff !important;
@@ -869,30 +874,18 @@ export default function Auth() {
   .container.sign-up-mode form.sign-up-form .input-field input {
     color: #fff !important;
   }
-  .container.sign-up-mode form.sign-up-form .input-field input::placeholder {
-    color: #fff !important;
-    opacity: 0.85;
-  }
-  /* soporte extra para iOS WebKit */
+  .container.sign-up-mode form.sign-up-form .input-field input::placeholder,
   .container.sign-up-mode form.sign-up-form .input-field input::-webkit-input-placeholder {
     color: #fff !important;
     opacity: 0.85;
   }
-  .container.sign-up-mode form.sign-up-form .input-field i {
-    color: #fff !important;
-  }
-
-  /* Botón mostrar/ocultar contraseña en blanco dentro del registro */
+  .container.sign-up-mode form.sign-up-form .input-field i,
   .container.sign-up-mode form.sign-up-form .show-password-btn {
     color: #fff !important;
   }
-
-  /* Título (encabezado) negro SOLO en el registro */
   .container.sign-up-mode form.sign-up-form .title {
     color: #000 !important;
   }
-
-  /* Botón principal (Registrarse) con borde blanco y fondo transparente SOLO en registro */
   .container.sign-up-mode form.sign-up-form .btn {
     background: transparent !important;
     border: 2px solid #fff !important;
@@ -901,7 +894,7 @@ export default function Auth() {
   .container.sign-up-mode form.sign-up-form .btn:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.12) !important;
   }
-
+  
           .container.sign-up-mode .signin-signup {
             top: 50%;
             left: 50%;
