@@ -271,9 +271,6 @@ export default function Auth() {
           <div className="panel right-panel">
             <div className="content">
               <h3>¿Ya tienes cuenta?</h3>
-              <p>
-                Inicia sesión para acceder a tu cuenta y gestionar tus préstamos
-              </p>
               <button 
                 className="btn transparent"
                 onClick={() => {
