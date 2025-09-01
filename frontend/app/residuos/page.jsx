@@ -1,4 +1,3 @@
-// app/residuos/page.jsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,10 +17,10 @@ const LABS = [
 ];
 
 const RESIDUE_TYPES = [
-  { label: 'Químico', value: 'quimico', icon: '⚗️', color: 'text-orange-600' },
-  { label: 'Biológico', value: 'biologico', icon: '🧬', color: 'text-green-600' },
-  { label: 'Radiactivo', value: 'radiactivo', icon: '☢️', color: 'text-yellow-600' },
-  { label: 'Común', value: 'comun', icon: '🗑️', color: 'text-gray-600' }
+  { label: 'Químico', value: 'quimico', icon: '⚗️', color: 'text-orange-500' },
+  { label: 'Biológico', value: 'biologico', icon: '🧬', color: 'text-green-500' },
+  { label: 'Radiactivo', value: 'radiactivo', icon: '☢️', color: 'text-yellow-500' },
+  { label: 'Común', value: 'comun', icon: '🗑️', color: 'text-gray-500' }
 ];
 
 const getTipoLabel = (value) =>
@@ -31,7 +30,7 @@ const getTipoIcon = (value) =>
   RESIDUE_TYPES.find((t) => t.value === value)?.icon || '📋';
 
 const getTipoColor = (value) =>
-  RESIDUE_TYPES.find((t) => t.value === value)?.color || 'text-gray-600';
+  RESIDUE_TYPES.find((t) => t.value === value)?.color || 'text-gray-500';
 
 const formatDate = (d) => {
   const date = d instanceof Date ? d : new Date(d);
@@ -52,14 +51,14 @@ export default function ResiduosPage() {
   const [entries, setEntries] = useState([]);
   const [selected, setSelected] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-    const [fromDate, setFromDate] = useState('');
+  const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const { usuario } = useAuth();
 
   useEffect(() => {
     obtenerResiduos()
       .then((data) => {
-       setEntries(Array.isArray(data) ? data : []);
+        setEntries(Array.isArray(data) ? data : []);
       })
       .catch(() => {
         setEntries([]);
@@ -89,7 +88,6 @@ export default function ResiduosPage() {
       };
 
       const saved = await registrarResiduo(payload);
-      // Asegura que 'saved' tenga un 'id' único
       setEntries((prev) => [saved, ...prev]);
       setForm({
         fecha: formatDate(new Date()),
@@ -123,7 +121,7 @@ export default function ResiduosPage() {
     }
   };
 
- const filteredEntries = entries.filter((e) => {
+  const filteredEntries = entries.filter((e) => {
     const date = formatDate(e.fecha);
     if (fromDate && date < fromDate) return false;
     if (toDate && date > toDate) return false;
@@ -133,7 +131,7 @@ export default function ResiduosPage() {
   const handleDownload = () => {
     if (filteredEntries.length === 0) return;
     const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
-  const rows = filteredEntries.map(e => [
+    const rows = filteredEntries.map(e => [
       formatDate(e.fecha),
       e.laboratorio,
       e.reactivo,
@@ -157,7 +155,7 @@ export default function ResiduosPage() {
     if (filteredEntries.length === 0) return;
     const doc = new jsPDF();
     const headers = ['Fecha', 'Laboratorio', 'Reactivo', 'Tipo', 'Cantidad', 'Unidad'];
-   const rows = filteredEntries.map(e => [
+    const rows = filteredEntries.map(e => [
       formatDate(e.fecha),
       e.laboratorio,
       e.reactivo,
@@ -171,300 +169,265 @@ export default function ResiduosPage() {
     });
     doc.save('residuos.pdf');
   };
-  
-    const allChecked =
+
+  const allChecked =
     filteredEntries.length > 0 && filteredEntries.every((e) => selected.includes(e.id));
 
- if ([3, 4].includes(usuario?.rol_id)) return <p>Acceso denegado</p>;
+  if ([3, 4].includes(usuario?.rol_id)) return <p className="text-red-500 text-center text-lg">Acceso denegado</p>;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-      {/* Header con animación sutil */}
-      <div className="text-center mb-8 transform transition-all duration-700 ease-out">
-        <div className="inline-flex items-center gap-3 mb-4">
-          <div className="text-4xl animate-pulse">⚠️</div>
-          <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-            Bitácora de Residuos Peligrosos
+    <div className="p-4 sm:p-6 bg-gray-100 min-h-screen">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <div className="flex items-center justify-center gap-2 mb-2 animate-slide-in">
+          <span className="text-2xl">🧪</span>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-blue-800">
+            Bitácora de Residuos
           </h1>
-          <div className="text-4xl animate-pulse">⚠️</div>
+          <span className="text-2xl">🧪</span>
         </div>
-        <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-green-500 mx-auto rounded-full"></div>
+        <div className="w-16 h-1 bg-green-500 mx-auto rounded-full"></div>
       </div>
 
-      <div className="flex flex-col xl:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Historial */}
-        <section className="flex-1 transform transition-all duration-500 ease-out">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-800 to-gray-700 px-6 py-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">📋</span>
-                  <h2 className="text-xl font-semibold text-white">Historial de Registros</h2>
-                  <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-sm font-medium">
-                    {filteredEntries.length}
-                  </span>
-                </div>
-               <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="date"
-                      value={fromDate}
-                      onChange={(e) => setFromDate(e.target.value)}
-                      className="border rounded px-2 py-1 text-gray-800"
-                    />
-                    <input
-                      type="date"
-                      value={toDate}
-                      onChange={(e) => setToDate(e.target.value)}
-                      className="border rounded px-2 py-1 text-gray-800"
-                    />
-                  </div>
-                  <button
-                    onClick={handleDownload}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                      disabled={filteredEntries.length === 0}
-                  >
-                    <span>📊</span>
-                    <span className="hidden sm:inline">CSV</span>
-                  </button>
-                  <button
-                    onClick={handleDownloadPDF}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                   disabled={filteredEntries.length === 0}
-                  >
-                    <span>📄</span>
-                    <span className="hidden sm:inline">PDF</span>
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    disabled={selected.length === 0}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                  >
-                    <span>🗑️</span>
-                    <span className="hidden sm:inline">Eliminar</span>
-                    {selected.length > 0 && (
-                      <span className="bg-red-800 px-2 py-1 rounded-full text-xs">
-                        {selected.length}
-                      </span>
-                    )}
-                  </button>
-                </div>
+        <section className="flex-1">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-blue-700">Historial</h2>
+                <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-sm">
+                  {filteredEntries.length}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="border rounded px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400"
+                />
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="border rounded px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-400"
+                />
+                <button
+                  onClick={handleDownload}
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50 transition-all duration-200 hover:scale-105"
+                  disabled={filteredEntries.length === 0}
+                >
+                  <span>📥</span>
+                  CSV
+                </button>
+                <button
+                  onClick={handleDownloadPDF}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50 transition-all duration-200 hover:scale-105"
+                  disabled={filteredEntries.length === 0}
+                >
+                  <span>📄</span>
+                  PDF
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={selected.length === 0}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50 transition-all duration-200 hover:scale-105"
+                >
+                  <span>🗑️</span>
+                  Eliminar
+                  {selected.length > 0 && (
+                    <span className="bg-red-700 px-2 py-1 rounded-full text-xs">
+                      {selected.length}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
 
-            <div className="p-6">
-              {filteredEntries.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4 opacity-50">📭</div>
-                  <p className="text-gray-500 text-lg">No hay residuos registrados aún.</p>
-                  <p className="text-gray-400 text-sm mt-2">Comienza registrando tu primer residuo</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-gray-50 border-b-2 border-gray-200">
-                        <th className="px-4 py-3 text-left">
+            {filteredEntries.length === 0 ? (
+              <div className="text-center py-8">
+                <span className="text-4xl mb-4 opacity-50">📭</span>
+                <p className="text-gray-500">No hay registros.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 border-b">
+                      <th className="p-3">
+                        <input
+                          type="checkbox"
+                          checked={allChecked}
+                          onChange={(e) =>
+                            setSelected(
+                              e.target.checked
+                                ? filteredEntries.map((en) => en.id)
+                                : []
+                            )
+                          }
+                          className="w-4 h-4 text-blue-500 rounded"
+                        />
+                      </th>
+                      <th className="p-3 text-left font-medium text-gray-700">Fecha</th>
+                      <th className="p-3 text-left font-medium text-gray-700">Laboratorio</th>
+                      <th className="p-3 text-left font-medium text-gray-700">Reactivo</th>
+                      <th className="p-3 text-left font-medium text-gray-700">Tipo</th>
+                      <th className="p-3 text-right font-medium text-gray-700">Cantidad</th>
+                      <th className="p-3 text-left font-medium text-gray-700">Unidad</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredEntries.map((entry, index) => (
+                      <tr
+                        key={entry.id}
+                        className="border-b hover:bg-blue-50 transition-all duration-200 animate-slide-in"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <td className="p-3">
                           <input
                             type="checkbox"
-                            checked={allChecked}
-                            onChange={(e) =>
-                              setSelected(
-                                 e.target.checked
-                                  ? filteredEntries.map((en) => en.id)
-                                  : []
-                              )
-                            }
-                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 transition-all duration-200"
+                            checked={selected.includes(entry.id)}
+                            onChange={() => toggleSelect(entry.id)}
+                            className="w-4 h-4 text-blue-500 rounded"
                           />
-                        </th>
-                        <th className="px-4 py-3 text-left font-semibold text-gray-700">📅 Fecha</th>
-                        <th className="px-4 py-3 text-left font-semibold text-gray-700">🏢 Laboratorio</th>
-                        <th className="px-4 py-3 text-left font-semibold text-gray-700">🧪 Reactivo</th>
-                        <th className="px-4 py-3 text-left font-semibold text-gray-700">🏷️ Tipo</th>
-                        <th className="px-4 py-3 text-right font-semibold text-gray-700">⚖️ Cantidad</th>
-                        <th className="px-4 py-3 text-left font-semibold text-gray-700">📏 Unidad</th>
+                        </td>
+                        <td className="p-3">{formatDate(entry.fecha)}</td>
+                        <td className="p-3 max-w-xs truncate" title={entry.laboratorio}>
+                          {entry.laboratorio}
+                        </td>
+                        <td className="p-3 font-medium">{entry.reactivo}</td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <span>{getTipoIcon(entry.tipo)}</span>
+                            <span className={getTipoColor(entry.tipo)}>
+                              {getTipoLabel(entry.tipo)}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-right font-mono">
+                          {Number(entry.cantidad).toFixed(2)}
+                        </td>
+                        <td className="p-3">{entry.unidad}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {filteredEntries.map((entry, index) => (
-                        <tr
-                          key={entry.id}
-                          className="border-b hover:bg-blue-50 transition-all duration-200 transform hover:scale-[1.01]"
-                          style={{ 
-                            animationDelay: `${index * 50}ms`,
-                            animation: 'fadeIn 0.5s ease-out forwards'
-                          }}
-                        >
-                          <td className="px-4 py-3">
-                            <input
-                              type="checkbox"
-                              checked={selected.includes(entry.id)}
-                              onChange={() => toggleSelect(entry.id)}
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 transition-all duration-200"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-gray-800">{formatDate(entry.fecha)}</td>
-                          <td className="px-4 py-3 text-gray-800 max-w-xs truncate" title={entry.laboratorio}>
-                            {entry.laboratorio}
-                          </td>
-                          <td className="px-4 py-3 font-medium text-gray-900">{entry.reactivo}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg">{getTipoIcon(entry.tipo)}</span>
-                              <span className={`font-medium ${getTipoColor(entry.tipo)}`}>
-                                {getTipoLabel(entry.tipo)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-right font-mono font-medium text-gray-900">
-                            {Number(entry.cantidad).toFixed(2)}
-                          </td>
-                          <td className="px-4 py-3 text-gray-700 font-medium">{entry.unidad}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </section>
 
         {/* Formulario */}
-        <div className="xl:w-96">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transform transition-all duration-500 ease-out hover:shadow-xl">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">➕</span>
-                <h3 className="text-xl font-semibold text-white">Nuevo Registro</h3>
+        <div className="lg:w-80">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h3 className="text-lg font-semibold text-blue-700 mb-4 flex items-center gap-2">
+              <span>➕</span> Nuevo Registro
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Fecha *
+                </label>
+                <input
+                  type="date"
+                  name="fecha"
+                  value={form.fecha}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
+                  required
+                />
               </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="space-y-6">
-                {/* Fecha */}
-                <div className="transform transition-all duration-300 hover:translate-x-1">
-                  <label className="flex items-center gap-2 text-sm font-medium mb-2 text-gray-700">
-                    <span>📅</span>
-                    Fecha *
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Laboratorio *
+                </label>
+                <select
+                  name="laboratorio"
+                  value={form.laboratorio}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
+                  required
+                >
+                  <option value="">-- Seleccionar laboratorio --</option>
+                  {LABS.map((lab) => (
+                    <option key={lab} value={lab}>
+                      {lab}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reactivo *
+                </label>
+                <input
+                  type="text"
+                  name="reactivo"
+                  value={form.reactivo}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
+                  placeholder="Nombre del reactivo"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipo de Residuo *
+                </label>
+                <select
+                  name="tipo"
+                  value={form.tipo}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
+                  required
+                >
+                  <option value="">-- Seleccionar tipo --</option>
+                  {RESIDUE_TYPES.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.icon} {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cantidad *
                   </label>
                   <input
-                    type="date"
-                    name="fecha"
-                    value={form.fecha}
+                    type="number"
+                    name="cantidad"
+                    value={form.cantidad}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    step="0.01"
+                    className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
+                    placeholder="0.00"
                     required
                   />
                 </div>
-
-                {/* Laboratorio */}
-                <div className="transform transition-all duration-300 hover:translate-x-1">
-                  <label className="flex items-center gap-2 text-sm font-medium mb-2 text-gray-700">
-                    <span>🏢</span>
-                    Laboratorio *
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Unidad *
                   </label>
                   <select
-                    name="laboratorio"
-                    value={form.laboratorio}
+                    name="unidad"
+                    value={form.unidad}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                    className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
                     required
                   >
-                    <option value="">-- Seleccionar laboratorio --</option>
-                    {LABS.map((lab) => (
-                      <option key={lab} value={lab}>
-                        {lab}
-                      </option>
-                    ))}
+                    <option value="">-- Unidad --</option>
+                    <option value="g">g (gramos)</option>
+                    <option value="ml">mL (mililitros)</option>
+                    <option value="u">u (unidades)</option>
                   </select>
-                </div>
-
-                {/* Reactivo */}
-                <div className="transform transition-all duration-300 hover:translate-x-1">
-                  <label className="flex items-center gap-2 text-sm font-medium mb-2 text-gray-700">
-                    <span>🧪</span>
-                    Reactivo *
-                  </label>
-                  <input
-                    type="text"
-                    name="reactivo"
-                    value={form.reactivo}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    placeholder="Nombre del reactivo"
-                    required
-                  />
-                </div>
-
-                {/* Tipo de residuo */}
-                <div className="transform transition-all duration-300 hover:translate-x-1">
-                  <label className="flex items-center gap-2 text-sm font-medium mb-2 text-gray-700">
-                    <span>🏷️</span>
-                    Tipo de Residuo *
-                  </label>
-                  <select
-                    name="tipo"
-                    value={form.tipo}
-                    onChange={handleChange}
-                    className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
-                    required
-                  >
-                    <option value="">-- Seleccionar tipo --</option>
-                    {RESIDUE_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {type.icon} {type.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Cantidad */}
-                  <div className="transform transition-all duration-300 hover:translate-x-1">
-                    <label className="flex items-center gap-2 text-sm font-medium mb-2 text-gray-700">
-                      <span>⚖️</span>
-                      Cantidad *
-                    </label>
-                    <input
-                      type="number"
-                      name="cantidad"
-                      value={form.cantidad}
-                      onChange={handleChange}
-                      step="0.01"
-                      className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
-
-                  {/* Unidad */}
-                  <div className="transform transition-all duration-300 hover:translate-x-1">
-                    <label className="flex items-center gap-2 text-sm font-medium mb-2 text-gray-700">
-                      <span>📏</span>
-                      Unidad *
-                    </label>
-                    <select
-                      name="unidad"
-                      value={form.unidad}
-                      onChange={handleChange}
-                      className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
-                      required
-                    >
-                      <option value="">-- Unidad --</option>
-                      <option value="g">g (gramos)</option>
-                      <option value="ml">mL (mililitros)</option>
-                      <option value="u">u (unidades)</option>
-                    </select>
-                  </div>
                 </div>
               </div>
-
               <button
                 type="submit"
                 disabled={isLoading}
-                className="mt-8 w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 hover:scale-105 disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
@@ -474,7 +437,7 @@ export default function ResiduosPage() {
                 ) : (
                   <>
                     <span>💾</span>
-                    Registrar Residuo
+                    Registrar
                   </>
                 )}
               </button>
@@ -483,9 +446,9 @@ export default function ResiduosPage() {
         </div>
       </div>
 
-      {/* CSS adicional para la animación fadeIn */}
+      {/* Animaciones */}
       <style jsx>{`
-        @keyframes fadeIn {
+        @keyframes slide-in {
           from {
             opacity: 0;
             transform: translateY(10px);
@@ -494,6 +457,9 @@ export default function ResiduosPage() {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.5s ease-out;
         }
       `}</style>
     </div>
