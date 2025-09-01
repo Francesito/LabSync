@@ -90,7 +90,13 @@ export default function ReportesPage() {
             all.push({ nombre: g, adeudos: grouped[g] });
           }
         });
-        setGrupos(all);
+       const filtered = all.filter(
+          (g) =>
+            g.adeudos.length > 0 &&
+            g.nombre &&
+            !['sin grupo', 'docente'].includes(g.nombre.toLowerCase())
+        );
+        setGrupos(filtered);
       });
 
     obtenerInventarioLiquidos()
@@ -284,9 +290,21 @@ export default function ReportesPage() {
         {/* Grupos con Adeudos */}
         <div className="col-md-4 col-12">
           <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
-            <h2 className="card-title h5 mb-3 text-teal">
-              <i className="bi bi-people-fill me-2 text-teal"></i>Grupos con Adeudos
-            </h2>
+         <div className="d-flex align-items-center mb-3">
+              <h2 className="card-title h5 mb-0 text-teal">
+                <i className="bi bi-people-fill me-2 text-teal"></i>Grupos con Adeudos
+              </h2>
+              <div className="ms-auto d-flex align-items-center">
+                <span className="me-1">Ordenar</span>
+                <button
+                  onClick={() => setOrdenDesc(!ordenDesc)}
+                  className="btn btn-link btn-sm p-0"
+                  aria-label="Ordenar"
+                >
+                  <i className={`bi ${ordenDesc ? 'bi-sort-down' : 'bi-sort-up'}`}></i>
+                </button>
+              </div>
+            </div>
             {grupos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay grupos.</p>
             ) : (
@@ -295,16 +313,7 @@ export default function ReportesPage() {
                   <table className="table table-sm table-hover table-bordered">
                     <thead className="table-teal">
                      <tr>
-                          <th className="text-start">
-                            Nombre
-                            <button
-                              onClick={() => setOrdenDesc(!ordenDesc)}
-                              className="btn btn-link btn-sm p-0 ms-2"
-                              aria-label="Ordenar"
-                            >
-                              <i className={`bi ${ordenDesc ? 'bi-sort-down' : 'bi-sort-up'}`}></i>
-                            </button>
-                          </th>
+                          <th className="text-start">Nombre</th>
                         </tr>
                     </thead>
                     <tbody>
