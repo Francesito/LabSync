@@ -680,16 +680,17 @@ export default function Auth() {
           .signin-signup {
             width: 100%;
             top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            transition: 1s 0.8s ease-in-out;
+            transition: none;
             display: flex;
             align-items: center;
             justify-content: center;
           }
 
-          .signin-signup,
           .container.sign-up-mode .signin-signup {
             left: 50%;
+            transform: translate(-50%, -50%);
           }
 
           .panels-container {
@@ -774,6 +775,7 @@ export default function Auth() {
 
           .container.sign-up-mode .signin-signup {
             top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
           }
 
@@ -805,6 +807,7 @@ export default function Auth() {
 
           .signin-signup {
             top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
             display: flex;
             align-items: center;
@@ -835,6 +838,7 @@ export default function Auth() {
 
           .container.sign-up-mode .signin-signup {
             top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
           }
 
