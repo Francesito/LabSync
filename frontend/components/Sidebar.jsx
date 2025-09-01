@@ -39,9 +39,7 @@ const handleNavClick = () => {
 };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUsuario(null);
-    router.push('/login');
+   router.push('/logout');
   };
 
   if (!usuario) return null;
