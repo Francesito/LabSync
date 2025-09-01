@@ -814,6 +814,37 @@ export default function Auth() {
             height: 100vh;
           }
 
+           /* Inputs estilo blanco */
+  .input-field {
+    background-color: transparent !important;
+    border: 1.5px solid #fff !important;
+  }
+  .input-field input {
+    color: #fff !important;
+  }
+  .input-field input::placeholder {
+    color: #fff !important;
+    opacity: 0.8;
+  }
+  .input-field i {
+    color: #fff !important;
+  }
+
+  /* Encabezado negro */
+  .title {
+    color: #000 !important;
+  }
+
+  /* Botón principal transparente con borde blanco */
+  .btn {
+    background: transparent !important;
+    border: 2px solid #fff !important;
+    color: #fff !important;
+  }
+  .btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.1) !important;
+  }
+
             .container.sign-up-mode form.sign-up-form {
     position: relative !important;
     top: -48px !important;       /* ajusta -40/-60 según te guste */
@@ -851,8 +882,12 @@ export default function Auth() {
   }
 
          .container.sign-up-mode:before {
-    bottom: 15% !important;  /* más abajo que el 30% anterior */
-    left: 50%;
+    width: 2000px !important;
+    height: 2000px !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    transform: translate(-50%, 0) !important;
+    background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%) !important;
   }
 
           .container.sign-up-mode .signin-signup {
