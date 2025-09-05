@@ -161,8 +161,6 @@ export function AuthProvider({ children }) {
           // Redirecciones basadas en el estado de autenticación y rol
           if (esRutaPublica && pathname !== '/reset-password' && !pathname.startsWith('/reset-password')) {
             router.push('/catalog');
-          } else if (rolNombre === 'docente' && pathname === '/chat') {
-            router.push('/catalog');
           } else if (
             (rolNombre === 'alumno' || rolNombre === 'almacen') &&
             pathname === '/solicitudes/pendientes'
