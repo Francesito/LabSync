@@ -217,10 +217,10 @@ const verificarPermisosChat = async (req, res) => {
       });
     }
     
-    // Si es docente (rol_id: 2), no tiene acceso al chat ni al stock
+    // Si es docente (rol_id: 2), tiene acceso al chat pero no al stock
     if (userRole === 2) {
       return res.json({ 
-        acceso_chat: false,
+         acceso_chat: true,
         modificar_stock: false,
         rol: 'docente'
       });
