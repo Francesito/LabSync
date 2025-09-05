@@ -157,7 +157,7 @@ export default function Chat() {
       setContactos(contactosConUltimoMensaje);
 
       if (contactosConUltimoMensaje.length === 0 && permisos.rol === 'almacen') {
-        setError('No hay alumnos que hayan iniciado conversación contigo aún');
+          setError('No hay usuarios que hayan iniciado conversación contigo aún');
       }
     } catch (err) {
       console.error('[Chat] cargarContactos:', err);
@@ -411,7 +411,9 @@ export default function Chat() {
                 <div>
                   <h2 className="font-semibold text-gray-900 text-base">Chats</h2>
                   <p className="text-xs text-gray-500">
-                    {permisos?.rol === 'alumno' ? 'Almacenistas' : 'Alumnos'}
+                    {['alumno', 'docente'].includes(permisos?.rol)
+                      ? 'Almacenistas'
+                      : 'Usuarios'}
                   </p>
                 </div>
               </div>
@@ -458,10 +460,9 @@ export default function Chat() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 <p className="text-center">
-                  {permisos?.rol === 'alumno'
+                {['alumno', 'docente'].includes(permisos?.rol)
                     ? 'No hay almacenistas disponibles'
-                    : 'No hay conversaciones iniciadas aún'
-                  }
+                    : 'No hay conversaciones iniciadas aún'}
                 </p>
               </div>
             ) : (
@@ -493,9 +494,12 @@ export default function Chat() {
 
                     <div className="ml-3 flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-gray-900 truncate text-sm">
-                          {contacto.nombre}
-                        </h3>
+                        <div className="truncate">
+                          <h3 className="font-semibold text-gray-900 text-sm truncate">
+                            {contacto.nombre}
+                          </h3>
+                          <p className="text-xs text-gray-500 capitalize">{contacto.rol}</p>
+                        </div>
                         {contacto.ultimoMensaje && (
                           <span className="text-xs text-gray-500 ml-2">
                             {formatearFecha(contacto.ultimoMensaje.fecha_envio)}
@@ -503,15 +507,13 @@ export default function Chat() {
                         )}
                       </div>
 
-                      <div className="flex items-center justify-between mt-0.5">
-                        <p className="text-xs text-gray-600 truncate">
-                          {contacto.ultimoMensaje ? (
-                            truncarMensaje(contacto.ultimoMensaje.contenido)
-                          ) : (
-                            <span className="text-gray-400 italic">Sin mensajes</span>
-                          )}
-                        </p>
-                      </div>
+                    <p className="text-xs text-gray-600 truncate mt-0.5">
+                        {contacto.ultimoMensaje ? (
+                          truncarMensaje(contacto.ultimoMensaje.contenido)
+                        ) : (
+                          <span className="text-gray-400 italic">Sin mensajes</span>
+                        )}
+                      </p>
                     </div>
                   </div>
                 ))}
