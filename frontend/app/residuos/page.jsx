@@ -46,6 +46,7 @@ export default function ResiduosPage() {
     laboratorio: '',
     reactivo: '',
     tipo: '',
+     otroTipo: '',
     cantidad: '',
     unidad: '',
   });
@@ -69,14 +70,20 @@ export default function ResiduosPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
+    setForm((f) => ({
+      ...f,
+      [name]: value,
+      ...(name === 'tipo' && value !== 'otros' ? { otroTipo: '' } : {}),
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { fecha, laboratorio, reactivo, tipo, cantidad, unidad } = form;
+    const { fecha, laboratorio, reactivo, tipo, otroTipo, cantidad, unidad } = form;
 
-    if (!fecha || !laboratorio || !reactivo || !tipo || !cantidad || !unidad) return;
+    const tipoValue = tipo === 'otros' ? otroTipo.trim() : tipo;
+
+    if (!fecha || !laboratorio || !reactivo || !tipoValue || !cantidad || !unidad) return;
 
     setIsLoading(true);
     try {
@@ -84,7 +91,7 @@ export default function ResiduosPage() {
         fecha,
         laboratorio,
         reactivo,
-        tipo,
+    tipo: tipoValue,
         cantidad: parseFloat(cantidad),
         unidad,
       };
@@ -96,6 +103,7 @@ export default function ResiduosPage() {
         laboratorio: '',
         reactivo: '',
         tipo: '',
+         otroTipo: '',
         cantidad: '',
         unidad: '',
       });
@@ -391,6 +399,17 @@ export default function ResiduosPage() {
                     </option>
                   ))}
                 </select>
+                 {form.tipo === 'otros' && (
+                  <input
+                    type="text"
+                    name="otroTipo"
+                    value={form.otroTipo}
+                    onChange={handleChange}
+                    className="mt-2 w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
+                    placeholder="Especificar tipo"
+                    required
+                  />
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
