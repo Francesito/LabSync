@@ -13,15 +13,15 @@ router.use(verificarToken);
 
 // ✅ Middleware que verifica tanto el rol como los permisos específicos de chat
 const verificarAccesoChat = [
-  verificarMultiplesRoles(1, 3, 4), // Permitir alumnos, almacén y admin
+  verificarMultiplesRoles(1, 2, 3, 4), // Permitir alumnos, docentes, almacén y admin
   verificarPermisosAlmacen('chat')   // Verificar permisos específicos para almacén
 ];
 
 // ==================== RUTAS DEL CHAT ====================
 
 // Obtener lista de contactos 
-// - Alumno verá todos los almacenistas
-// - Almacenista verá solo alumnos con quienes ha chateado
+// - Alumno o docente verá todos los almacenistas
+// - Almacenista verá alumnos y docentes con quienes ha chateado
 router.get('/users', verificarAccesoChat, messageController.getContactos);
 
 // Obtener mensajes con un usuario específico
