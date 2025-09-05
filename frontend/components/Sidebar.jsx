@@ -115,7 +115,7 @@ const handleNavClick = () => {
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       ),
-      visible: [1, 3].includes(usuario.rol_id), // alumno y almacén (docente y admin no)
+    visible: [1, 2, 3].includes(usuario.rol_id), // alumno, docente y almacén
       color: 'indigo',
     },
     {
