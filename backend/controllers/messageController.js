@@ -67,11 +67,14 @@ exports.sendMessage = async (req, res) => {
       return res.status(404).json({ error: 'Usuario receptor no encontrado' });
     }
 
-    // 2) Verificar permisos de chat (alumno solo puede hablar con almacenistas y viceversa)
+      // 2) Verificar permisos de chat (alumnos y docentes solo pueden hablar con almacenistas y viceversa)
     const emisorRol = req.usuario.rol_id;
     const receptorRol = receptor[0].rol_id;
-    
-    if (!((emisorRol === 1 && receptorRol === 3) || (emisorRol === 3 && receptorRol === 1))) {
+
+     const emisorEsUsuario = [1, 2].includes(emisorRol) && receptorRol === 3;
+    const emisorEsAlmacen = emisorRol === 3 && [1, 2].includes(receptorRol);
+
+    if (!(emisorEsUsuario || emisorEsAlmacen)) {
       return res.status(403).json({ error: 'No tienes permisos para enviar mensajes a este usuario' });
     }
 
@@ -143,8 +146,11 @@ exports.getMessages = async (req, res) => {
     // Verificar permisos de chat
     const currentUserRol = req.usuario.rol_id;
     const targetUserRol = targetUser[0].rol_id;
-    
-    if (!((currentUserRol === 1 && targetUserRol === 3) || (currentUserRol === 3 && targetUserRol === 1))) {
+
+     const usuarioConAlmacen = [1, 2].includes(currentUserRol) && targetUserRol === 3;
+    const almacenConUsuario = currentUserRol === 3 && [1, 2].includes(targetUserRol);
+
+    if (!(usuarioConAlmacen || almacenConUsuario)) {
       return res.status(403).json({ error: 'No tienes permisos para ver mensajes con este usuario' });
     }
 
@@ -175,8 +181,8 @@ exports.getMessages = async (req, res) => {
 
 /**
  * Obtener lista de contactos:
- *  - Si soy alumno (rol_id=1), veo TODOS los almacenistas
- *  - Si soy almacenista (rol_id=3), veo sólo alumnos con quienes he chateado
+*  - Si soy alumno (rol_id=1) o docente (rol_id=2), veo TODOS los almacenistas
+ *  - Si soy almacenista (rol_id=3), veo alumnos y docentes con quienes he chateado
  * GET /api/messages/users
  */
 exports.getContactos = async (req, res) => {
@@ -185,10 +191,10 @@ exports.getContactos = async (req, res) => {
     await cleanupOldMessages();
 
     const currentUserId = req.usuario.id;
-    const rolId = req.usuario.rol_id; // 1 = alumno, 3 = almacen
+      const rolId = req.usuario.rol_id; // 1 = alumno, 2 = docente, 3 = almacen
 
-    // Alumno: ver todos los almacenistas
-    if (rolId === 1) {
+      // Alumnos y docentes: ver todos los almacenistas
+    if (rolId === 1 || rolId === 2) {
       const [users] = await pool.query(
         `SELECT u.id, u.nombre, r.nombre AS rol
            FROM Usuario u
@@ -201,7 +207,7 @@ exports.getContactos = async (req, res) => {
       return res.json(users);
     }
 
-    // Almacenista: ver sólo alumnos con quienes he chateado
+  // Almacenista: ver alumnos y docentes con quienes he chateado
     if (rolId === 3) {
       const [contacts] = await pool.query(
         `SELECT DISTINCT u.id, u.nombre, r.nombre AS rol
@@ -210,7 +216,7 @@ exports.getContactos = async (req, res) => {
              ON (u.id = m.emisor_id   AND m.receptor_id = ?)
              OR (u.id = m.receptor_id AND m.emisor_id    = ?)
            JOIN Rol r ON u.rol_id = r.id
-          WHERE u.rol_id = 1
+          WHERE u.rol_id IN (1, 2)
           ORDER BY u.nombre ASC`,
         [currentUserId, currentUserId]
       );
