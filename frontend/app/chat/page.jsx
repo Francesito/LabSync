@@ -40,10 +40,8 @@ export default function Chat() {
     // Verificar permisos básicos
     if (!permisos.acceso_chat) {
       let mensajeError = 'No tienes acceso al chat';
-      
-      if (permisos.rol === 'docente') {
-        mensajeError = 'Los docentes no tienen acceso al chat';
-      } else if (permisos.rol === 'almacen') {
+
+       if (permisos.rol === 'almacen') {
         mensajeError = 'No tienes permisos de chat habilitados. Contacta al administrador.';
       }
       
