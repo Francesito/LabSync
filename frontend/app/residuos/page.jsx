@@ -17,11 +17,13 @@ const LABS = [
 ];
 
 const RESIDUE_TYPES = [
-  { label: 'Químico', value: 'quimico', icon: '⚗️', color: 'text-orange-500' },
-  { label: 'Biológico', value: 'biologico', icon: '🧬', color: 'text-green-500' },
-  { label: 'Radiactivo', value: 'radiactivo', icon: '☢️', color: 'text-yellow-500' },
-  { label: 'Común', value: 'comun', icon: '🗑️', color: 'text-gray-500' }
+  { label: 'Corrosivo', value: 'corrosivo', icon: '🧪', color: 'text-red-600' },
+  { label: 'Reactivo', value: 'reactivo', icon: '⚡', color: 'text-purple-600' },
+  { label: 'Tóxico', value: 'toxico', icon: '☠️', color: 'text-green-600' },
+  { label: 'Inflamable', value: 'inflamable', icon: '🔥', color: 'text-orange-600' },
+  { label: 'Otros', value: 'otros', icon: '📦', color: 'text-gray-500' }
 ];
+
 
 const getTipoLabel = (value) =>
   RESIDUE_TYPES.find((t) => t.value === value)?.label || value;
