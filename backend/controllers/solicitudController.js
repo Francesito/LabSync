@@ -1588,13 +1588,15 @@ const rechazarSolicitud = async (req, res) => {
 const cancelarSolicitudesVencidas = async () => {
   try {
     const [result] = await pool.query(
-    "UPDATE Solicitud SET estado = 'sin recoleccion' WHERE estado IN ('pendiente','aprobada') AND fecha_recoleccion < CURDATE()"
+    `DELETE FROM Solicitud
+       WHERE estado IN ('pendiente','aprobada')
+       AND fecha_recoleccion < CURDATE()`
     );
     if (result.affectedRows > 0) {
-     console.log(`⏰ Marcadas ${result.affectedRows} solicitudes por falta de recolección`);
+     console.log(`⏰ Eliminadas ${result.affectedRows} solicitudes por falta de recolección`);
     }
   } catch (error) {
- console.error('Error al marcar solicitudes vencidas:', error);
+ console.error('Error al eliminar solicitudes vencidas:', error);
   }
 };
 
