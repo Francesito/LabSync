@@ -179,7 +179,7 @@ const initializeResiduoTable = async () => {
         fecha DATE NOT NULL,
         laboratorio VARCHAR(100) NOT NULL,
         reactivo VARCHAR(100) NOT NULL,
-        tipo ENUM('quimico','biologico','radiactivo','comun') NOT NULL,
+        tipo VARCHAR(100) NOT NULL,
         cantidad DECIMAL(10,2) NOT NULL,
         unidad ENUM('ml','g','u') NOT NULL,
        PRIMARY KEY (id),
@@ -187,6 +187,10 @@ const initializeResiduoTable = async () => {
         CONSTRAINT Residuo_ibfk_1 FOREIGN KEY (usuario_id) REFERENCES Usuario(id) ON DELETE CASCADE
       );
     `);
+     // Aseguramos que la columna tipo permita valores personalizados
+    await pool.query(
+      'ALTER TABLE Residuo MODIFY COLUMN tipo VARCHAR(100) NOT NULL'
+    );
     console.log('✅ Tabla Residuo inicializada correctamente');
   } catch (error) {
     console.error('❌ Error inicializando tabla Residuo:', error);
