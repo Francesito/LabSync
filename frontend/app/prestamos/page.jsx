@@ -92,7 +92,7 @@ export default function Prestamos() {
   const [tipoPrestamo, setTipoPrestamo] = useState('alumno');
   const [selectedUser, setSelectedUser] = useState(null);
   const [userQuery, setUserQuery] = useState('');
-    const [docentesList, setDocentesList] = useState([]);
+  const [docentesList, setDocentesList] = useState([]);
   const [docenteQuery, setDocenteQuery] = useState('');
   const [selectedDocente, setSelectedDocente] = useState(null);
   const [prestamoItems, setPrestamoItems] = useState([]);
@@ -610,8 +610,8 @@ export default function Prestamos() {
 
       {/* Modal Completamente Responsivo */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-2 sm:p-4">
-         <div className="bg-white rounded-lg sm:rounded-xl shadow-2xl w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-2 sm:p-4 transition-opacity duration-300 ease-in-out">
+          <div className="bg-white rounded-lg sm:rounded-xl shadow-2xl w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden transform transition-all duration-300 ease-out scale-100">
             {/* Header del Modal Responsivo */}
             <div className="bg-[#003579] text-white px-4 sm:px-6 py-3 sm:py-4">
               <div className="flex justify-between items-center">
@@ -625,7 +625,7 @@ export default function Prestamos() {
                 </div>
                 <button 
                   onClick={closeModal} 
-                  className="text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg p-2 flex-shrink-0"
+                  className="text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg p-2 flex-shrink-0 transition-colors duration-200"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -646,31 +646,31 @@ export default function Prestamos() {
               ) : (
                 <>
                   {/* Info Cards Responsivas */}
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                    <div className="bg-slate-50 rounded-lg p-3 sm:p-4">
-                      <div className="flex items-center space-x-2">
-                        <div className="p-1 bg-[#002e63] rounded-lg flex-shrink-0">  
-                          <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                    <div className="bg-slate-50 rounded-xl p-4 sm:p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className="p-2 bg-[#002e63] rounded-lg flex-shrink-0">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2C7 1.44772 7.44772 1 8 1H16C16.5523 1 17 1.44772 17 2V4M7 4H5C4.44772 4 4 4.44772 4 5V19C4 19.5523 4.44772 20 5 20H19C19.5523 20 20 19.5523 20 19V5C20 4.44772 19.5523 4 19 4H17M7 4H17" />
                           </svg>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <span className="block text-xs text-slate-500 uppercase font-medium">Folio</span>
-                          <span className="block font-bold text-sm text-slate-800 truncate">{detalle.folio}</span>
+                          <span className="block text-xs sm:text-sm text-slate-500 uppercase font-medium">Folio</span>
+                          <span className="block font-bold text-base sm:text-lg text-slate-800 truncate">{detalle.folio}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-lg p-3 sm:p-4">
-                      <div className="flex items-center space-x-2">
-                        <div className="p-1 bg-[#002e63] rounded-lg flex-shrink-0">
-                          <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="bg-slate-50 rounded-xl p-4 sm:p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className="p-2 bg-[#002e63] rounded-lg flex-shrink-0">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4m-4 8a4 4 0 01-4-4V7a4 4 0 118 0v4a4 4 0 01-4 4z" />
                           </svg>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <span className="block text-xs text-slate-500 uppercase font-medium">Recolección</span>
-                          <span className="block font-bold text-sm text-slate-800 truncate">
+                          <span className="block text-xs sm:text-sm text-slate-500 uppercase font-medium">Recolección</span>
+                          <span className="block font-bold text-base sm:text-lg text-slate-800 truncate">
                             {formatDate(detalle.fecha_recoleccion)}
                           </span>
                         </div>
@@ -678,32 +678,32 @@ export default function Prestamos() {
                     </div>
 
                     {detalle.nombre_alumno && (
-                      <div className="bg-slate-50 rounded-lg p-3 sm:p-4">
-                        <div className="flex items-center space-x-2">
-                          <div className="p-1 bg-[#002e63] rounded-lg flex-shrink-0">
-                            <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="bg-slate-50 rounded-xl p-4 sm:p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
+                        <div className="flex items-center space-x-3 sm:space-x-4">
+                          <div className="p-2 bg-[#002e63] rounded-lg flex-shrink-0">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <span className="block text-xs text-slate-500 uppercase font-medium">Alumno</span>
-                         <span className="block font-bold text-sm text-slate-800 break-words">{detalle.nombre_alumno}</span>
+                            <span className="block text-xs sm:text-sm text-slate-500 uppercase font-medium">Alumno</span>
+                            <span className="block font-bold text-base sm:text-lg text-slate-800 break-words">{detalle.nombre_alumno}</span>
                           </div>
                         </div>
                       </div>
                     )}
 
                     {detalle.profesor && (
-                      <div className="bg-slate-50 rounded-lg p-3 sm:p-4">
-                        <div className="flex items-center space-x-2">
-                          <div className="p-1 bg-[#002e63] rounded-lg flex-shrink-0">
-                            <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="bg-slate-50 rounded-xl p-4 sm:p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
+                        <div className="flex items-center space-x-3 sm:space-x-4">
+                          <div className="p-2 bg-[#002e63] rounded-lg flex-shrink-0">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
                             </svg>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <span className="block text-xs text-slate-500 uppercase font-medium">Profesor</span>
-                             <span className="block font-bold text-sm text-slate-800 break-words">{detalle.profesor}</span>
+                            <span className="block text-xs sm:text-sm text-slate-500 uppercase font-medium">Profesor</span>
+                            <span className="block font-bold text-base sm:text-lg text-slate-800 break-words">{detalle.profesor}</span>
                           </div>
                         </div>
                       </div>
@@ -712,10 +712,10 @@ export default function Prestamos() {
 
                   {/* Formulario Responsivo Mejorado */}
                   <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
-                    <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-slate-200">
-                      <div className="bg-slate-50 px-3 sm:px-4 py-2 border-b border-slate-200">
-                        <h3 className="text-sm font-semibold text-slate-800 flex items-center space-x-2">
-                          <svg className="w-4 h-4 text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
+                      <div className="bg-slate-50 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200">
+                        <h3 className="text-base sm:text-lg font-semibold text-slate-800 flex items-center space-x-3">
+                          <svg className="w-5 h-5 text-slate-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                           </svg>
                           <span>Materiales por Devolver</span>
@@ -726,29 +726,29 @@ export default function Prestamos() {
                       <div className="overflow-x-auto">
                         {/* Vista Desktop - Tabla compacta */}
                         <div className="hidden lg:block">
-                          <table className="table-auto w-auto mx-auto">
+                          <table className="table-auto w-full divide-y divide-slate-200">
                             <thead className="bg-slate-50">
                               <tr>
-                                <th className="px-2 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                <th className="px-6 py-4 text-left text-sm font-medium text-slate-500 uppercase tracking-wider">
                                   {detalle.nombre_alumno ? 'Devolver' : 'Entregado'}
                                 </th>
-                                <th className="px-2 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                <th className="px-6 py-4 text-left text-sm font-medium text-slate-500 uppercase tracking-wider">
                                   Material
                                 </th>
-                                <th className="px-2 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                <th className="px-6 py-4 text-center text-sm font-medium text-slate-500 uppercase tracking-wider">
                                   Total
                                 </th>
-                                <th className="px-2 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                <th className="px-6 py-4 text-center text-sm font-medium text-slate-500 uppercase tracking-wider">
                                   Unidad
                                 </th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
                               {detalle.items.map((item) => (
-                                <tr key={item.item_id} className="hover:bg-slate-50">
-                                  <td className="px-2 py-2">
+                                <tr key={item.item_id} className="hover:bg-slate-50 transition-colors duration-200">
+                                  <td className="px-6 py-4">
                                     {detalle.nombre_alumno ? (
-                                      <div className="flex items-center justify-center space-x-1">
+                                      <div className="flex items-center justify-center space-x-2">
                                         <input
                                           type="number"
                                           min="0"
@@ -759,9 +759,9 @@ export default function Prestamos() {
                                             item.devolver = Math.min(Math.max(val, 0), item.cantidad);
                                             setDetalle({ ...detalle });
                                           }}
-                                          className="w-10 border border-slate-300 rounded px-1 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-transparent"
+                                          className="w-20 border border-slate-300 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-shadow duration-200"
                                         />
-                                        <span className="text-xs text-slate-400">/{item.cantidad}</span>
+                                        <span className="text-sm text-slate-400">/ {item.cantidad}</span>
                                       </div>
                                     ) : (
                                       <div className="flex justify-center">
@@ -772,30 +772,30 @@ export default function Prestamos() {
                                             item.entregado = e.target.checked;
                                             setDetalle({ ...detalle });
                                           }}
-                                          className="w-4 h-4"
+                                          className="w-5 h-5 rounded text-slate-600 focus:ring-slate-400 transition-colors duration-200"
                                         />
                                       </div>
                                     )}
                                   </td>
-                                  <td className="px-2 py-2">
-                                    <div className="flex items-center space-x-2">
-                                      <div className="p-1 bg-slate-100 rounded flex-shrink-0">
-                                        <svg className="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <td className="px-6 py-4">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="p-2 bg-slate-100 rounded-lg flex-shrink-0">
+                                        <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                                         </svg>
                                       </div>
                                       <div className="min-w-0 flex-1">
-                                        <div className="text-xs font-medium text-slate-900 leading-tight truncate">
+                                        <div className="text-base font-medium text-slate-900 leading-tight truncate">
                                           {formatMaterialName(item.nombre_material)}
                                         </div>
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="px-2 py-2 text-center">
-                                    <span className="text-xs font-medium text-slate-900">{item.cantidad}</span>
+                                  <td className="px-6 py-4 text-center">
+                                    <span className="text-base font-medium text-slate-900">{item.cantidad}</span>
                                   </td>
-                                  <td className="px-2 py-2 text-center">
-                                    <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
+                                  <td className="px-6 py-4 text-center">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-800">
                                       {item.tipo === 'liquido' ? 'ml' : item.tipo === 'solido' ? 'g' : 'u'}
                                     </span>
                                   </td>
@@ -807,27 +807,27 @@ export default function Prestamos() {
 
                         {/* Vista Tablet - Tabla más compacta */}
                         <div className="hidden md:block lg:hidden">
-                          <table className="w-full">
+                          <table className="w-full divide-y divide-slate-200">
                             <thead className="bg-slate-50">
                               <tr>
-                                <th className="px-2 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                                   {detalle.nombre_alumno ? 'Dev.' : 'Ent.'}
                                 </th>
-                                <th className="px-2 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                                   Material
                                 </th>
-                                <th className="px-2 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
                                   Total
                                 </th>
-                                <th className="px-2 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wide">
+                                <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
                                   Und
                                 </th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
                               {detalle.items.map((item) => (
-                                <tr key={item.item_id} className="hover:bg-slate-50">
-                                  <td className="px-2 py-2">
+                                <tr key={item.item_id} className="hover:bg-slate-50 transition-colors duration-200">
+                                  <td className="px-4 py-3">
                                     {detalle.nombre_alumno ? (
                                       <div className="flex items-center justify-center space-x-1">
                                         <input
@@ -840,7 +840,7 @@ export default function Prestamos() {
                                             item.devolver = Math.min(Math.max(val, 0), item.cantidad);
                                             setDetalle({ ...detalle });
                                           }}
-                                          className="w-10 border border-slate-300 rounded px-1 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-transparent"
+                                          className="w-16 border border-slate-300 rounded-lg px-2 py-1 text-xs text-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-shadow duration-200"
                                         />
                                         <span className="text-xs text-slate-400">/{item.cantidad}</span>
                                       </div>
@@ -853,30 +853,30 @@ export default function Prestamos() {
                                             item.entregado = e.target.checked;
                                             setDetalle({ ...detalle });
                                           }}
-                                          className="w-4 h-4"
+                                          className="w-4 h-4 rounded text-slate-600 focus:ring-slate-400 transition-colors duration-200"
                                         />
                                       </div>
                                     )}
                                   </td>
-                                  <td className="px-2 py-2">
+                                  <td className="px-4 py-3">
                                     <div className="flex items-center space-x-2">
-                                      <div className="p-1 bg-slate-100 rounded flex-shrink-0">
-                                        <svg className="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <div className="p-1.5 bg-slate-100 rounded flex-shrink-0">
+                                        <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                                         </svg>
                                       </div>
                                       <div className="min-w-0 flex-1">
-                                        <div className="text-xs font-medium text-slate-900 leading-tight truncate">
+                                        <div className="text-sm font-medium text-slate-900 leading-tight truncate">
                                           {formatMaterialName(item.nombre_material)}
                                         </div>
                                       </div>
                                     </div>
                                   </td>
-                                  <td className="px-2 py-2 text-center">
-                                    <span className="text-xs font-medium text-slate-900">{item.cantidad}</span>
+                                  <td className="px-4 py-3 text-center">
+                                    <span className="text-sm font-medium text-slate-900">{item.cantidad}</span>
                                   </td>
-                                  <td className="px-2 py-2 text-center">
-                                    <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
+                                  <td className="px-4 py-3 text-center">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
                                       {item.tipo === 'liquido' ? 'ml' : item.tipo === 'solido' ? 'g' : 'u'}
                                     </span>
                                   </td>
@@ -887,94 +887,92 @@ export default function Prestamos() {
                         </div>
 
                         {/* Vista Móvil Compacta */}
-                        <div className="block md:hidden">
-                          <div className="space-y-2 p-2">
-                            {detalle.items.map((item) => (
-                              <div key={item.item_id} className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-2 flex-1 min-w-0 mr-3">
-                                    <div className="p-1 bg-slate-100 rounded flex-shrink-0">
-                                      <svg className="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                                      </svg>
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                      <div className="text-xs font-medium text-slate-900 leading-tight mb-1">
-                                        {formatMaterialName(item.nombre_material)}
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <span className="text-xs text-slate-600">
-                                          {item.cantidad}
-                                        </span>
-                                        <span className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-slate-200 text-slate-700">
-                                          {item.tipo === 'liquido' ? 'ml' : item.tipo === 'solido' ? 'g' : 'u'}
-                                        </span>
-                                      </div>
-                                    </div>
+                        <div className="block md:hidden space-y-4 p-2">
+                          {detalle.items.map((item) => (
+                            <div key={item.item_id} className="bg-slate-50 rounded-xl p-4 border border-slate-200 shadow-sm transition-shadow duration-200 hover:shadow-md">
+                              <div className="flex flex-col space-y-3">
+                                <div className="flex items-center space-x-3">
+                                  <div className="p-2 bg-slate-100 rounded-lg flex-shrink-0">
+                                    <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                    </svg>
                                   </div>
-                                  
-                                  <div className="flex-shrink-0">
-                                    {detalle.nombre_alumno ? (
-                                      <div className="text-center">
-                                        <div className="text-xs text-slate-500 font-medium mb-1">Devolver</div>
-                                        <input
-                                          type="number"
-                                          min="0"
-                                          max={item.cantidad}
-                                          value={item.devolver}
-                                          onChange={e => {
-                                            const val = parseInt(e.target.value || '0', 10);
-                                            item.devolver = Math.min(Math.max(val, 0), item.cantidad);
-                                            setDetalle({ ...detalle });
-                                          }}
-                                          className="w-12 border border-slate-300 rounded px-1 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-transparent"
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="text-center">
-                                        <div className="text-xs text-slate-500 font-medium mb-1">Entregado</div>
-                                        <input
-                                          type="checkbox"
-                                          checked={item.entregado}
-                                          onChange={e => {
-                                            item.entregado = e.target.checked;
-                                            setDetalle({ ...detalle });
-                                          }}
-                                          className="w-4 h-4"
-                                        />
-                                      </div>
-                                    )}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-base font-medium text-slate-900 leading-tight mb-1">
+                                      {formatMaterialName(item.nombre_material)}
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <span className="text-sm text-slate-600">
+                                        Total: {item.cantidad}
+                                      </span>
+                                      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-slate-100 text-slate-800">
+                                        {item.tipo === 'liquido' ? 'ml' : item.tipo === 'solido' ? 'g' : 'u'}
+                                      </span>
+                                    </div>
                                   </div>
                                 </div>
+                                
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm font-medium text-slate-700">
+                                    {detalle.nombre_alumno ? 'Devolver' : 'Entregado'}
+                                  </span>
+                                  {detalle.nombre_alumno ? (
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        max={item.cantidad}
+                                        value={item.devolver}
+                                        onChange={e => {
+                                          const val = parseInt(e.target.value || '0', 10);
+                                          item.devolver = Math.min(Math.max(val, 0), item.cantidad);
+                                          setDetalle({ ...detalle });
+                                        }}
+                                        className="w-24 border border-slate-300 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-shadow duration-200"
+                                      />
+                                      <span className="text-sm text-slate-400">/ {item.cantidad}</span>
+                                    </div>
+                                  ) : (
+                                    <input
+                                      type="checkbox"
+                                      checked={item.entregado}
+                                      onChange={e => {
+                                        item.entregado = e.target.checked;
+                                        setDetalle({ ...detalle });
+                                      }}
+                                      className="w-5 h-5 rounded text-slate-600 focus:ring-slate-400 transition-colors duration-200"
+                                    />
+                                  )}
+                                </div>
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
 
                     {/* Botones de acción responsivos */}
-                    <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 mt-4">
+                    <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 mt-6">
                       <button
                         type="button"
                         onClick={closeModal}
-                        className="w-full sm:w-auto px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium border border-slate-300 text-sm order-2 sm:order-1"
+                        className="w-full sm:w-auto px-6 py-3 rounded-lg text-slate-700 hover:bg-slate-100 font-medium border border-slate-300 text-base shadow-sm transition-all duration-200 hover:shadow-md order-2 sm:order-1"
                       >
                         Cancelar
                       </button>
                       <button
                         type="submit"
                         disabled={saving}
-                        className="w-full sm:w-auto px-4 py-2 bg-[#003579] text-white rounded-lg hover:bg-[#002a5e] font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm order-1 sm:order-2"
+                        className="w-full sm:w-auto px-6 py-3 bg-[#003579] text-white rounded-lg hover:bg-[#002a5e] font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 text-base transition-all duration-200 hover:shadow-lg order-1 sm:order-2"
                       >
                         {saving ? (
                           <>
-                            <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                             <span>Guardando...</span>
                           </>
                         ) : (
                           <>
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                             <span>Guardar</span>
