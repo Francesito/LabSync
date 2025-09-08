@@ -91,16 +91,19 @@ export default function Catalog() {
     }
   }, [isSmallScreen]);
 
-    const getFormattedDate = (d) => d.toISOString().split('T')[0];
+  const MX_TZ = 'America/Mexico_City';
 
-    const addDays = (date, days) => {
+    const formatMX = (d) =>
+    new Date(d).toLocaleDateString('en-CA', { timeZone: MX_TZ });
+
+  const addDays = (date, days) => {
     const d = new Date(date);
     d.setDate(d.getDate() + days);
     return d;
   };
 
   const isWeekend = (dateStr) => {
-    const day = new Date(dateStr).getDay();
+   const day = new Date(`${dateStr}T00:00:00-06:00`).getUTCDay();
     return day === 0 || day === 6;
   };
 
@@ -117,7 +120,7 @@ export default function Catalog() {
   
   const computeMinPickupDate = () => {
     const now = new Date();
-    let d = new Date(now);
+let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
     const day = d.getDay();
     const hour = d.getHours();
 
@@ -143,12 +146,12 @@ export default function Catalog() {
   };
   
   useEffect(() => {
-   const minDate = computeMinPickupDate();
-    setMinPickupDate(getFormattedDate(minDate));
-const pickupEnd = computeWeekEnd(addDays(minDate, 7));
-    setMaxPickupDate(getFormattedDate(pickupEnd));
+  const minDate = computeMinPickupDate();
+    setMinPickupDate(formatMX(minDate));
+    const pickupEnd = computeWeekEnd(addDays(minDate, 7));
+    setMaxPickupDate(formatMX(pickupEnd));
     const returnEnd = computeWeekEnd(addDays(minDate, 14));
-    setMaxReturnDate(getFormattedDate(returnEnd));
+   setMaxReturnDate(formatMX(returnEnd));
   }, []);
 
   // Cargar permisos del usuario
