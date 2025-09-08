@@ -16,6 +16,7 @@ const { obtenerGrupos } = require('./controllers/authController');
 const adminRoutes = require('./routes/adminRoutes');
 const residuoRoutes = require('./routes/residuoRoutes');
 const notificacionRoutes = require('./routes/notificacionRoutes');
+const usuarioRoutes = require('./routes/usuarioRoutes');
 
 const pool = require('./config/db');
 const { eliminarSolicitudesViejas, cancelarSolicitudesVencidas } = require('./controllers/solicitudController');
@@ -97,6 +98,7 @@ app.use('/api/solicitudes', solicitudRoutes);
 app.use('/api/adeudos', adeudoRoutes);
 app.use('/api/residuos', residuoRoutes);
 app.use('/api/notificaciones', notificacionRoutes);
+app.use('/api/usuarios', usuarioRoutes);
 
 // Nueva ruta de administrador (con gestión de permisos completa)
 app.use('/api/admin', adminRoutes);
@@ -225,6 +227,23 @@ const initializeNotificacionTable = async () => {
     console.log('✅ Tabla Notificacion inicializada correctamente');
   } catch (error) {
     console.error('❌ Error inicializando tabla Notificacion:', error);
+  }
+};
+
+// Asegura columna para control de cambio de nombre
+const initializeUsuarioTable = async () => {
+  try {
+    const [columns] = await pool.query(
+      "SHOW COLUMNS FROM Usuario LIKE 'ultimo_cambio_nombre'"
+    );
+    if (columns.length === 0) {
+      await pool.query(
+        'ALTER TABLE Usuario ADD COLUMN ultimo_cambio_nombre DATETIME NULL'
+      );
+    }
+    console.log('✅ Tabla Usuario actualizada correctamente');
+  } catch (error) {
+    console.error('❌ Error actualizando tabla Usuario:', error);
   }
 };
 
@@ -414,6 +433,7 @@ app.listen(PORT, '0.0.0.0', async () => {
         await initializePermisosTable();
         await initializeResiduoTable();
         await initializeNotificacionTable();
+        await initializeUsuarioTable();
         break;
       } catch (error) {
         console.error(`❌ Error de conexión intento ${i + 1}:`, error.message);
