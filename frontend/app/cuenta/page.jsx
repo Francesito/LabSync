@@ -301,7 +301,6 @@ export default function Cuenta() {
                     {usuario?.nombre?.charAt(0)?.toUpperCase() || 'U'}
                   </div>
                   <h1 className="h2 mb-2 text-dark fw-bold">Mi Cuenta</h1>
-                  <p className="text-muted mb-0">Gestiona tu información personal</p>
                 </div>
               </div>
 
