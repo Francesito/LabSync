@@ -37,7 +37,7 @@ export default function Cuenta() {
   };
 
   return (
-    <div className="bg-white p-4 rounded shadow ml-64">
+    <div className="bg-white p-4 rounded shadow">
       <h1 className="text-3xl fw-bold mb-4 text-dark">Cuenta</h1>
 
       <div className="bg-light p-4 rounded shadow mb-4">
