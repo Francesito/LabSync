@@ -132,8 +132,12 @@ export function AuthProvider({ children }) {
           }
 
           // Obtener el nombre del grupo desde el backend si es alumno
-         let grupo = 'No asignado';
-          if (decoded.rol_id === 1) {
+                 let grupo = 'No asignado';
+          const isAlumno =
+            decoded.rol_id === 1 ||
+            decoded.rol_id === '1' ||
+            decoded.rol === 'alumno';
+          if (isAlumno) {
             try {
               const response = await axios.get(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/solicitudes/grupo`,
