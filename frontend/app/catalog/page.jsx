@@ -103,6 +103,17 @@ export default function Catalog() {
     const day = new Date(dateStr).getDay();
     return day === 0 || day === 6;
   };
+
+    const adjustToWeekday = (dateStr) => {
+    const d = new Date(dateStr);
+    const day = d.getDay();
+    if (day === 6) {
+      d.setDate(d.getDate() + 2);
+    } else if (day === 0) {
+      d.setDate(d.getDate() + 1);
+    }
+    return getFormattedDate(d);
+  };
   
   const computeMinPickupDate = () => {
     const now = new Date();
@@ -1399,15 +1410,17 @@ const pickupEnd = computeWeekEnd(addDays(minDate, 7));
                   min={minPickupDate}
                   max={maxPickupDate}
                   value={pickupDate}
-                 onChange={(e) => {
-                      let v = e.target.value;
-                      if (v && isWeekend(v)) return;
-                      if (v && v > maxPickupDate) v = maxPickupDate;
-                      setPickupDate(v);
-                      if (returnDate && v > returnDate) {
-                        setReturnDate('');
-                      }
-                    }}
+                  onChange={(e) => {
+                    let v = e.target.value;
+                    if (v) {
+                      if (isWeekend(v)) v = adjustToWeekday(v);
+                      if (v > maxPickupDate) v = maxPickupDate;
+                    }
+                    setPickupDate(v);
+                    if (returnDate && v > returnDate) {
+                      setReturnDate('');
+                    }
+                  }}
                 />
                 <small className="text-muted">
                   Debes solicitar con al menos 24 horas de anticipación. Solicitudes después de las 9 PM se procesarán un día hábil adicional.
@@ -1418,15 +1431,15 @@ const pickupEnd = computeWeekEnd(addDays(minDate, 7));
                 <input
                   type="date"
                   className="form-control"
-                   min={pickupDate || minPickupDate}
-                    max={maxReturnDate}
-                    value={returnDate}
-                    onChange={(e) => {
-                      let v = e.target.value;
-                      if (v && isWeekend(v)) return;
-                      if (!v || v <= maxReturnDate) setReturnDate(v);
-                    }}
-                  />
+                  min={pickupDate || minPickupDate}
+                  max={maxReturnDate}
+                  value={returnDate}
+                  onChange={(e) => {
+                    let v = e.target.value;
+                    if (v && isWeekend(v)) v = adjustToWeekday(v);
+                    if (!v || v <= maxReturnDate) setReturnDate(v);
+                  }}
+                />
               </div>
             </div>
             <div className="modal-footer-custom">
