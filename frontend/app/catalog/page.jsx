@@ -39,6 +39,7 @@ export default function Catalog() {
   const [returnDate, setReturnDate] = useState('');
   const [minPickupDate, setMinPickupDate] = useState('');
   const [maxPickupDate, setMaxPickupDate] = useState('');
+   const [maxReturnDate, setMaxReturnDate] = useState('');
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
     const [massAdjustments, setMassAdjustments] = useState({});
@@ -92,6 +93,17 @@ export default function Catalog() {
 
     const getFormattedDate = (d) => d.toISOString().split('T')[0];
 
+    const addDays = (date, days) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+  };
+
+  const isWeekend = (dateStr) => {
+    const day = new Date(dateStr).getDay();
+    return day === 0 || day === 6;
+  };
+  
   const computeMinPickupDate = () => {
     const now = new Date();
     let d = new Date(now);
@@ -122,8 +134,10 @@ export default function Catalog() {
   useEffect(() => {
    const minDate = computeMinPickupDate();
     setMinPickupDate(getFormattedDate(minDate));
-    const weekEnd = computeWeekEnd(minDate);
-    setMaxPickupDate(getFormattedDate(weekEnd));
+const pickupEnd = computeWeekEnd(addDays(minDate, 7));
+    setMaxPickupDate(getFormattedDate(pickupEnd));
+    const returnEnd = computeWeekEnd(addDays(minDate, 14));
+    setMaxReturnDate(getFormattedDate(returnEnd));
   }, []);
 
   // Cargar permisos del usuario
@@ -1385,14 +1399,15 @@ export default function Catalog() {
                   min={minPickupDate}
                   max={maxPickupDate}
                   value={pickupDate}
-                  onChange={(e) => {
-                   let v = e.target.value;
-                    if (v && v > maxPickupDate) v = maxPickupDate;
-                    setPickupDate(v);
-                    if (returnDate && v > returnDate) {
-                      setReturnDate('');
-                    }
-                  }}
+                 onChange={(e) => {
+                      let v = e.target.value;
+                      if (v && isWeekend(v)) return;
+                      if (v && v > maxPickupDate) v = maxPickupDate;
+                      setPickupDate(v);
+                      if (returnDate && v > returnDate) {
+                        setReturnDate('');
+                      }
+                    }}
                 />
                 <small className="text-muted">
                   Debes solicitar con al menos 24 horas de anticipación. Solicitudes después de las 9 PM se procesarán un día hábil adicional.
@@ -1403,14 +1418,15 @@ export default function Catalog() {
                 <input
                   type="date"
                   className="form-control"
-                  min={pickupDate || minPickupDate}
-                  max={maxPickupDate}
-                  value={returnDate}
-                 onChange={(e) => {
-                    const v = e.target.value;
-                    if (!v || v <= maxPickupDate) setReturnDate(v);
-                  }}
-                />
+                   min={pickupDate || minPickupDate}
+                    max={maxReturnDate}
+                    value={returnDate}
+                    onChange={(e) => {
+                      let v = e.target.value;
+                      if (v && isWeekend(v)) return;
+                      if (!v || v <= maxReturnDate) setReturnDate(v);
+                    }}
+                  />
               </div>
             </div>
             <div className="modal-footer-custom">
