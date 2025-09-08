@@ -118,17 +118,6 @@ const handleNavClick = () => {
     visible: [1, 2, 3].includes(usuario.rol_id), // alumno, docente y almacén
       color: 'indigo',
     },
-     {
-      href: '/cuenta',
-      label: 'Cuenta',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A7 7 0 0112 15a7 7 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
-      visible: [1, 2, 3, 4].includes(usuario.rol_id),
-      color: 'indigo',
-    },
     {
       href: '/reportes',
       label: 'Reportes',
@@ -180,6 +169,17 @@ const handleNavClick = () => {
       ),
       visible: [1, 2, 3].includes(usuario.rol_id),
       color: 'blue',
+    },
+        {
+      href: '/cuenta',
+      label: 'Cuenta',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A7 7 0 0112 15a7 7 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
+      visible: [1, 2, 3, 4].includes(usuario.rol_id),
+      color: 'indigo',
     },
   ];
 
