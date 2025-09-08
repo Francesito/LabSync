@@ -437,15 +437,9 @@ export default function Cuenta() {
 
               {/* Danger Zone */}
               <div className="card border-danger mb-4">
-                <div className="card-header bg-danger bg-opacity-10 border-danger">
-                  <h3 className="h5 mb-0 text-danger fw-bold">
-                    <i className="bi bi-exclamation-triangle me-2"></i>
-                    Zona de peligro
-                  </h3>
-                </div>
                 <div className="card-body">
                   <p className="text-muted mb-3">
-                    Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, ten cuidado.
+                    Una vez que elimines tu cuenta, no hay vuelta atrás.
                   </p>
                   <button 
                     onClick={handleEliminar}
@@ -460,7 +454,7 @@ export default function Cuenta() {
                     ) : (
                       <>
                         <i className="bi bi-trash me-1"></i>
-                        Eliminar cuenta permanentemente
+                        Eliminar cuenta 
                       </>
                     )}
                   </button>
