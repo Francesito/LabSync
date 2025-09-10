@@ -1484,7 +1484,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
                 </small>
               </div>
               <div className="mt-3">
-                <label className="form-label">Fecha de entrega *</label>
+                <label className="form-label">Fecha de devolucion *</label>
                 <input
                   type="date"
                   className="form-control"
