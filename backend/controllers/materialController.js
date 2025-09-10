@@ -59,6 +59,8 @@ const SELECT_SOLICITUDES_CON_NOMBRE = `
     s.estado,
     s.nombre_alumno,
     s.profesor,
+      s.materia,
+    s.materia_otro,
     s.folio,
     si.id           AS item_id,
     si.material_id,
@@ -427,7 +429,9 @@ const crearSolicitudes = async (req, res) => {
     fecha_recoleccion,
     fecha_devolucion,
     aprobar_automatico,
-    docente_id
+    docente_id,
+    materia,
+    materia_otro
   } = req.body;
 
   if (!token) return res.status(401).json({ error: 'Token requerido' });
@@ -437,7 +441,10 @@ const crearSolicitudes = async (req, res) => {
   if (!fecha_recoleccion || !fecha_devolucion) {
     return res.status(400).json({ error: 'Fechas de recolección y entrega requeridas' });
   }
-
+  if (!materia) {
+    return res.status(400).json({ error: 'Materia requerida' });
+  }
+  
   try {
     const { id: usuario_id, rol_id } = jwt.verify(token, process.env.JWT_SECRET);
     if (![1, 2].includes(rol_id)) {
@@ -488,8 +495,8 @@ const crearSolicitudes = async (req, res) => {
 
     const [result] = await pool.query(
       `INSERT INTO Solicitud
-   (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, folio, grupo_id, fecha_recoleccion, fecha_devolucion)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, folio, grupo_id, fecha_recoleccion, fecha_devolucion)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         usuario_id,
         fecha_solicitud,
@@ -498,6 +505,8 @@ const crearSolicitudes = async (req, res) => {
         docente_seleccionado_id,
         nombre_alumno,
         profesor,
+         materia,
+        materia === 'Otras' ? materia_otro : null,
         folio,
         grupo_id,
         fecha_recoleccion,
@@ -559,9 +568,19 @@ const crearSolicitudes = async (req, res) => {
 
 const crearSolicitudConAdeudo = async (req, res) => {
   logRequest('crearSolicitudConAdeudo');
-  const { usuario_id, material_id, tipo, fecha_solicitud, motivo, monto_adeudo, docente_id } = req.body;
+ const {
+    usuario_id,
+    material_id,
+    tipo,
+    fecha_solicitud,
+    motivo,
+    monto_adeudo,
+    docente_id,
+    materia,
+    materia_otro
+  } = req.body;
 
-  if (!usuario_id || !material_id || !tipo || !fecha_solicitud || !motivo || !monto_adeudo) {
+   if (!usuario_id || !material_id || !tipo || !fecha_solicitud || !motivo || !monto_adeudo || !materia) {
     return res.status(400).json({ error: 'Faltan datos obligatorios para la solicitud con adeudo' });
   }
 
@@ -607,10 +626,24 @@ const crearSolicitudConAdeudo = async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO Solicitud 
-        (usuario_id, material_id, tipo, cantidad, fecha_solicitud, motivo, monto_adeudo, estado, docente_id, nombre_alumno, profesor, grupo_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente', ?, ?, ?, ?)`,
-      [usuario_id, material_id, tipo, 1, fecha_solicitud, motivo, monto_adeudo, docente_seleccionado_id, user[0].nombre, profesor, grupo_id]
+      `INSERT INTO Solicitud
+        (usuario_id, material_id, tipo, cantidad, fecha_solicitud, motivo, monto_adeudo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, grupo_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente', ?, ?, ?, ?, ?, ?)`,
+      [
+        usuario_id,
+        material_id,
+        tipo,
+        1,
+        fecha_solicitud,
+        motivo,
+        monto_adeudo,
+        docente_seleccionado_id,
+        user[0].nombre,
+        profesor,
+        materia,
+        materia === 'Otras' ? materia_otro : null,
+        grupo_id
+      ]
     );
 
     res.status(201).json({ 
@@ -2262,11 +2295,11 @@ const getUsuariosPrestamo = async (req, res) => {
 // Registrar préstamo inmediato para alumnos o docentes
 const prestamoInmediato = async (req, res) => {
   logRequest('prestamoInmediato');
-const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion } = req.body;
+const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion, materia, materia_otro } = req.body;
 
   const fechaRec = fecha_recoleccion || new Date().toISOString().split('T')[0];
 
-  if (!usuario_id || !fecha_devolucion || !Array.isArray(items) || items.length === 0) {
+  if (!usuario_id || !fecha_devolucion || !Array.isArray(items) || items.length === 0 || !materia) {
     return res.status(400).json({ error: 'Datos incompletos para registrar préstamo' });
   }
 
@@ -2302,14 +2335,16 @@ const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion } = r
 
       const [solRes] = await connection.query(
         `INSERT INTO Solicitud
-           (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, folio, grupo_id, fecha_recoleccion, fecha_devolucion)
-         VALUES (?, NOW(), ?, 'pendiente', ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'))`,
+         (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, folio, grupo_id, fecha_recoleccion, fecha_devolucion)
+         VALUES (?, NOW(), ?, 'pendiente', ?, ?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'))`,
         [
           usuario_id,
           'Prestamo inmediato',
           docente_id,
           usuarioInfo.nombre,
           docenteSel.nombre,
+            materia,
+          materia === 'Otras' ? materia_otro : null,
           folio,
           usuarioInfo.grupo_id,
           fechaRec,
@@ -2341,14 +2376,16 @@ const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion } = r
 
       const [solicitudResult] = await connection.query(
         `INSERT INTO Solicitud
-           (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, folio, grupo_id, fecha_recoleccion, fecha_devolucion, fecha_entrega)
-     VALUES (?, NOW(), ?, 'entregado', ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'), NOW())`,
+           (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, folio, grupo_id, fecha_recoleccion, fecha_devolucion, fecha_entrega)
+     VALUES (?, NOW(), ?, 'entregado', ?, ?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'), NOW())`,
         [
           usuario_id,
           'Prestamo inmediato',
           docenteId,
           null,
           profesorNombre,
+            materia,
+          materia === 'Otras' ? materia_otro : null,
           folio,
           usuarioInfo.grupo_id,
            fechaRec,
