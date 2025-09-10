@@ -39,7 +39,9 @@ export default function Catalog() {
   const [returnDate, setReturnDate] = useState('');
   const [minPickupDate, setMinPickupDate] = useState('');
   const [maxPickupDate, setMaxPickupDate] = useState('');
-   const [maxReturnDate, setMaxReturnDate] = useState('');
+  const [maxReturnDate, setMaxReturnDate] = useState('');
+  const [materia, setMateria] = useState('');
+  const [materiaOtro, setMateriaOtro] = useState('');
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
     const [massAdjustments, setMassAdjustments] = useState({});
@@ -71,6 +73,24 @@ export default function Catalog() {
   
   const LOW_STOCK_THRESHOLD = 50;
   const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'tu-cloud-name';
+  const MATERIAS = [
+    'Quimica Basica',
+    'Quimica Inorganica',
+    'Quimica Organica',
+    'Quimica Analitica',
+    'Cinetica Quimica',
+    'Reactores quimicos',
+    'Quimica Sustentable',
+    'Sistemas sostenibles',
+    'Quimica',
+    'Bloquimica',
+    'Microbiologia',
+    'Farmacologia',
+    'farmaceutica',
+    'Quimica organica farmaceutica',
+    'Toxicologia',
+    'Otras'
+  ];
 
     useEffect(() => {
     const checkScreen = () => {
@@ -650,6 +670,8 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
          fecha_solicitud: toLocalDateStr(new Date()),
           fecha_recoleccion: pickupDate,
           fecha_devolucion: returnDate,
+          materia,
+          materia_otro: materia === 'Otras' ? materiaOtro : null,
           aprobar_automatico: userPermissions.rol === 'docente',
           docente_id: docenteIdToUse,
           nombre_alumno: userPermissions.rol === 'alumno' ? formatName(usuario.nombre) : null,
@@ -659,6 +681,8 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       setSelectedCart([]);
          setPickupDate('');
       setReturnDate('');
+      setMateria('');
+      setMateriaOtro('');
       setShowRequestModal(false);
       setSelectedDocenteId(
         userPermissions.rol === 'docente' ? usuario.id.toString() : ''
@@ -1403,6 +1427,36 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
               {userPermissions.rol !== 'docente' && (
                 <div className="security-alert mt-4">
                   Esta solicitud será revisada por el docente seleccionado antes de ser aprobada.
+                </div>
+              )}
+                <div className="mt-4">
+                <label className="form-label">Materia *</label>
+                <select
+                  className="form-control"
+                  value={materia}
+                  onChange={(e) => setMateria(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>
+                    -- Selecciona la materia --
+                  </option>
+                  {MATERIAS.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {materia === 'Otras' && (
+                <div className="mt-3">
+                  <label className="form-label">Especifica la materia *</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={materiaOtro}
+                    onChange={(e) => setMateriaOtro(e.target.value)}
+                    required
+                  />
                 </div>
               )}
               <div className="mt-4">
