@@ -117,6 +117,8 @@ const obtenerTodasSolicitudes = async (req, res) => {
         s.usuario_id,
         s.nombre_alumno,
         s.profesor,
+         s.materia,
+        s.materia_otro,
         s.fecha_solicitud,
         s.fecha_recoleccion,
         s.estado,
@@ -256,6 +258,8 @@ const obtenerSolicitudes = async (req, res) => {
         s.usuario_id,
         s.nombre_alumno,
         s.profesor,
+          s.materia,
+        s.materia_otro,
         s.fecha_solicitud,
         s.fecha_recoleccion,
         s.estado,
@@ -415,6 +419,8 @@ const obtenerDetalleSolicitud = async (req, res) => {
         s.usuario_id,
         s.nombre_alumno,
         s.profesor,
+         s.materia,
+        s.materia_otro,
         s.fecha_solicitud,
         s.fecha_recoleccion,
         s.estado,
@@ -1455,9 +1461,17 @@ const obtenerSolicitudesPorRangoFechas = async (req, res) => {
 
 // Crear solicitud con adeudo
 const crearSolicitudConAdeudo = async (req, res) => {
-  const { usuario_id, material_id, fecha_solicitud, motivo, monto_adeudo } = req.body;
+const {
+    usuario_id,
+    material_id,
+    fecha_solicitud,
+    motivo,
+    monto_adeudo,
+    materia,
+    materia_otro
+  } = req.body;
 
-  if (!usuario_id || !material_id || !fecha_solicitud || !motivo || !monto_adeudo) {
+  if (!usuario_id || !material_id || !fecha_solicitud || !motivo || !monto_adeudo || !materia) {
     return res.status(400).json({ error: 'Faltan datos para solicitud con adeudo' });
   }
 
@@ -1472,10 +1486,18 @@ const crearSolicitudConAdeudo = async (req, res) => {
     }
 
     await pool.query(
-      `INSERT INTO Solicitud 
-        (usuario_id, material_id, fecha_solicitud, estado, motivo) 
-        VALUES (?, ?, ?, ?, ?)`,
-      [usuario_id, material_id, fecha_solicitud, 'pendiente', motivo]
+      `INSERT INTO Solicitud
+        (usuario_id, material_id, fecha_solicitud, estado, motivo, materia, materia_otro)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        usuario_id,
+        material_id,
+        fecha_solicitud,
+        'pendiente',
+        motivo,
+        materia,
+        materia === 'Otras' ? materia_otro : null
+      ]
     );
 
     await pool.query(
