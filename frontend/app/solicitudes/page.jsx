@@ -846,6 +846,10 @@ const descargarPDF = async (vale) => {
     // Sección inferior
     const afterTableY = doc.lastAutoTable.finalY + 4;
     const profesor = vale.profesor || '';
+    const materiaVal =
+      vale.materia === 'Otras'
+        ? vale.materia_otro || ''
+        : vale.materia || '';
 
     doc.setFontSize(10);
     doc.setTextColor(...primary);
@@ -864,12 +868,18 @@ const descargarPDF = async (vale) => {
     let noteY = afterTableY;
 
     if (!vale.isDocenteRequest) {
-      const profesorY = afterTableY + 6;
+    const infoY = afterTableY + 6;
       doc.setFont('helvetica', 'bold');
-      doc.text('Profesor:', marginLeft, profesorY);
+    doc.text('Profesor:', marginLeft, infoY);
       doc.setFont('helvetica', 'normal');
-      doc.text(profesor, marginLeft + 25, profesorY);
-      noteY = profesorY;
+      doc.text(profesor, marginLeft + 25, infoY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Materia:', pageWidth / 2, infoY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(materiaVal, pageWidth / 2 + 25, infoY);
+
+      noteY = infoY;
     }
 
     // Nota
