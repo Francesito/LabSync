@@ -337,7 +337,7 @@ export default function Cuenta() {
                       </div>
                     </div>
                     
-                    {usuario?.rol_id === 1 && (
+                   {Number(usuario?.rol_id) === 1 && (
                       <div className="col-md-6">
                         <div className="info-item">
                           <div className="d-flex align-items-center justify-content-between">
