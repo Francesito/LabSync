@@ -501,6 +501,8 @@ export default function SolicitudesPage() {
            folio: item.folio || '',
           nombre_alumno: item.nombre_alumno || '',
           profesor: item.profesor || '',
+            materia: item.materia || '',
+          materia_otro: item.materia_otro || '',
           fecha_solicitud: item.fecha_solicitud,
           fecha_recoleccion: item.fecha_recoleccion,
            fecha_devolucion: item.fecha_devolucion,
