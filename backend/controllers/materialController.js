@@ -61,6 +61,7 @@ const SELECT_SOLICITUDES_CON_NOMBRE = `
     s.profesor,
       s.materia,
     s.materia_otro,
+     s.riesgo,
     s.folio,
     si.id           AS item_id,
     si.material_id,
@@ -431,7 +432,8 @@ const crearSolicitudes = async (req, res) => {
     aprobar_automatico,
     docente_id,
     materia,
-    materia_otro
+   materia_otro,
+    riesgo
   } = req.body;
 
   if (!token) return res.status(401).json({ error: 'Token requerido' });
@@ -443,6 +445,9 @@ const crearSolicitudes = async (req, res) => {
   }
   if (!materia) {
     return res.status(400).json({ error: 'Materia requerida' });
+  }
+   if (!riesgo) {
+    return res.status(400).json({ error: 'Riesgo requerido' });
   }
   
   try {
@@ -495,8 +500,8 @@ const crearSolicitudes = async (req, res) => {
 
     const [result] = await pool.query(
       `INSERT INTO Solicitud
-    (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, folio, grupo_id, fecha_recoleccion, fecha_devolucion)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, folio, grupo_id, fecha_recoleccion, fecha_devolucion, riesgo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         usuario_id,
         fecha_solicitud,
@@ -510,7 +515,8 @@ const crearSolicitudes = async (req, res) => {
         folio,
         grupo_id,
         fecha_recoleccion,
-        fecha_devolucion
+         fecha_devolucion,
+        riesgo
       ]
     );
     const solicitudId = result.insertId;
@@ -577,7 +583,8 @@ const crearSolicitudConAdeudo = async (req, res) => {
     monto_adeudo,
     docente_id,
     materia,
-    materia_otro
+    materia_otro,
+    riesgo
   } = req.body;
 
    if (!usuario_id || !material_id || !tipo || !fecha_solicitud || !motivo || !monto_adeudo || !materia) {
@@ -627,8 +634,8 @@ const crearSolicitudConAdeudo = async (req, res) => {
 
     const [result] = await pool.query(
       `INSERT INTO Solicitud
-        (usuario_id, material_id, tipo, cantidad, fecha_solicitud, motivo, monto_adeudo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, grupo_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente', ?, ?, ?, ?, ?, ?)`,
+         (usuario_id, material_id, tipo, cantidad, fecha_solicitud, motivo, monto_adeudo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, grupo_id, riesgo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente', ?, ?, ?, ?, ?, ?, ?)`,
       [
         usuario_id,
         material_id,
@@ -642,7 +649,8 @@ const crearSolicitudConAdeudo = async (req, res) => {
         profesor,
         materia,
         materia === 'Otras' ? materia_otro : null,
-        grupo_id
+        grupo_id,
+        riesgo
       ]
     );
 
@@ -2295,7 +2303,7 @@ const getUsuariosPrestamo = async (req, res) => {
 // Registrar préstamo inmediato para alumnos o docentes
 const prestamoInmediato = async (req, res) => {
   logRequest('prestamoInmediato');
-const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion, materia, materia_otro } = req.body;
+const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion, materia, materia_otro, riesgo = 'bajo' } = req.body;
 
   const fechaRec = fecha_recoleccion || new Date().toISOString().split('T')[0];
 
@@ -2335,8 +2343,8 @@ const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion, mate
 
       const [solRes] = await connection.query(
         `INSERT INTO Solicitud
-         (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, folio, grupo_id, fecha_recoleccion, fecha_devolucion)
-         VALUES (?, NOW(), ?, 'pendiente', ?, ?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'))`,
+      (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, folio, grupo_id, fecha_recoleccion, fecha_devolucion, riesgo)
+         VALUES (?, NOW(), ?, 'pendiente', ?, ?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'), ?)`,
         [
           usuario_id,
           'Prestamo inmediato',
@@ -2348,7 +2356,8 @@ const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion, mate
           folio,
           usuarioInfo.grupo_id,
           fechaRec,
-          fecha_devolucion
+          fecha_devolucion,
+          riesgo
         ]
       );
       const solicitudId = solRes.insertId;
@@ -2376,8 +2385,8 @@ const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion, mate
 
       const [solicitudResult] = await connection.query(
         `INSERT INTO Solicitud
-           (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, folio, grupo_id, fecha_recoleccion, fecha_devolucion, fecha_entrega)
-     VALUES (?, NOW(), ?, 'entregado', ?, ?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'), NOW())`,
+            (usuario_id, fecha_solicitud, motivo, estado, docente_id, nombre_alumno, profesor, materia, materia_otro, folio, grupo_id, fecha_recoleccion, fecha_devolucion, fecha_entrega, riesgo)
+     VALUES (?, NOW(), ?, 'entregado', ?, ?, ?, ?, ?, ?, ?, STR_TO_DATE(?, '%Y-%m-%d'), STR_TO_DATE(?, '%Y-%m-%d'), NOW(), ?)`,
         [
           usuario_id,
           'Prestamo inmediato',
@@ -2388,8 +2397,9 @@ const { usuario_id, fecha_devolucion, items, docente_id, fecha_recoleccion, mate
           materia === 'Otras' ? materia_otro : null,
           folio,
           usuarioInfo.grupo_id,
-           fechaRec,
-          fecha_devolucion
+        fechaRec,
+          fecha_devolucion,
+          riesgo
         ]
       );
      const solicitudId = solicitudResult.insertId;
