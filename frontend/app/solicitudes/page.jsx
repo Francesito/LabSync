@@ -712,7 +712,7 @@ const descargarPDF = async (vale) => {
           `${process.env.NEXT_PUBLIC_API_URL}/api/solicitudes/detalle/${vale.id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        vale = { ...vale, ...data };
+       vale = { ...vale, ...(Array.isArray(data) ? data[0] : data) };
       } catch (e) {
         console.error('Error al obtener detalle de solicitud:', e);
       }
