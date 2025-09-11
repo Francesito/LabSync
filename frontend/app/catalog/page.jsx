@@ -643,6 +643,16 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       return;
     }
 
+        if (!materia) {
+      setError('Debes seleccionar la materia.');
+      return;
+    }
+
+    if (materia === 'Otras' && !materiaOtro.trim()) {
+      setError('Debes especificar la materia.');
+      return;
+    }
+
     let docenteIdToUse = userPermissions.rol === 'docente' ? usuario.id : parseInt(selectedDocenteId);
     if (userPermissions.rol !== 'docente' && !docenteIdToUse) {
       setError('Debes seleccionar un docente encargado.');
@@ -1478,6 +1488,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
                       setReturnDate('');
                     }
                   }}
+                  required
                 />
                 <small className="text-muted">
                   Debes solicitar con al menos 24 horas de anticipación. Solicitudes después de las 9 PM se procesarán un día hábil adicional.
@@ -1496,6 +1507,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
                     if (v && isWeekend(v)) v = adjustToWeekday(v);
                     if (!v || v <= maxReturnDate) setReturnDate(v);
                   }}
+                    required
                 />
               </div>
             </div>
