@@ -37,6 +37,7 @@ export default function Catalog() {
   const [selectedDocenteId, setSelectedDocenteId] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
+   const [riesgo, setRiesgo] = useState('');
   const [minPickupDate, setMinPickupDate] = useState('');
   const [maxPickupDate, setMaxPickupDate] = useState('');
   const [maxReturnDate, setMaxReturnDate] = useState('');
@@ -653,6 +654,11 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       return;
     }
 
+       if (!riesgo) {
+      setError('Debes seleccionar el nivel de riesgo.');
+      return;
+    }
+    
     let docenteIdToUse = userPermissions.rol === 'docente' ? usuario.id : parseInt(selectedDocenteId);
     if (userPermissions.rol !== 'docente' && !docenteIdToUse) {
       setError('Debes seleccionar un docente encargado.');
@@ -682,6 +688,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
           fecha_devolucion: returnDate,
           materia,
           materia_otro: materia === 'Otras' ? materiaOtro : null,
+          riesgo,
           aprobar_automatico: userPermissions.rol === 'docente',
           docente_id: docenteIdToUse,
           nombre_alumno: userPermissions.rol === 'alumno' ? formatName(usuario.nombre) : null,
@@ -693,6 +700,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       setReturnDate('');
       setMateria('');
       setMateriaOtro('');
+      setRiesgo('');
       setShowRequestModal(false);
       setSelectedDocenteId(
         userPermissions.rol === 'docente' ? usuario.id.toString() : ''
@@ -1469,6 +1477,22 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
                   />
                 </div>
               )}
+               <div className="mt-4">
+                <label className="form-label">Nivel de riesgo *</label>
+                <select
+                  className="form-control"
+                  value={riesgo}
+                  onChange={(e) => setRiesgo(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>
+                    -- Selecciona el riesgo --
+                  </option>
+                  <option value="bajo">Bajo</option>
+                  <option value="medio">Medio</option>
+                  <option value="alto">Alto</option>
+                </select>
+              </div>
               <div className="mt-4">
                 <label className="form-label">Fecha de recolección *</label>
                 <input
