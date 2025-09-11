@@ -138,6 +138,12 @@ function TablaSolicitudes({
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
   const tomorrowStr = toLocalDateStr(tomorrow);
+  const [mostrarRecientes, setMostrarRecientes] = useState(true);
+  const sortedData = [...data].sort((a, b) =>
+    mostrarRecientes
+      ? new Date(b.fecha_solicitud) - new Date(a.fecha_solicitud)
+      : new Date(a.fecha_solicitud) - new Date(b.fecha_solicitud)
+  );
   
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 transition-all duration-300 hover:shadow-xl hover:border-blue-300">
@@ -146,9 +152,17 @@ function TablaSolicitudes({
           <span className="text-xl animate-spin-slow">📋</span>
           {titulo}
         </h2>
-        <span className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200">
-          {data?.length || 0} registros
-        </span>
+       <div className="flex items-center gap-2">
+          <button
+            onClick={() => setMostrarRecientes(!mostrarRecientes)}
+            className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200"
+          >
+            {mostrarRecientes ? 'Recientes' : 'Antiguas'}
+          </button>
+          <span className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200">
+            {sortedData?.length || 0} registros
+          </span>
+        </div>
       </div>
 
       <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200">
@@ -168,7 +182,7 @@ function TablaSolicitudes({
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               [...Array(5)].map((_, i) => <SkeletonRow key={i} colCount={colCount} />)
-            ) : data.length === 0 ? (
+            ) : sortedData.length === 0 ? (
               <tr>
                 <td className="px-6 py-10 text-center text-gray-500" colSpan={colCount}>
                   <div className="flex flex-col items-center gap-2">
@@ -178,7 +192,7 @@ function TablaSolicitudes({
                 </td>
               </tr>
             ) : (
-              data.map((s) => {
+              sortedData.map((s) => {
                 const createDateStr = (s.fecha_solicitud || '').split('T')[0];
                 const recoDateStr   = (s.fecha_recoleccion || '').split('T')[0];
                 const dateStr = usuario?.rol === 'almacen' ? recoDateStr : createDateStr;
@@ -506,6 +520,7 @@ export default function SolicitudesPage() {
           fecha_solicitud: item.fecha_solicitud,
           fecha_recoleccion: item.fecha_recoleccion,
            fecha_devolucion: item.fecha_devolucion,
+           riesgo: item.riesgo || '',
           estado: estadoUI,
           rawEstado,
           isDocenteRequest: isDocenteReq,
@@ -789,12 +804,12 @@ const descargarPDF = async (vale) => {
     const fechaReco = formatFechaStr(vale.fecha_recoleccion);
     const fechaDevolucion = formatFechaStr(vale.fecha_devolucion);
 
-     const headInfo = vale.isDocenteRequest
-      ? [['Nombre', 'Folio']]
-      : [['Nombre', 'Grupo', 'Folio']];
+    const headInfo = vale.isDocenteRequest
+      ? [['Nombre', 'Folio', 'Riesgo']]
+      : [['Nombre', 'Grupo', 'Folio', 'Riesgo']];
     const bodyInfo = vale.isDocenteRequest
-      ? [[nombre, vale.folio]]
-      : [[nombre, grupo, vale.folio]];
+    ? [[nombre, vale.folio, vale.riesgo || '']]
+      : [[nombre, grupo, vale.folio, vale.riesgo || '']];
     
     autoTable(doc, {
        startY: titleY + 5,
