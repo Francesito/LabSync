@@ -27,23 +27,23 @@ const EstadoBadge = ({ estado }) => {
   const safe = (estado || '').toLowerCase().trim();
   const { bg, text, icon } = config[safe] || config.pendiente;
   return (
-    <span className={`${bg} ${text} inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md`}>
-      <span className="animate-pulse">{icon}</span>
+    <span className={`${bg} ${text} inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md border border-transparent`}>
+      <span className="animate-pulse text-base">{icon}</span>
       <span className="capitalize">{estado}</span>
     </span>
   );
 };
 
 const SkeletonCard = () => (
-  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-5 h-[340px] animate-pulse flex flex-col">
-    <div className="h-5 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-28 mb-3" />
-    <div className="h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-36 mb-4" />
-    <div className="space-y-2 flex-1">
-      {Array.from({ length: 3 }).map((_, i) => (
+  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 h-[380px] animate-pulse flex flex-col overflow-hidden">
+    <div className="h-6 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-32 mb-4" />
+    <div className="h-5 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-40 mb-6" />
+    <div className="space-y-3 flex-1 mb-6">
+      {Array.from({ length: 4 }).map((_, i) => (
         <div key={i} className="h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-full" />
       ))}
     </div>
-    <div className="h-10 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded mt-4" />
+    <div className="h-10 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded" />
   </div>
 );
 
@@ -59,14 +59,14 @@ const Btn = ({ children, color, onClick, disabled, icon, className = '' }) => {
   return (
     <button
       type="button"
-      className={`${palette} text-white text-xs sm:text-sm rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 disabled:opacity-60 disabled:cursor-not-allowed 
+      className={`${palette} text-white text-sm rounded-lg px-4 py-2 disabled:opacity-60 disabled:cursor-not-allowed 
         transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-1
-        shadow-md hover:shadow-lg active:scale-95 flex items-center gap-1.5 ${className}`}
+        shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 min-w-[100px] ${className}`}
       onClick={onClick}
       disabled={disabled}
     >
-      {icon && <span className="text-sm">{icon}</span>}
-      {children}
+      {icon && <span className="text-base">{icon}</span>}
+      <span className="font-medium">{children}</span>
     </button>
   );
 };
@@ -132,37 +132,38 @@ function FichasSolicitudes({
   );
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 transition-all duration-300 hover:shadow-xl hover:border-blue-300">
-      <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-[#003579] to-[#0056b3] text-white flex items-center justify-between">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <span className="text-2xl animate-spin-slow">📋</span>
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden mb-10 transition-all duration-300 hover:shadow-2xl hover:border-blue-300">
+      <div className="px-8 py-5 border-b border-gray-200 bg-gradient-to-r from-[#003579] to-[#0056b3] text-white flex items-center justify-between">
+        <h2 className="text-2xl font-bold flex items-center gap-3">
+          <span className="text-3xl animate-spin-slow">📋</span>
           {titulo}
         </h2>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => setMostrarRecientes(!mostrarRecientes)}
-            className="text-sm bg-white/20 px-4 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200"
+            className="text-base bg-white/20 px-5 py-2 rounded-full backdrop-blur-sm hover:bg-white/30 transition-all duration-200 font-medium"
           >
-            {mostrarRecientes ? 'Recientes' : 'Antiguas'}
+            {mostrarRecientes ? 'Recientes primero' : 'Antiguas primero'}
           </button>
-          <span className="text-sm bg-white/20 px-4 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200">
-            {sortedData?.length || 0} registros
+          <span className="text-base bg-white/20 px-5 py-2 rounded-full backdrop-blur-sm hover:bg-white/30 transition-all duration-200 font-medium">
+            {sortedData?.length || 0} solicitudes
           </span>
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-8">
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
+            {[...Array(10)].map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : sortedData.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center text-gray-500">
-            <span className="text-5xl opacity-50 animate-bounce mb-4">📭</span>
-            <span className="text-lg font-medium">No hay solicitudes para mostrar.</span>
+          <div className="flex flex-col items-center justify-center py-20 text-center text-gray-500">
+            <span className="text-6xl opacity-50 animate-bounce mb-6">📭</span>
+            <span className="text-xl font-semibold">No hay solicitudes para mostrar en este momento.</span>
+            <p className="text-gray-400 mt-2">Intenta ajustar los filtros o revisa más tarde.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
             {sortedData.map((s) => {
               const createDateStr = (s.fecha_solicitud || '').split('T')[0];
               const recoDateStr   = (s.fecha_recoleccion || '').split('T')[0];
@@ -185,122 +186,129 @@ function FichasSolicitudes({
               return (
                 <div
                   key={s.id}
-                  className={`bg-white rounded-xl shadow-lg border border-gray-200 p-5 h-[340px] flex flex-col cursor-pointer hover:shadow-xl hover:border-blue-300 transition-all duration-300 overflow-hidden ${
-                    isOverdue ? 'border-2 border-red-500 bg-red-50' : ''
+                  className={`bg-white rounded-2xl shadow-lg border border-gray-200 p-6 h-[380px] flex flex-col cursor-pointer hover:shadow-2xl hover:border-blue-300 transition-all duration-300 overflow-hidden group ${
+                    isOverdue ? 'border-2 border-red-500 bg-red-50/50' : ''
                   }`}
                   onClick={() => onDetail && onDetail(s)}
                 >
                   {/* Header: Folio y Estado */}
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="font-bold text-lg text-gray-900 truncate">{s.folio}</div>
+                  <div className="flex justify-between items-start mb-4 pb-4 border-b border-gray-100">
+                    <div className="font-bold text-xl text-gray-900 truncate pr-2">{s.folio}</div>
                     <EstadoBadge estado={isOverdue ? 'cancelada' : s.estado} />
                   </div>
 
-                  {/* Información básica */}
-                  <div className="space-y-2 mb-4 flex-1 min-h-0">
+                  {/* Información básica - Más espaciada */}
+                  <div className="space-y-3 mb-6 flex-1 min-h-0">
                     {columnas.solicitante && (
-                      <div className="text-sm text-gray-700 flex items-center gap-2">
-                        <span className="text-gray-500 text-lg">👤</span>
-                        <span className="truncate font-medium">{s.isDocenteRequest ? s.profesor : s.nombre_alumno}</span>
+                      <div className="text-base text-gray-700 flex items-center gap-3 py-1">
+                        <span className="text-gray-400 text-xl min-w-[20px]">👤</span>
+                        <span className="truncate font-semibold text-gray-900 flex-1">{s.isDocenteRequest ? s.profesor : s.nombre_alumno}</span>
                       </div>
                     )}
                     {columnas.encargado && (
-                      <div className="text-sm text-gray-700 flex items-center gap-2">
-                        <span className="text-gray-500 text-lg">👨‍🏫</span>
-                        <span className="truncate">{s.profesor || 'N/A'}</span>
+                      <div className="text-base text-gray-700 flex items-center gap-3 py-1">
+                        <span className="text-gray-400 text-xl min-w-[20px]">👨‍🏫</span>
+                        <span className="truncate text-gray-900">{s.profesor || 'N/A'}</span>
                       </div>
                     )}
                     {columnas.grupo && (
-                      <div className="text-sm text-gray-700 flex items-center gap-2">
-                        <span className="text-gray-500 text-lg">👥</span>
-                        <span className="truncate">{s.grupo || 'N/A'}</span>
+                      <div className="text-base text-gray-700 flex items-center gap-3 py-1">
+                        <span className="text-gray-400 text-xl min-w-[20px]">👥</span>
+                        <span className="truncate text-gray-900">{s.grupo || 'N/A'}</span>
                       </div>
                     )}
                     {columnas.fecha && (
-                      <div className="text-sm text-gray-700 flex items-center gap-2">
-                        <span className="text-gray-500 text-lg">📅</span>
-                        <span className="font-medium">{dateStr ? formatFechaStr(dateStr) : 'N/A'}</span>
+                      <div className="text-base text-gray-700 flex items-center gap-3 py-1">
+                        <span className="text-gray-400 text-xl min-w-[20px]">📅</span>
+                        <span className="font-semibold text-gray-900">{dateStr ? formatFechaStr(dateStr) : 'N/A'}</span>
                       </div>
                     )}
                     {showMsg && recoDateStr === tomorrowStr && (
-                      <div className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-lg flex items-center gap-1">
-                        <span>🕒</span> Entrega para mañana
+                      <div className="text-sm text-orange-600 bg-orange-100 px-3 py-2 rounded-xl flex items-center gap-2 border-l-4 border-orange-400">
+                        <span className="text-lg">🕒</span> <span>Entrega programada para mañana</span>
                       </div>
                     )}
                   </div>
 
-                  {/* Materiales: Max 3 */}
-                  <div className="mb-4">
-                    <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1">
-                      <span className="text-lg">📦</span> Materiales
+                  {/* Materiales: Más espacio y mejor visibilidad */}
+                  <div className="mb-6 flex-1 min-h-0">
+                    <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-2 pb-2 border-b border-gray-100">
+                      <span className="text-xl">📦</span> Materiales solicitados
                     </div>
-                    <div className="space-y-2 max-h-24 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                      {visibleItems.map((m) => (
-                        <div key={m.item_id} className="text-xs flex items-center gap-2 p-1.5 bg-gray-50 rounded-lg">
-                          <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">
+                    <div className="space-y-2 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pr-1">
+                      {visibleItems.map((m, idx) => (
+                        <div key={m.item_id} className={`text-sm flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-all duration-200 ${idx < visibleItems.length - 1 ? 'mb-1' : ''}`}>
+                          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold min-w-[60px] text-center">
                             {m.cantidad} {getUnidad(m.tipo)}
                           </span>
-                          <span className="truncate flex-1">{m.nombre_material}</span>
+                          <span className="truncate flex-1 font-medium text-gray-900">{m.nombre_material}</span>
                         </div>
                       ))}
                       {hasMoreItems && (
-                        <div className="text-xs text-gray-500 italic text-center py-1">
-                          +{s.items.length - 3} más...
+                        <div className="text-sm text-gray-500 italic text-center py-2 bg-blue-50 rounded-xl border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors duration-200">
+                          +{s.items.length - 3} materiales adicionales...
+                        </div>
+                      )}
+                      {!hasMoreItems && visibleItems.length === 0 && (
+                        <div className="text-sm text-gray-400 italic text-center py-2">
+                          Sin materiales listados
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Acciones compactas */}
+                  {/* Acciones - Mejor distribución */}
                   {columnas.acciones && (
-                    <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-100">
-                      {usuario?.rol === 'docente' &&
-                        !s.isDocenteRequest &&
-                        (s.estado === 'aprobación pendiente') && (
-                          <>
-                            <Btn
-                              color="green"
-                              icon="✅"
-                              onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'aprobar', 'entrega pendiente'); }}
-                              disabled={procesandoId === s.id}
-                              className="flex-1 min-w-[80px]"
-                            >
-                              Aprobar
-                            </Btn>
-                            <Btn
-                              color="red"
-                              icon="❌"
-                              onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'rechazar', 'rechazada'); }}
-                              disabled={procesandoId === s.id}
-                              className="flex-1 min-w-[80px]"
-                            >
-                              Rechazar
-                            </Btn>
-                          </>
-                        )}
+                    <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
+                      <div className="flex flex-1 gap-2 min-w-0">
+                        {usuario?.rol === 'docente' &&
+                          !s.isDocenteRequest &&
+                          (s.estado === 'aprobación pendiente') && (
+                            <>
+                              <Btn
+                                color="green"
+                                icon="✅"
+                                onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'aprobar', 'entrega pendiente'); }}
+                                disabled={procesandoId === s.id}
+                                className="flex-1"
+                              >
+                                Aprobar
+                              </Btn>
+                              <Btn
+                                color="red"
+                                icon="❌"
+                                onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'rechazar', 'rechazada'); }}
+                                disabled={procesandoId === s.id}
+                                className="flex-1"
+                              >
+                                Rechazar
+                              </Btn>
+                            </>
+                          )}
+                      </div>
                       {canDeliver && (
-                        <div className="flex rounded-lg overflow-hidden shadow-sm flex-1 min-w-[80px]">
-                          <button
-                            type="button"
-                            className={`${
-                              isToday
-                                ? 'bg-green-500 hover:bg-green-600'
-                                : 'bg-orange-500 hover:bg-orange-600'
-                            } text-white px-2 py-1.5 rounded-l-lg flex items-center justify-center text-sm cursor-default`}
-                            title={isToday ? 'Entrega hoy' : 'Entrega futura'}
-                            disabled
-                          >
-                            🕒
-                          </button>
-                          <Btn
-                            color="blue"
-                            icon="🚚"
-                            onClick={(e) => { e.stopPropagation(); onEntregar ? onEntregar(s) : onAccion(s.id, 'entregar', 'entregada'); }}
-                            disabled={procesandoId === s.id}
-                            className="rounded-none rounded-r-lg flex-1 min-w-0"
-                          >
-                            Entregar
-                          </Btn>
+                        <div className="flex-1 min-w-[140px]">
+                          <div className="flex rounded-xl overflow-hidden shadow-sm">
+                            <div
+                              className={`${
+                                isToday
+                                  ? 'bg-green-500'
+                                  : 'bg-orange-500'
+                              } text-white px-3 py-2 rounded-l-xl flex items-center justify-center text-sm font-medium`}
+                              title={isToday ? 'Entrega hoy' : 'Entrega futura'}
+                            >
+                              <span className="text-lg">🕒</span>
+                            </div>
+                            <Btn
+                              color="blue"
+                              icon="🚚"
+                              onClick={(e) => { e.stopPropagation(); onEntregar ? onEntregar(s) : onAccion(s.id, 'entregar', 'entregada'); }}
+                              disabled={procesandoId === s.id}
+                              className="rounded-none rounded-r-xl flex-1 px-3"
+                            >
+                              Entregar
+                            </Btn>
+                          </div>
                         </div>
                       )}
                       {usuario?.rol === 'almacen' &&
@@ -310,7 +318,7 @@ function FichasSolicitudes({
                             icon="🗑️"
                             onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'cancelar', 'cancelado'); }}
                             disabled={procesandoId === s.id}
-                            className="flex-1 min-w-[80px]"
+                            className="flex-1 min-w-[100px]"
                           >
                             Cancelar
                           </Btn>
@@ -322,7 +330,7 @@ function FichasSolicitudes({
                             icon="🚫"
                             onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'cancelar', 'cancelado'); }}
                             disabled={procesandoId === s.id}
-                            className="flex-1 min-w-[80px]"
+                            className="flex-1 min-w-[100px]"
                           >
                             Cancelar
                           </Btn>
@@ -332,7 +340,7 @@ function FichasSolicitudes({
                         icon="📄"
                         onClick={(e) => { e.stopPropagation(); onPDF(s); }}
                         disabled={procesandoId === s.id}
-                        className="flex-1 min-w-[60px]"
+                        className="min-w-[80px]"
                       >
                         PDF
                       </Btn>
@@ -359,110 +367,116 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
   const canDeliver = usuario?.rol === 'almacen' && solicitud.estado === 'entrega pendiente' && (isToday || isFuture);
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn overflow-y-auto p-4 sm:p-6">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200 transform animate-slideUp border border-gray-200">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn overflow-y-auto p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200 transform animate-slideUp border border-gray-200 mx-auto my-4">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl animate-spin-slow">📋</span>
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-8 z-10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <span className="text-4xl animate-spin-slow">📋</span>
               <div>
-                <h3 className="text-2xl font-bold text-gray-800">Solicitud #{solicitud.folio}</h3>
-                <p className="text-sm text-gray-500">Detalles completos</p>
+                <h3 className="text-3xl font-bold text-gray-800">Detalle de Solicitud</h3>
+                <p className="text-lg text-gray-600">Folio: <span className="font-mono text-blue-600">{solicitud.folio}</span></p>
               </div>
             </div>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors duration-200 text-2xl">
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-all duration-200 text-3xl font-bold p-2 rounded-full hover:bg-gray-100">
               ×
             </button>
           </div>
-          <div className="mt-4 flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-4 flex-wrap">
             <EstadoBadge estado={isOverdue ? 'cancelada' : solicitud.estado} />
             {isOverdue && (
-              <div className="text-sm text-red-600 bg-red-100 px-4 py-1.5 rounded-lg border border-red-300 flex items-center gap-2">
-                <span>⚠️</span> Ha pasado la fecha de recolección
+              <div className="text-base text-red-600 bg-red-50 px-4 py-2 rounded-xl border border-red-200 flex items-center gap-2">
+                <span className="text-xl">⚠️</span> <span>Fecha de recolección vencida</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Contenido */}
-        <div className="p-6 space-y-8">
+        <div className="p-8 space-y-8">
           {/* Información básica */}
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <span className="text-xl">ℹ️</span> Información General
+          <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl p-6 border border-gray-200">
+            <h4 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3 pb-3 border-b border-gray-200">
+              <span className="text-2xl">ℹ️</span> Información General
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {solicitud.isDocenteRequest ? (
                 <>
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Solicitante</label>
-                    <p className="text-base font-semibold text-gray-900">{solicitud.profesor}</p>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Solicitante</label>
+                    <p className="text-lg font-bold text-gray-900">{solicitud.profesor}</p>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Riesgo</label>
-                    <p className="text-base text-gray-700">{solicitud.riesgo || 'N/A'}</p>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Nivel de Riesgo</label>
+                    <p className="text-lg text-gray-700">{solicitud.riesgo || 'N/A'}</p>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Solicitante</label>
-                    <p className="text-base font-semibold text-gray-900">{solicitud.nombre_alumno}</p>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Solicitante</label>
+                    <p className="text-lg font-bold text-gray-900">{solicitud.nombre_alumno}</p>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Grupo</label>
-                    <p className="text-base text-gray-700">{solicitud.grupo || 'N/A'}</p>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Grupo</label>
+                    <p className="text-lg text-gray-700">{solicitud.grupo || 'N/A'}</p>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Encargado</label>
-                    <p className="text-base text-gray-700">{solicitud.profesor || 'N/A'}</p>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Encargado</label>
+                    <p className="text-lg text-gray-700">{solicitud.profesor || 'N/A'}</p>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Materia</label>
-                    <p className="text-base text-gray-700">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Materia</label>
+                    <p className="text-lg text-gray-700">
                       {solicitud.materia === 'Otras' ? solicitud.materia_otro : solicitud.materia || 'N/A'}
                     </p>
                   </div>
                 </>
               )}
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha Solicitud</label>
-                <p className="text-base text-gray-700">{formatFechaStr(solicitud.fecha_solicitud)}</p>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Fecha de Solicitud</label>
+                <p className="text-lg text-gray-700">{formatFechaStr(solicitud.fecha_solicitud)}</p>
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha Recolección</label>
-                <p className="text-base font-semibold text-blue-600">{formatFechaStr(solicitud.fecha_recoleccion)}</p>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Fecha de Recolección</label>
+                <p className="text-lg font-bold text-blue-600">{formatFechaStr(solicitud.fecha_recoleccion)}</p>
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha Devolución</label>
-                <p className="text-base text-gray-700">{formatFechaStr(solicitud.fecha_devolucion)}</p>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Fecha de Devolución</label>
+                <p className="text-lg text-gray-700">{formatFechaStr(solicitud.fecha_devolucion)}</p>
               </div>
             </div>
           </div>
 
           {/* Materiales completos */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <span className="text-xl">📦</span> Materiales Solicitados
+          <div className="space-y-5">
+            <h4 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+              <span className="text-2xl">📦</span> Lista Completa de Materiales
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {solicitud.items.map((m) => (
-                <div key={m.item_id} className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-sm font-medium">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {solicitud.items.map((m, idx) => (
+                <div key={m.item_id} className={`p-5 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200 ${idx % 2 === 0 ? 'hover:border-blue-200' : 'hover:border-green-200'}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-1.5 rounded-full text-sm font-bold">
                       {m.cantidad} {getUnidad(m.tipo)}
                     </span>
                   </div>
-                  <p className="text-base font-medium text-gray-900">{m.nombre_material}</p>
+                  <p className="text-base font-semibold text-gray-900 leading-relaxed">{m.nombre_material}</p>
                 </div>
               ))}
+              {solicitud.items.length === 0 && (
+                <div className="col-span-full text-center py-12 text-gray-500">
+                  <span className="text-6xl mb-4">📦</span>
+                  <p className="text-xl">No hay materiales en esta solicitud</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Acciones en footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 flex flex-wrap items-center justify-end gap-3">
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 sm:p-8 flex flex-wrap items-center justify-end gap-4 bg-gradient-to-r from-gray-50 to-white">
           {usuario?.rol === 'docente' &&
             !solicitud.isDocenteRequest &&
             (solicitud.estado === 'aprobación pendiente') && (
@@ -472,43 +486,41 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
                   icon="✅"
                   onClick={() => onAccion(solicitud.id, 'aprobar', 'entrega pendiente')}
                   disabled={procesandoId === solicitud.id}
-                  className="min-w-[120px]"
+                  className="min-w-[140px] text-lg py-3"
                 >
-                  Aprobar
+                  Aprobar Solicitud
                 </Btn>
                 <Btn
                   color="red"
                   icon="❌"
                   onClick={() => onAccion(solicitud.id, 'rechazar', 'rechazada')}
                   disabled={procesandoId === solicitud.id}
-                  className="min-w-[120px]"
+                  className="min-w-[140px] text-lg py-3"
                 >
-                  Rechazar
+                  Rechazar Solicitud
                 </Btn>
               </>
             )}
           {canDeliver && (
-            <div className="flex rounded-lg overflow-hidden shadow-sm">
-              <button
-                type="button"
+            <div className="flex rounded-xl overflow-hidden shadow-lg min-w-[160px]">
+              <div
                 className={`${
                   isToday
                     ? 'bg-green-500 hover:bg-green-600'
                     : 'bg-orange-500 hover:bg-orange-600'
-                } text-white px-3 py-2 rounded-l-lg flex items-center justify-center cursor-default`}
-                title={isToday ? 'Entrega hoy' : 'Entrega futura'}
-                disabled
+                } text-white px-4 py-3 rounded-l-xl flex items-center justify-center font-medium transition-colors duration-200`}
+                title={isToday ? 'Entrega para hoy' : 'Entrega programada'}
               >
-                🕒
-              </button>
+                <span className="text-xl">🕒</span>
+              </div>
               <Btn
                 color="blue"
                 icon="🚚"
                 onClick={() => onEntregar ? onEntregar(solicitud) : onAccion(solicitud.id, 'entregar', 'entregada')}
                 disabled={procesandoId === solicitud.id}
-                className="rounded-none rounded-r-lg min-w-[120px]"
+                className="rounded-none rounded-r-xl min-w-[120px] px-4 text-lg py-3"
               >
-                Entregar
+                Confirmar Entrega
               </Btn>
             </div>
           )}
@@ -519,9 +531,9 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
                 icon="🗑️"
                 onClick={() => onAccion(solicitud.id, 'cancelar', 'cancelado')}
                 disabled={procesandoId === solicitud.id}
-                className="min-w-[120px]"
+                className="min-w-[140px] text-lg py-3"
               >
-                Cancelar
+                Cancelar Solicitud
               </Btn>
             )}
           {usuario?.rol === 'alumno' &&
@@ -531,9 +543,9 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
                 icon="🚫"
                 onClick={() => onAccion(solicitud.id, 'cancelar', 'cancelado')}
                 disabled={procesandoId === solicitud.id}
-                className="min-w-[120px]"
+                className="min-w-[140px] text-lg py-3"
               >
-                Cancelar
+                Cancelar Solicitud
               </Btn>
             )}
           <Btn
@@ -541,9 +553,9 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
             icon="📄"
             onClick={() => onPDF(solicitud)}
             disabled={procesandoId === solicitud.id}
-            className="min-w-[100px]"
+            className="min-w-[120px] text-lg py-3"
           >
-            PDF
+            Generar PDF
           </Btn>
         </div>
       </div>
@@ -672,11 +684,11 @@ export default function SolicitudesPage() {
         if (usuario.rol === 'almacen' && pendientes.length > 0) {
           let msg = '';
           if (hoyCount > 0 && mañanaCount > 0) {
-            msg = `Tienes ${pendientes.length} solicitudes: ${hoyCount} para entregar hoy y ${mañanaCount} para entregar mañana`;
+            msg = `Tienes ${pendientes.length} solicitudes pendientes: ${hoyCount} para hoy y ${mañanaCount} para mañana. ¡No olvides entregar!`;
           } else if (hoyCount > 0) {
-            msg = `Tienes ${hoyCount} solicitudes para entregar hoy`;
+            msg = `Tienes ${hoyCount} solicitudes para entregar hoy. ¡Priorízalas!`;
           } else if (mañanaCount > 0) {
-            msg = `Tienes ${mañanaCount} solicitudes para entregar mañana`;
+            msg = `Tienes ${mañanaCount} solicitudes programadas para mañana. Prepárate.`;
           }
           if (msg) {
             setNotice(msg);
@@ -686,14 +698,13 @@ export default function SolicitudesPage() {
         setError('');
       } catch (err) {
         console.error(err);
-        setError(err.response?.data?.error || 'Error al cargar solicitudes');
+        setError(err.response?.data?.error || 'Error al cargar las solicitudes. Intenta recargar la página.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario]);
 
   function agrupar(rows, rolVista, gruposMap) {
@@ -836,7 +847,7 @@ export default function SolicitudesPage() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || `Error al ${accion} la solicitud`);
+      setError(err.response?.data?.error || `Error al ${accion} la solicitud. Verifica tu conexión.`);
     } finally {
       setProcesando(null);
     }
@@ -1095,31 +1106,32 @@ export default function SolicitudesPage() {
       doc.save(nombrePDF);
     } catch (err) {
       console.error('Error al generar PDF:', err);
+      alert('Error al generar el PDF. Intenta nuevamente.');
     }
   };
 
   return (
-    <div className="p-6 sm:p-8 lg:p-10 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 min-h-screen font-sans">
+    <div className="min-h-screen font-sans antialiased bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-8">
       {error && (
-        <div className="mb-8 p-5 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl shadow-lg animate-shake hover:shadow-xl transition-shadow duration-300">
-          <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="mb-8 p-6 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-2xl shadow-xl animate-shake hover:shadow-2xl transition-all duration-300">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-14 h-14 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-lg text-red-800 flex items-center gap-2">
-                  <span>⚠️</span> Error
+                <h3 className="font-bold text-xl text-red-800 flex items-center gap-2">
+                  <span className="text-2xl">⚠️</span> Error en la carga
                 </h3>
-                <p className="text-red-700 text-base">{error}</p>
+                <p className="text-red-700 text-base mt-1">{error}</p>
               </div>
             </div>
             <button 
               onClick={() => setError('')} 
-              className="text-red-500 hover:text-red-700 transition-colors duration-200 hover:scale-110 transform"
+              className="text-red-500 hover:text-red-700 transition-all duration-200 hover:scale-110 transform p-2 rounded-full hover:bg-red-100"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -1132,7 +1144,7 @@ export default function SolicitudesPage() {
 
       {usuario?.rol === 'alumno' && (
         <FichasSolicitudes
-          titulo="Mis solicitudes"
+          titulo="Mis Solicitudes de Materiales"
           data={alumnoData}
           loading={loading}
           showSolicitante
@@ -1149,65 +1161,65 @@ export default function SolicitudesPage() {
 
       {usuario?.rol === 'docente' && (
         <>
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">🐺</span>
-            <h2 className="text-2xl font-bold text-gray-800">Solicitudes de Préstamo</h2>
+          <div className="flex items-center gap-4 mb-8">
+            <span className="text-3xl">🐺</span>
+            <h2 className="text-3xl font-bold text-gray-800">Panel de Solicitudes de Préstamo</h2>
           </div>
-          <div className="flex flex-wrap items-center gap-4 mb-8">
-            <div className="relative flex rounded-xl shadow-lg border border-gray-200 w-full sm:w-auto gap-3 bg-white p-1">
+          <div className="flex flex-col lg:flex-row items-center gap-6 mb-10">
+            <div className="relative flex rounded-2xl shadow-xl border border-gray-200 w-full lg:w-auto gap-4 bg-white p-2">
               <div className="relative flex-1">
                 {pendientesDocAlumnos > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2.5 py-1 shadow-lg animate-bounce z-20">
-                    {pendientesDocAlumnos}
+                  <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm rounded-full px-3 py-1.5 shadow-lg animate-bounce z-20 font-bold">
+                    {pendientesDocAlumnos} Pendientes
                   </span>
                 )}
                 <button
-                  className={`w-full px-5 py-3 transition-all duration-200 font-medium text-base flex items-center justify-center ${
+                  className={`w-full px-6 py-4 transition-all duration-200 font-semibold text-lg flex items-center justify-center ${
                     activeTab === 'alumnos'
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-xl transform scale-105'
                       : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                  } rounded-lg`}
+                  } rounded-xl`}
                   onClick={() => setActiveTab('alumnos')}
                 >
-                  <div className="flex items-center gap-2 justify-center">
-                    <span className="text-lg">🎓</span>
+                  <div className="flex items-center gap-3 justify-center">
+                    <span className="text-2xl">🎓</span>
                     <span className="whitespace-nowrap">Solicitudes de Alumnos</span>
                   </div>
                 </button>
               </div>
               <div className="relative flex-1">
                 <button
-                  className={`w-full px-5 py-3 transition-all duration-200 font-medium text-base flex items-center justify-center ${
+                  className={`w-full px-6 py-4 transition-all duration-200 font-semibold text-lg flex items-center justify-center ${
                     activeTab === 'mias'
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-xl transform scale-105'
                       : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                  } rounded-lg`}
+                  } rounded-xl`}
                   onClick={() => setActiveTab('mias')}
                 >
-                  <div className="flex items-center gap-2 justify-center">
-                    <span className="text-lg">👨‍🏫</span>
+                  <div className="flex items-center gap-3 justify-center">
+                    <span className="text-2xl">👨‍🏫</span>
                     <span className="whitespace-nowrap">Mis Solicitudes</span>
                   </div>
                 </button>
               </div>
             </div>
-            <div className="relative flex-1 w-full sm:w-80">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <span className="text-gray-400 text-lg animate-pulse">🔍</span>
+            <div className="relative flex-1 w-full lg:w-96">
+              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                <span className="text-gray-400 text-2xl animate-pulse">🔍</span>
               </div>
               <input
                 type="text"
-                placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
+                placeholder={activeTab === 'alumnos' ? 'Buscar por nombre del alumno, folio o grupo...' : 'Buscar por folio o nombre...'}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
+                className="w-full pl-16 pr-5 py-4 border border-gray-300 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white shadow-lg hover:shadow-xl"
               />
             </div>
           </div>
 
           {activeTab === 'alumnos' ? (
             <FichasSolicitudes
-              titulo="Solicitudes de alumnos para aprobar"
+              titulo="Solicitudes Pendientes de Aprobación"
               data={filteredDocAprobar}
               loading={loading}
               showSolicitante
@@ -1222,7 +1234,7 @@ export default function SolicitudesPage() {
             />
           ) : (
             <FichasSolicitudes
-              titulo="Mis solicitudes como docente"
+              titulo="Mis Solicitudes Personales"
               data={filteredDocMias}
               loading={loading}
               showSolicitante={false}
@@ -1241,69 +1253,69 @@ export default function SolicitudesPage() {
 
       {usuario?.rol === 'almacen' && (
         <>
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">🐺</span>
-            <h2 className="text-2xl font-bold text-gray-800">Solicitudes de Préstamo</h2>
+          <div className="flex items-center gap-4 mb-8">
+            <span className="text-3xl">🐺</span>
+            <h2 className="text-3xl font-bold text-gray-800">Centro de Entregas - Solicitudes</h2>
           </div>
-          <div className="flex flex-wrap items-center gap-4 mb-8">
-            <div className="relative flex rounded-xl shadow-lg border border-gray-200 w-full sm:w-auto gap-3 bg-white p-1">
+          <div className="flex flex-col lg:flex-row items-center gap-6 mb-10">
+            <div className="relative flex rounded-2xl shadow-xl border border-gray-200 w-full lg:w-auto gap-4 bg-white p-2">
               <div className="relative flex-1">
                 {pendientesAlmAlumnos > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2.5 py-1 shadow-lg animate-bounce z-20">
-                    {pendientesAlmAlumnos}
+                  <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm rounded-full px-3 py-1.5 shadow-lg animate-bounce z-20 font-bold">
+                    {pendientesAlmAlumnos} Pendientes
                   </span>
                 )}
                 <button
-                  className={`w-full px-5 py-3 transition-all duration-200 font-medium text-base flex items-center justify-center ${
+                  className={`w-full px-6 py-4 transition-all duration-200 font-semibold text-lg flex items-center justify-center ${
                     activeTab === 'alumnos'
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-xl transform scale-105'
                       : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                  } rounded-lg`}
+                  } rounded-xl`}
                   onClick={() => setActiveTab('alumnos')}
                 >
-                  <div className="flex items-center gap-2 justify-center">
-                    <span className="text-lg">🎓</span>
+                  <div className="flex items-center gap-3 justify-center">
+                    <span className="text-2xl">🎓</span>
                     <span className="whitespace-nowrap">Solicitudes de Alumnos</span>
                   </div>
                 </button>
               </div>
               <div className="relative flex-1">
                 {pendientesAlmDocentes > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2.5 py-1 shadow-lg animate-bounce z-20">
-                    {pendientesAlmDocentes}
+                  <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm rounded-full px-3 py-1.5 shadow-lg animate-bounce z-20 font-bold">
+                    {pendientesAlmDocentes} Pendientes
                   </span>
                 )}
                 <button
-                  className={`w-full px-5 py-3 transition-all duration-200 font-medium text-base flex items-center justify-center ${
+                  className={`w-full px-6 py-4 transition-all duration-200 font-semibold text-lg flex items-center justify-center ${
                     activeTab === 'docentes'
-                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-xl transform scale-105'
                       : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                  } rounded-lg`}
+                  } rounded-xl`}
                   onClick={() => setActiveTab('docentes')}
                 >
-                  <div className="flex items-center gap-2 justify-center">
-                    <span className="text-lg">👨‍🏫</span>
+                  <div className="flex items-center gap-3 justify-center">
+                    <span className="text-2xl">👨‍🏫</span>
                     <span className="whitespace-nowrap">Solicitudes de Docentes</span>
                   </div>
                 </button>
               </div>
             </div>
-            <div className="relative flex-1 w-full sm:w-80">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <span className="text-gray-400 text-lg animate-pulse">🔍</span>
+            <div className="relative flex-1 w-full lg:w-96">
+              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                <span className="text-gray-400 text-2xl animate-pulse">🔍</span>
               </div>
               <input
                 type="text"
                 placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
+                className="w-full pl-16 pr-5 py-4 border border-gray-300 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white shadow-lg hover:shadow-xl"
               />
             </div>
-            <div className="flex flex-wrap items-center gap-4 bg-gray-50 rounded-xl p-4 border border-gray-200 shadow-lg w-full sm:w-auto">
-              <label className="text-base font-medium text-gray-700 flex items-center gap-2">
-                <span className="text-lg">📅</span>
-                Filtrar por fecha:
+            <div className="flex flex-col sm:flex-row items-center gap-4 bg-white rounded-2xl p-5 border border-gray-200 shadow-xl w-full lg:w-auto">
+              <label className="text-lg font-semibold text-gray-700 flex items-center gap-3">
+                <span className="text-2xl">📅</span>
+                Filtrar por fecha de recolección:
               </label>
               <input
                 type="date"
@@ -1320,23 +1332,23 @@ export default function SolicitudesPage() {
                     setFilterDate(v);
                   }
                 }}
-                className="border border-gray-300 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 hover:shadow-sm flex-1"
+                className="border border-gray-300 rounded-xl px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 hover:shadow-sm flex-1"
               />
               {filterDate && (
                 <button
                   onClick={() => setFilterDate('')}
-                  className="text-base text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center gap-2"
+                  className="text-lg text-blue-600 hover:text-blue-800 hover:underline transition-all duration-200 flex items-center gap-2 font-medium"
                 >
-                  <span className="text-lg">✖️</span>
-                  Limpiar
+                  <span className="text-xl">✖️</span>
+                  Limpiar filtro
                 </button>
               )}
             </div>
             {notice && (
-              <div className="w-full sm:ml-auto">
-                <div className="px-5 py-3 text-base bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-lg animate-pulse hover:shadow-xl transition-shadow duration-200 flex items-center gap-3">
-                  <span className="text-lg">🔔</span>
-                  {notice}
+              <div className="w-full lg:ml-auto">
+                <div className="px-6 py-4 text-lg bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-2xl shadow-xl animate-pulse hover:shadow-2xl transition-shadow duration-200 flex items-center gap-3">
+                  <span className="text-2xl">🔔</span>
+                  <span className="font-semibold">{notice}</span>
                 </div>
               </div>
             )}
@@ -1344,7 +1356,7 @@ export default function SolicitudesPage() {
 
           {activeTab === 'alumnos' ? (
             <FichasSolicitudes
-              titulo="Solicitudes de alumnos"
+              titulo="Solicitudes de Alumnos Listas para Entrega"
               data={searchedAlmAlumnos}
               loading={loading}
               showSolicitante
@@ -1360,7 +1372,7 @@ export default function SolicitudesPage() {
             />
           ) : (
             <FichasSolicitudes
-              titulo="Solicitudes de docentes"
+              titulo="Solicitudes Directas de Docentes"
               data={searchedAlmDocentes}
               loading={loading}
               showSolicitante
@@ -1389,65 +1401,113 @@ export default function SolicitudesPage() {
       />
 
       {modalEntrega && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn overflow-y-auto">
-          <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl max-w-lg w-full mx-4 my-8 sm:my-0 transform animate-slideUp border border-gray-200 hover:shadow-3xl transition-shadow duration-300">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-3xl animate-spin-slow">🚚</span>
-              <h3 className="text-xl font-bold text-gray-800">Entregar materiales</h3>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn overflow-y-auto p-4">
+          <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 my-8 transform animate-slideUp border border-gray-200 hover:shadow-3xl transition-shadow duration-300">
+            <div className="flex items-center gap-4 mb-8">
+              <span className="text-4xl animate-spin-slow">🚚</span>
+              <h3 className="text-2xl font-bold text-gray-800">Confirmar Entrega de Materiales</h3>
             </div>
-            <div className="space-y-4 mb-6 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200">
+            <div className="space-y-4 mb-8 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200 pr-2">
               {modalEntrega.items.map(item => (
-                <label key={item.item_id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer shadow-sm hover:shadow-md">
+                <label key={item.item_id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md border border-gray-200">
                   <input
                     type="checkbox"
                     checked={selectedItems.includes(item.item_id)}
                     onChange={() => toggleItem(item.item_id)}
-                    className="w-6 h-6 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 hover:scale-110 transition-transform duration-200"
+                    className="w-6 h-6 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 hover:scale-110 transition-transform duration-200"
                   />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2.5 py-1 rounded-full text-sm font-medium shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-4">
+                      <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md">
                         {item.cantidad} {getUnidad(item.tipo)}
                       </span>
-                      <span className="font-medium text-gray-800 text-base hover:text-blue-600 transition-colors duration-200">{item.nombre_material}</span>
+                      <span className="font-semibold text-gray-800 text-lg truncate hover:text-blue-600 transition-colors duration-200">{item.nombre_material}</span>
                     </div>
                   </div>
                 </label>
               ))}
             </div>
-            <div className="flex justify-between mb-6">
+            <div className="flex justify-between items-center mb-8 py-4 border-t border-gray-200">
               <button 
                 onClick={seleccionarTodos} 
-                className="text-base text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 flex items-center gap-2 hover:underline"
+                className="text-lg text-blue-600 hover:text-blue-800 font-semibold transition-all duration-200 flex items-center gap-2 hover:underline"
               >
-                <span className="text-lg">✅</span>
-                Seleccionar todo
+                <span className="text-xl">✅</span>
+                Seleccionar todos los materiales
               </button>
-              <span className="text-base text-gray-500 hover:text-gray-700 transition-colors duration-200">
-                {selectedItems.length} de {modalEntrega.items.length} seleccionados
+              <span className="text-lg text-gray-600 font-semibold">
+                {selectedItems.length} / {modalEntrega.items.length} seleccionados
               </span>
             </div>
-            <div className="flex justify-end gap-4 flex-wrap">
+            <div className="flex justify-end gap-4">
               <button 
                 onClick={() => setModalEntrega(null)} 
-                className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium shadow-sm hover:shadow-md text-base"
+                className="px-8 py-3 text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300 transition-all duration-200 font-semibold shadow-md hover:shadow-lg text-lg"
               >
                 Cancelar
               </button>
               <button 
                 onClick={confirmarEntrega} 
                 disabled={selectedItems.length === 0}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105 transform text-base"
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-lg hover:scale-105 transform"
               >
-                <span className="text-lg">🚚</span>
-                Entregar ({selectedItems.length})
+                <span className="text-xl">🚚</span>
+                Confirmar Entrega ({selectedItems.length})
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <style jsx>{`
+      <style jsx global>{`
+        * {
+          box-sizing: border-box;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 3px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        @media (max-width: 640px) {
+          .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+          }
+        }
+        @media (min-width: 640px) {
+          .sm\\:grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        @media (min-width: 1024px) {
+          .lg\\:grid-cols-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+        @media (min-width: 1280px) {
+          .xl\\:grid-cols-4 {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+          }
+        }
+        @media (min-width: 1536px) {
+          .2xl\\:grid-cols-5 {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+          }
+        }
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -1455,7 +1515,7 @@ export default function SolicitudesPage() {
         @keyframes slideUp {
           from { 
             opacity: 0; 
-            transform: translateY(20px); 
+            transform: translateY(30px); 
           }
           to { 
             opacity: 1; 
@@ -1464,8 +1524,8 @@ export default function SolicitudesPage() {
         }
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
+          25% { transform: translateX(-6px); }
+          75% { transform: translateX(6px); }
         }
         @keyframes shimmer {
           0% { background-position: -200px 0; }
@@ -1476,13 +1536,13 @@ export default function SolicitudesPage() {
           to { transform: rotate(360deg); }
         }
         .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
+          animation: fadeIn 0.4s ease-out;
         }
         .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
+          animation: slideUp 0.4s ease-out;
         }
         .animate-shake {
-          animation: shake 0.5s ease-in-out;
+          animation: shake 0.6s ease-in-out;
         }
         .animate-shimmer {
           background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
@@ -1491,9 +1551,6 @@ export default function SolicitudesPage() {
         }
         .animate-spin-slow {
           animation: spin-slow 10s linear infinite;
-        }
-        .scrollbar-thin {
-          scrollbar-width: thin;
         }
       `}</style>
     </div>
