@@ -14,36 +14,36 @@ const encabezadoUT = '/universidad.jpg';
 const EstadoBadge = ({ estado }) => {
   const config = {
     'aprobación pendiente': { bg: 'bg-amber-100', text: 'text-amber-800', icon: '⏳' },
-    'aprobacion pendiente': { bg: 'bg-amber-100', text: 'text-amber-800', icon: '⏳' }, // fallback sin tilde
+    'aprobacion pendiente': { bg: 'bg-amber-100', text: 'text-amber-800', icon: '⏳' },
     'entrega pendiente':    { bg: 'bg-blue-100',  text: 'text-blue-800',  icon: '📦' },
     'entregada':            { bg: 'bg-green-100', text: 'text-green-800', icon: '✓'  },
     'rechazada':            { bg: 'bg-red-100',   text: 'text-red-800',   icon: '✗'  },
     'cancelado':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
     'cancelada':            { bg: 'bg-gray-100',  text: 'text-gray-800',  icon: '❌' },
     'eliminación automática por falta de recolección': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' },
-    'eliminacion automatica por falta de recoleccion': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' }, // fallback sin tildes
-    'pendiente':            { bg: 'bg-yellow-100',text: 'text-yellow-800',icon: '⏳' } // fallback
+    'eliminacion automatica por falta de recoleccion': { bg: 'bg-red-100', text: 'text-red-800', icon: '⚠️' },
+    'pendiente':            { bg: 'bg-yellow-100',text: 'text-yellow-800',icon: '⏳' }
   };
   const safe = (estado || '').toLowerCase().trim();
   const { bg, text, icon } = config[safe] || config.pendiente;
   return (
-    <span className={`${bg} ${text} inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md`}>
+    <span className={`${bg} ${text} inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md`}>
       <span className="animate-pulse">{icon}</span>
       <span className="capitalize">{estado}</span>
     </span>
   );
 };
 
-const SkeletonCard = ({ colCount }) => (
-  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 h-[300px] animate-pulse flex flex-col">
-    <div className="h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-24 mb-2" />
-    <div className="h-3 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-32 mb-4" />
+const SkeletonCard = () => (
+  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-5 h-[340px] animate-pulse flex flex-col">
+    <div className="h-5 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-28 mb-3" />
+    <div className="h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-36 mb-4" />
     <div className="space-y-2 flex-1">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="h-3 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-full" />
+        <div key={i} className="h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-full" />
       ))}
     </div>
-    <div className="h-8 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded mt-4" />
+    <div className="h-10 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded mt-4" />
   </div>
 );
 
@@ -59,13 +59,13 @@ const Btn = ({ children, color, onClick, disabled, icon, className = '' }) => {
   return (
     <button
       type="button"
-      className={`${palette} text-white text-xs sm:text-sm rounded-lg px-2 sm:px-3 py-1 sm:py-2 disabled:opacity-60 disabled:cursor-not-allowed 
+      className={`${palette} text-white text-xs sm:text-sm rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 disabled:opacity-60 disabled:cursor-not-allowed 
         transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-1
-           shadow-md hover:shadow-lg active:scale-95 flex items-center gap-1 ${className}`}
+        shadow-md hover:shadow-lg active:scale-95 flex items-center gap-1.5 ${className}`}
       onClick={onClick}
       disabled={disabled}
     >
-      {icon && <span className="text-xs sm:text-sm">{icon}</span>}
+      {icon && <span className="text-sm">{icon}</span>}
       {children}
     </button>
   );
@@ -85,7 +85,7 @@ function toLocalDateStr(date) {
 function formatFechaStr(fecha) {
   if (!fecha) return '';
   try {
-   const datePart = String(fecha).split('T')[0];
+    const datePart = String(fecha).split('T')[0];
     const [year, month, day] = datePart.split('-');
     return `${day}/${month}/${year}`;
   } catch (e) {
@@ -130,39 +130,39 @@ function FichasSolicitudes({
       ? new Date(b.fecha_solicitud) - new Date(a.fecha_solicitud)
       : new Date(a.fecha_solicitud) - new Date(b.fecha_solicitud)
   );
-  
+
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8 transition-all duration-300 hover:shadow-xl hover:border-blue-300">
       <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-[#003579] to-[#0056b3] text-white flex items-center justify-between">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <span className="text-xl animate-spin-slow">📋</span>
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          <span className="text-2xl animate-spin-slow">📋</span>
           {titulo}
         </h2>
-       <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setMostrarRecientes(!mostrarRecientes)}
-            className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200"
+            className="text-sm bg-white/20 px-4 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200"
           >
             {mostrarRecientes ? 'Recientes' : 'Antiguas'}
           </button>
-          <span className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200">
+          <span className="text-sm bg-white/20 px-4 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors duration-200">
             {sortedData?.length || 0} registros
           </span>
         </div>
       </div>
 
-      <div className="p-4 sm:p-6">
+      <div className="p-6">
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : sortedData.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
-            <span className="text-4xl opacity-50 animate-bounce mb-4">📭</span>
-            <span className="text-lg">No hay solicitudes para mostrar.</span>
+          <div className="flex flex-col items-center justify-center py-16 text-center text-gray-500">
+            <span className="text-5xl opacity-50 animate-bounce mb-4">📭</span>
+            <span className="text-lg font-medium">No hay solicitudes para mostrar.</span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedData.map((s) => {
               const createDateStr = (s.fecha_solicitud || '').split('T')[0];
               const recoDateStr   = (s.fecha_recoleccion || '').split('T')[0];
@@ -174,7 +174,7 @@ function FichasSolicitudes({
                 recoDateStr &&
                 recoDateStr > todayStr &&
                 recoDateStr !== todayStr;
-                const isToday = recoDateStr === todayStr;
+              const isToday = recoDateStr === todayStr;
               const isFuture = recoDateStr > todayStr;
               const canDeliver =
                 usuario?.rol === 'almacen' &&
@@ -185,7 +185,7 @@ function FichasSolicitudes({
               return (
                 <div
                   key={s.id}
-                  className={`bg-white rounded-xl shadow-lg border border-gray-200 p-4 h-[300px] flex flex-col cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden ${
+                  className={`bg-white rounded-xl shadow-lg border border-gray-200 p-5 h-[340px] flex flex-col cursor-pointer hover:shadow-xl hover:border-blue-300 transition-all duration-300 overflow-hidden ${
                     isOverdue ? 'border-2 border-red-500 bg-red-50' : ''
                   }`}
                   onClick={() => onDetail && onDetail(s)}
@@ -196,37 +196,48 @@ function FichasSolicitudes({
                     <EstadoBadge estado={isOverdue ? 'cancelada' : s.estado} />
                   </div>
 
-                  {/* Solicitante / Encargado / Grupo */}
-                  <div className="space-y-1 mb-3 flex-1 min-h-0">
+                  {/* Información básica */}
+                  <div className="space-y-2 mb-4 flex-1 min-h-0">
                     {columnas.solicitante && (
-                      <div className="text-sm text-gray-700 flex items-center gap-1">
-                        <span className="text-gray-500">👤</span>
-                        <span className="truncate">{s.isDocenteRequest ? s.profesor : s.nombre_alumno}</span>
+                      <div className="text-sm text-gray-700 flex items-center gap-2">
+                        <span className="text-gray-500 text-lg">👤</span>
+                        <span className="truncate font-medium">{s.isDocenteRequest ? s.profesor : s.nombre_alumno}</span>
                       </div>
                     )}
                     {columnas.encargado && (
-                      <div className="text-sm text-gray-700 flex items-center gap-1">
-                        <span className="text-gray-500">👨‍🏫</span>
-                        <span>{s.profesor || ''}</span>
+                      <div className="text-sm text-gray-700 flex items-center gap-2">
+                        <span className="text-gray-500 text-lg">👨‍🏫</span>
+                        <span className="truncate">{s.profesor || 'N/A'}</span>
                       </div>
                     )}
                     {columnas.grupo && (
-                      <div className="text-sm text-gray-700 flex items-center gap-1">
-                        <span className="text-gray-500">👥</span>
-                        <span>{s.grupo || ''}</span>
+                      <div className="text-sm text-gray-700 flex items-center gap-2">
+                        <span className="text-gray-500 text-lg">👥</span>
+                        <span className="truncate">{s.grupo || 'N/A'}</span>
+                      </div>
+                    )}
+                    {columnas.fecha && (
+                      <div className="text-sm text-gray-700 flex items-center gap-2">
+                        <span className="text-gray-500 text-lg">📅</span>
+                        <span className="font-medium">{dateStr ? formatFechaStr(dateStr) : 'N/A'}</span>
+                      </div>
+                    )}
+                    {showMsg && recoDateStr === tomorrowStr && (
+                      <div className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-lg flex items-center gap-1">
+                        <span>🕒</span> Entrega para mañana
                       </div>
                     )}
                   </div>
 
                   {/* Materiales: Max 3 */}
-                  <div className="mb-3 space-y-2">
-                    <div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1 flex items-center gap-1">
-                      <span>📦</span> Materiales
+                  <div className="mb-4">
+                    <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 flex items-center gap-1">
+                      <span className="text-lg">📦</span> Materiales
                     </div>
-                    <div className="space-y-1 max-h-20 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <div className="space-y-2 max-h-24 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                       {visibleItems.map((m) => (
-                        <div key={m.item_id} className="text-xs flex items-center gap-2 p-1 bg-gray-50 rounded">
-                          <span className="bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-xs font-medium">
+                        <div key={m.item_id} className="text-xs flex items-center gap-2 p-1.5 bg-gray-50 rounded-lg">
+                          <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">
                             {m.cantidad} {getUnidad(m.tipo)}
                           </span>
                           <span className="truncate flex-1">{m.nombre_material}</span>
@@ -240,18 +251,9 @@ function FichasSolicitudes({
                     </div>
                   </div>
 
-                  {/* Fecha */}
-                  {columnas.fecha && (
-                    <div className="text-sm text-gray-700 mb-3 flex items-center gap-1">
-                      <span className="text-gray-500">📅</span>
-                      <span>{dateStr ? formatFechaStr(dateStr) : ''}</span>
-                    </div>
-                  )}
-
                   {/* Acciones compactas */}
                   {columnas.acciones && (
-                    <div className="flex flex-wrap gap-1 pt-2 border-t border-gray-100">
-                      {/* Docente: aprobar / rechazar */}
+                    <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-100">
                       {usuario?.rol === 'docente' &&
                         !s.isDocenteRequest &&
                         (s.estado === 'aprobación pendiente') && (
@@ -261,7 +263,7 @@ function FichasSolicitudes({
                               icon="✅"
                               onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'aprobar', 'entrega pendiente'); }}
                               disabled={procesandoId === s.id}
-                              className="flex-1 min-w-[60px]"
+                              className="flex-1 min-w-[80px]"
                             >
                               Aprobar
                             </Btn>
@@ -270,23 +272,21 @@ function FichasSolicitudes({
                               icon="❌"
                               onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'rechazar', 'rechazada'); }}
                               disabled={procesandoId === s.id}
-                              className="flex-1 min-w-[60px]"
+                              className="flex-1 min-w-[80px]"
                             >
                               Rechazar
                             </Btn>
                           </>
                         )}
-
-                      {/* Almacén: Entregar cuando fecha no ha pasado */}
                       {canDeliver && (
-                        <div className="flex rounded-lg overflow-hidden shadow-sm flex-1 min-w-0">
+                        <div className="flex rounded-lg overflow-hidden shadow-sm flex-1 min-w-[80px]">
                           <button
                             type="button"
                             className={`${
                               isToday
                                 ? 'bg-green-500 hover:bg-green-600'
                                 : 'bg-orange-500 hover:bg-orange-600'
-                            } text-white px-1 py-1 rounded-l-lg flex items-center justify-center text-xs cursor-default`}
+                            } text-white px-2 py-1.5 rounded-l-lg flex items-center justify-center text-sm cursor-default`}
                             title={isToday ? 'Entrega hoy' : 'Entrega futura'}
                             disabled
                           >
@@ -297,14 +297,12 @@ function FichasSolicitudes({
                             icon="🚚"
                             onClick={(e) => { e.stopPropagation(); onEntregar ? onEntregar(s) : onAccion(s.id, 'entregar', 'entregada'); }}
                             disabled={procesandoId === s.id}
-                            className="rounded-none rounded-r-lg flex-1 min-w-0 px-2"
+                            className="rounded-none rounded-r-lg flex-1 min-w-0"
                           >
                             Entregar
                           </Btn>
                         </div>
                       )}
-
-                      {/* Almacén: cancelar solicitud */}
                       {usuario?.rol === 'almacen' &&
                         !['entregada', 'cancelado', 'rechazada'].includes((s.estado || '').toLowerCase()) && (
                           <Btn
@@ -312,13 +310,11 @@ function FichasSolicitudes({
                             icon="🗑️"
                             onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'cancelar', 'cancelado'); }}
                             disabled={procesandoId === s.id}
-                            className="flex-1 min-w-[60px]"
+                            className="flex-1 min-w-[80px]"
                           >
                             Cancelar
                           </Btn>
                         )}
-
-                      {/* Alumno: cancelar si está en aprobación pendiente */}
                       {usuario?.rol === 'alumno' &&
                         (s.estado === 'aprobación pendiente') && (
                           <Btn
@@ -326,18 +322,17 @@ function FichasSolicitudes({
                             icon="🚫"
                             onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'cancelar', 'cancelado'); }}
                             disabled={procesandoId === s.id}
-                            className="flex-1 min-w-[60px]"
+                            className="flex-1 min-w-[80px]"
                           >
                             Cancelar
                           </Btn>
                         )}
-
                       <Btn
                         color="purple"
                         icon="📄"
                         onClick={(e) => { e.stopPropagation(); onPDF(s); }}
                         disabled={procesandoId === s.id}
-                        className="flex-1 min-w-[40px]"
+                        className="flex-1 min-w-[60px]"
                       >
                         PDF
                       </Btn>
@@ -364,97 +359,102 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
   const canDeliver = usuario?.rol === 'almacen' && solicitud.estado === 'entrega pendiente' && (isToday || isFuture);
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn overflow-y-auto p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200 transform animate-slideUp border border-gray-200">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn overflow-y-auto p-4 sm:p-6">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200 transform animate-slideUp border border-gray-200">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-3xl animate-spin-slow">📋</span>
               <div>
-                <h3 className="text-2xl font-bold text-gray-800">Detalle de Solicitud</h3>
-                <div className="text-lg font-semibold text-gray-900">{solicitud.folio}</div>
+                <h3 className="text-2xl font-bold text-gray-800">Solicitud #{solicitud.folio}</h3>
+                <p className="text-sm text-gray-500">Detalles completos</p>
               </div>
             </div>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors duration-200 text-2xl">
               ×
             </button>
           </div>
-          <div className="mt-3 flex items-center gap-4">
+          <div className="mt-4 flex items-center gap-4 flex-wrap">
             <EstadoBadge estado={isOverdue ? 'cancelada' : solicitud.estado} />
             {isOverdue && (
-              <div className="text-sm text-red-600 bg-red-100 px-3 py-1 rounded-full border border-red-300">
-                ⚠️ Ha pasado la fecha de recolección
+              <div className="text-sm text-red-600 bg-red-100 px-4 py-1.5 rounded-lg border border-red-300 flex items-center gap-2">
+                <span>⚠️</span> Ha pasado la fecha de recolección
               </div>
             )}
           </div>
         </div>
 
         {/* Contenido */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-8">
           {/* Información básica */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {solicitud.isDocenteRequest ? (
-              <>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Solicitante</label>
-                  <p className="text-sm font-semibold text-gray-900">{solicitud.profesor}</p>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Riesgo</label>
-                  <p className="text-sm text-gray-700">{solicitud.riesgo || 'N/A'}</p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Solicitante</label>
-                  <p className="text-sm font-semibold text-gray-900">{solicitud.nombre_alumno}</p>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Grupo</label>
-                  <p className="text-sm text-gray-700">{solicitud.grupo || 'N/A'}</p>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Encargado</label>
-                  <p className="text-sm text-gray-700">{solicitud.profesor || 'N/A'}</p>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Materia</label>
-                  <p className="text-sm text-gray-700">
-                    {solicitud.materia === 'Otras' ? solicitud.materia_otro : solicitud.materia || 'N/A'}
-                  </p>
-                </div>
-              </>
-            )}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Solicitud</label>
-              <p className="text-sm text-gray-700">{formatFechaStr(solicitud.fecha_solicitud)}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Recolección</label>
-              <p className="text-sm font-semibold text-blue-600">{formatFechaStr(solicitud.fecha_recoleccion)}</p>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Devolución</label>
-              <p className="text-sm text-gray-700">{formatFechaStr(solicitud.fecha_devolucion)}</p>
+          <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <span className="text-xl">ℹ️</span> Información General
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {solicitud.isDocenteRequest ? (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Solicitante</label>
+                    <p className="text-base font-semibold text-gray-900">{solicitud.profesor}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Riesgo</label>
+                    <p className="text-base text-gray-700">{solicitud.riesgo || 'N/A'}</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Solicitante</label>
+                    <p className="text-base font-semibold text-gray-900">{solicitud.nombre_alumno}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Grupo</label>
+                    <p className="text-base text-gray-700">{solicitud.grupo || 'N/A'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Encargado</label>
+                    <p className="text-base text-gray-700">{solicitud.profesor || 'N/A'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Materia</label>
+                    <p className="text-base text-gray-700">
+                      {solicitud.materia === 'Otras' ? solicitud.materia_otro : solicitud.materia || 'N/A'}
+                    </p>
+                  </div>
+                </>
+              )}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha Solicitud</label>
+                <p className="text-base text-gray-700">{formatFechaStr(solicitud.fecha_solicitud)}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha Recolección</label>
+                <p className="text-base font-semibold text-blue-600">{formatFechaStr(solicitud.fecha_recoleccion)}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha Devolución</label>
+                <p className="text-base text-gray-700">{formatFechaStr(solicitud.fecha_devolucion)}</p>
+              </div>
             </div>
           </div>
 
           {/* Materiales completos */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <span>📦</span> Materiales Solicitados
+              <span className="text-xl">📦</span> Materiales Solicitados
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {solicitud.items.map((m) => (
-                <div key={m.item_id} className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-200">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                <div key={m.item_id} className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-sm font-medium">
                       {m.cantidad} {getUnidad(m.tipo)}
                     </span>
                   </div>
-                  <p className="text-sm font-medium text-gray-900">{m.nombre_material}</p>
+                  <p className="text-base font-medium text-gray-900">{m.nombre_material}</p>
                 </div>
               ))}
             </div>
@@ -463,7 +463,6 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
 
         {/* Acciones en footer */}
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 flex flex-wrap items-center justify-end gap-3">
-          {/* Docente: aprobar / rechazar */}
           {usuario?.rol === 'docente' &&
             !solicitud.isDocenteRequest &&
             (solicitud.estado === 'aprobación pendiente') && (
@@ -473,6 +472,7 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
                   icon="✅"
                   onClick={() => onAccion(solicitud.id, 'aprobar', 'entrega pendiente')}
                   disabled={procesandoId === solicitud.id}
+                  className="min-w-[120px]"
                 >
                   Aprobar
                 </Btn>
@@ -481,13 +481,12 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
                   icon="❌"
                   onClick={() => onAccion(solicitud.id, 'rechazar', 'rechazada')}
                   disabled={procesandoId === solicitud.id}
+                  className="min-w-[120px]"
                 >
                   Rechazar
                 </Btn>
               </>
             )}
-
-          {/* Almacén: Entregar cuando fecha no ha pasado */}
           {canDeliver && (
             <div className="flex rounded-lg overflow-hidden shadow-sm">
               <button
@@ -507,14 +506,12 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
                 icon="🚚"
                 onClick={() => onEntregar ? onEntregar(solicitud) : onAccion(solicitud.id, 'entregar', 'entregada')}
                 disabled={procesandoId === solicitud.id}
-                className="rounded-none rounded-r-lg"
+                className="rounded-none rounded-r-lg min-w-[120px]"
               >
                 Entregar
               </Btn>
             </div>
           )}
-
-          {/* Almacén: cancelar solicitud */}
           {usuario?.rol === 'almacen' &&
             !['entregada', 'cancelado', 'rechazada'].includes((solicitud.estado || '').toLowerCase()) && (
               <Btn
@@ -522,12 +519,11 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
                 icon="🗑️"
                 onClick={() => onAccion(solicitud.id, 'cancelar', 'cancelado')}
                 disabled={procesandoId === solicitud.id}
+                className="min-w-[120px]"
               >
                 Cancelar
               </Btn>
             )}
-
-          {/* Alumno: cancelar si está en aprobación pendiente */}
           {usuario?.rol === 'alumno' &&
             (solicitud.estado === 'aprobación pendiente') && (
               <Btn
@@ -535,16 +531,17 @@ const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF
                 icon="🚫"
                 onClick={() => onAccion(solicitud.id, 'cancelar', 'cancelado')}
                 disabled={procesandoId === solicitud.id}
+                className="min-w-[120px]"
               >
                 Cancelar
               </Btn>
             )}
-
           <Btn
             color="purple"
             icon="📄"
             onClick={() => onPDF(solicitud)}
             disabled={procesandoId === solicitud.id}
+            className="min-w-[100px]"
           >
             PDF
           </Btn>
@@ -561,11 +558,11 @@ export default function SolicitudesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [grupos, setGrupos] = useState({});
-  const [alumnoData, setAlumnoData] = useState([]); // alumno
-  const [docAprobar, setDocAprobar] = useState([]); // docente: tabla 1
-  const [docMias, setDocMias] = useState([]);       // docente: tabla 2
-  const [almAlumnos, setAlmAlumnos] = useState([]); // almacén: tabla 1
-  const [almDocentes, setAlmDocentes] = useState([]); // almacén: tabla 2
+  const [alumnoData, setAlumnoData] = useState([]);
+  const [docAprobar, setDocAprobar] = useState([]);
+  const [docMias, setDocMias] = useState([]);
+  const [almAlumnos, setAlmAlumnos] = useState([]);
+  const [almDocentes, setAlmDocentes] = useState([]);
   const [procesando, setProcesando] = useState(null);
   const [filterDate, setFilterDate] = useState('');
   const [minFilterDate, setMinFilterDate] = useState('');
@@ -573,9 +570,9 @@ export default function SolicitudesPage() {
   const [notice, setNotice] = useState('');
   const [activeTab, setActiveTab] = useState('alumnos');
   const [search, setSearch] = useState('');
-  const [modalEntrega, setModalEntrega] = useState(null); // {id, items}
+  const [modalEntrega, setModalEntrega] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
-  const [modalDetail, setModalDetail] = useState(null); // Nueva: para detalle
+  const [modalDetail, setModalDetail] = useState(null);
 
   useEffect(() => {
     if (!notice) return;
@@ -612,7 +609,6 @@ export default function SolicitudesPage() {
       try {
         setLoading(true);
 
-        // Grupos
         try {
           const g = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/grupos`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -626,8 +622,7 @@ export default function SolicitudesPage() {
         let docMiasArr = [];
         let almAlumnosArr = [];
         let almDocentesArr = [];
-        
-        // Alumno
+
         if (usuario.rol === 'alumno') {
           const { data } = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL}/api/materials/usuario/solicitudes`,
@@ -637,7 +632,6 @@ export default function SolicitudesPage() {
           setAlumnoData(alumnoArr);
         }
 
-        // Docente
         if (usuario.rol === 'docente') {
           const [aprobarRes, miasRes] = await Promise.all([
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/docente/aprobar`,
@@ -651,7 +645,6 @@ export default function SolicitudesPage() {
           setDocMias(docMiasArr);
         }
 
-        // Almacén (sin filtrar en cliente; solo mapeo de estado especial)
         if (usuario.rol === 'almacen') {
           const { data } = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/almacen`,
@@ -685,11 +678,11 @@ export default function SolicitudesPage() {
           } else if (mañanaCount > 0) {
             msg = `Tienes ${mañanaCount} solicitudes para entregar mañana`;
           }
-            if (msg) {
+          if (msg) {
             setNotice(msg);
           }
         }
-        
+
         setError('');
       } catch (err) {
         console.error(err);
@@ -703,14 +696,13 @@ export default function SolicitudesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario]);
 
-  /** Agrupa por solicitud y mapea estados UI; para ALMACÉN lo no entregado/rechazado/cancelado = "entrega pendiente". */
   function agrupar(rows, rolVista, gruposMap) {
     const by = {};
     for (const item of rows) {
       const key = item.solicitud_id ?? item.id;
       if (!key) continue;
 
-      const isDocenteReq = !item.nombre_alumno; // solicitudes de docente no traen nombre_alumno
+      const isDocenteReq = !item.nombre_alumno;
 
       if (!by[key]) {
         const rawEstado = String(item.estado || '').toLowerCase().trim();
@@ -718,15 +710,15 @@ export default function SolicitudesPage() {
 
         by[key] = {
           id: key,
-           folio: item.folio || '',
+          folio: item.folio || '',
           nombre_alumno: item.nombre_alumno || '',
           profesor: item.profesor || '',
-            materia: item.materia || '',
+          materia: item.materia || '',
           materia_otro: item.materia_otro || '',
           fecha_solicitud: item.fecha_solicitud,
           fecha_recoleccion: item.fecha_recoleccion,
-           fecha_devolucion: item.fecha_devolucion,
-           riesgo: item.riesgo || '',
+          fecha_devolucion: item.fecha_devolucion,
+          riesgo: item.riesgo || '',
           estado: estadoUI,
           rawEstado,
           isDocenteRequest: isDocenteReq,
@@ -740,14 +732,13 @@ export default function SolicitudesPage() {
       const nombreMaterialRaw =
         item?.nombre_material ??
         item?.nombreMaterial ??
-        item?.material_nombre ??     // ← alias común en otros endpoints
-        item?.materialNombre ??      // ← camelCase
-        item?.material ??            // ← a veces solo "material"
-        item?.nombre ??              // ← último recurso si el backend lo nombra así
+        item?.material_nombre ??
+        item?.materialNombre ??
+        item?.material ??
+        item?.nombre ??
         '';
 
       if (!nombreMaterialRaw) {
-        // Debug temporal para ver qué trae esa fila del endpoint "para aprobar"
         console.debug('Fila sin nombre_material:', item);
       }
 
@@ -765,21 +756,17 @@ export default function SolicitudesPage() {
     );
   }
 
-  /** Mapeo de estados con sensibilidad al rol que visualiza */
   function mapEstadoPorRol(estadoSQL, isDocenteReq, rolVista) {
     const e = (estadoSQL || '').toLowerCase().trim();
 
-    // Vista de ALMACÉN: regla estricta para evitar "aprobación pendiente" allí
     if (rolVista === 'almacen') {
       if (e === 'entregado') return 'entregada';
       if (e === 'rechazada') return 'rechazada';
       if (e === 'cancelado') return 'cancelado';
       if (e === 'sin recoleccion') return 'eliminación automática por falta de recolección';
-      // Cualquier otro (incluido 'aprobada' y un posible 'pendiente') se ve como entrega pendiente
       return 'entrega pendiente';
     }
 
-    // Otras vistas (alumno/docente)
     switch (e) {
       case 'pendiente':
         return isDocenteReq ? 'pendiente' : 'aprobación pendiente';
@@ -798,7 +785,6 @@ export default function SolicitudesPage() {
     }
   }
 
-  /** Acciones aprobar/rechazar/entregar/cancelar */
   const actualizarEstado = async (id, accion, nuevoEstadoUI, items = []) => {
     if (procesando) return;
     setProcesando(id);
@@ -810,7 +796,6 @@ export default function SolicitudesPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Helpers para in-place update
       const apply = (arrSetter) =>
         arrSetter(prev =>
           prev.map(s => {
@@ -857,14 +842,13 @@ export default function SolicitudesPage() {
     }
   };
 
-  // Mapea estado UI -> estado SQL crudo
   function uiToRaw(estadoUI) {
     const e = (estadoUI || '').toLowerCase().trim();
-    if (e === 'entrega pendiente')        return 'aprobada';
+    if (e === 'entrega pendiente') return 'aprobada';
     if (e === 'aprobación pendiente' || e === 'aprobacion pendiente') return 'pendiente';
-    if (e === 'entregada')                return 'entregado';
-    if (e === 'rechazada')                return 'rechazada';
-    if (e === 'cancelado')                return 'cancelado';
+    if (e === 'entregada') return 'entregado';
+    if (e === 'rechazada') return 'rechazada';
+    if (e === 'cancelado') return 'cancelado';
     if (e === 'eliminación automática por falta de recolección' || e === 'eliminacion automatica por falta de recoleccion') return 'sin recoleccion';
     return e;
   }
@@ -927,234 +911,217 @@ export default function SolicitudesPage() {
   const abrirDetalle = (sol) => {
     setModalDetail(sol);
   };
-   
-  /** PDF */
-const descargarPDF = async (vale) => {
-  try {
+
+  const descargarPDF = async (vale) => {
+    try {
       const token = localStorage.getItem('token');
-    if (token && vale?.id) {
-      try {
-        const { data } = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/solicitudes/detalle/${vale.id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-       vale = { ...vale, ...(Array.isArray(data) ? data[0] : data) };
-      } catch (e) {
-        console.error('Error al obtener detalle de solicitud:', e);
+      if (token && vale?.id) {
+        try {
+          const { data } = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/solicitudes/detalle/${vale.id}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          vale = { ...vale, ...(Array.isArray(data) ? data[0] : data) };
+        } catch (e) {
+          console.error('Error al obtener detalle de solicitud:', e);
+        }
       }
-    }
-    
-    const doc = new jsPDF({
-     orientation: 'portrait',
-      unit: 'mm',
-    format: 'a4'
-    });
 
-    const toBase64 = async (url) => {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('No se pudo cargar la imagen');
-      const blob = await res.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
       });
-    };
 
-    const encabezadoImg = await toBase64(encabezadoUT);
+      const toBase64 = async (url) => {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('No se pudo cargar la imagen');
+        const blob = await res.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
 
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 15;
-    const marginLeft = margin;
-    const primary = [0, 0, 0];
-    const secondary = [100, 100, 100];
+      const encabezadoImg = await toBase64(encabezadoUT);
 
-    // Encabezado - Imagen adaptada y más pequeña
-    // Calculamos dimensiones más pequeñas manteniendo proporción
-    const maxHeaderWidth = (pageWidth - margin * 2) * 0.4; // 40% del ancho disponible
-    const maxHeaderHeight = 40; // altura máxima reducida
-    
-    // Proporción original aproximada (ajusta según tu imagen real)
-    const originalRatio = 3.5; // ancho/alto aproximado
-    
-    let headerWidth, headerHeight;
-    
-    // Calculamos el tamaño manteniendo proporción y límites
-    if (maxHeaderWidth / originalRatio <= maxHeaderHeight) {
-      headerWidth = maxHeaderWidth;
-      headerHeight = maxHeaderWidth / originalRatio;
-    } else {
-      headerHeight = maxHeaderHeight;
-      headerWidth = maxHeaderHeight * originalRatio;
-    }
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 15;
+      const marginLeft = margin;
+      const primary = [0, 0, 0];
+      const secondary = [100, 100, 100];
 
-    // Escalamos la imagen para evitar distorsiones
-    const scale = 0.5;
-    headerWidth *= scale;
-    headerHeight *= scale;
-    
-    // Centramos la imagen horizontalmente
-    const imageX = (pageWidth - headerWidth) / 2;
-    const imageY = 18; // posición Y fija
-    
-    doc.addImage(encabezadoImg, 'JPG', imageX, imageY, headerWidth, headerHeight);
-    
-    // Título centrado debajo de la imagen
-    const titleY = imageY + headerHeight + 8;
-    doc.setFontSize(18);
-    doc.setTextColor(...primary);
-    doc.setFont('helvetica', 'bold');
-    doc.text('VALE DE ALMACÉN', pageWidth / 2, titleY, { align: 'center' });
-    
-    // Tabla de información principal
-    const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
-    const grupo = vale.isDocenteRequest ? '' : (vale.grupo || '');
-    const fechaReco = formatFechaStr(vale.fecha_recoleccion);
-    const fechaDevolucion = formatFechaStr(vale.fecha_devolucion);
+      const maxHeaderWidth = (pageWidth - margin * 2) * 0.5;
+      const maxHeaderHeight = 45;
+      const originalRatio = 3.5;
 
-    const headInfo = vale.isDocenteRequest
-      ? [['Nombre', 'Folio', 'Riesgo']]
-      : [['Nombre', 'Grupo', 'Folio', 'Riesgo']];
-    const bodyInfo = vale.isDocenteRequest
-    ? [[nombre, vale.folio, vale.riesgo || '']]
-      : [[nombre, grupo, vale.folio, vale.riesgo || '']];
-    
-    autoTable(doc, {
-       startY: titleY + 5,
-      theme: 'grid',
-     head: headInfo,
-      body: bodyInfo,
-      headStyles: {
-        fillColor: [255, 255, 255],
-        textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        halign: 'center'
-      },
-      bodyStyles: { fontSize: 11, cellPadding: 2 },
-      styles: { lineColor: primary, lineWidth: 0.2 },
-      margin: { top: 0, bottom: 0, left: margin, right: margin },
-      tableWidth: pageWidth - margin * 2
-    });
+      let headerWidth, headerHeight;
+      if (maxHeaderWidth / originalRatio <= maxHeaderHeight) {
+        headerWidth = maxHeaderWidth;
+        headerHeight = maxHeaderWidth / originalRatio;
+      } else {
+        headerHeight = maxHeaderHeight;
+        headerWidth = maxHeaderHeight * originalRatio;
+      }
 
-    // Tabla de materiales (10 filas, 4 columnas)
-    const startY = doc.lastAutoTable.finalY;
-    const items = vale.items || [];
-    const rows = [];
-    for (let i = 0; i < 10; i++) {
-      const left = items[i];
-      const right = items[i + 10];
-      rows.push([
-        left ? `${left.cantidad} ${getUnidad(left.tipo)}` : '',
-        left ? left.nombre_material : '',
-        right ? `${right.cantidad} ${getUnidad(right.tipo)}` : '',
-        right ? right.nombre_material : ''
-      ]);
-    }
+      const scale = 0.6;
+      headerWidth *= scale;
+      headerHeight *= scale;
 
-    autoTable(doc, {
-      startY,
-      theme: 'grid',
-      head: [['Cantidad', 'Descripción', 'Cantidad', 'Descripción']],
-      body: rows,
-      headStyles: {
-        fillColor: [255, 255, 255],
-        textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        halign: 'center'
-      },
-      bodyStyles: { fontSize: 10, cellPadding: 2 },
-      styles: { lineColor: primary, lineWidth: 0.2 },
-      margin: { top: 0, bottom: 0, left: margin, right: margin },
-      tableWidth: pageWidth - margin * 2
-    });
+      const imageX = (pageWidth - headerWidth) / 2;
+      const imageY = 15;
 
-    // Sección inferior
-    const afterTableY = doc.lastAutoTable.finalY + 4;
-    const profesor = vale.profesor || '';
-    const materiaVal =
-      vale.materia === 'Otras'
-        ? vale.materia_otro || ''
-        : vale.materia || '';
+      doc.addImage(encabezadoImg, 'JPG', imageX, imageY, headerWidth, headerHeight);
 
-    doc.setFontSize(10);
-    doc.setTextColor(...primary);
-
-      // Fechas de recolección y devolución
-    doc.setFont('helvetica', 'bold');
-    doc.text('Fecha recolección:', marginLeft, afterTableY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(fechaReco, marginLeft + 40, afterTableY);
-
-    doc.setFont('helvetica', 'bold');
-  doc.text('Fecha devolución:', pageWidth / 2, afterTableY);
-    doc.setFont('helvetica', 'normal');
-   doc.text(fechaDevolucion, pageWidth / 2 + 40, afterTableY);
-
-    let noteY = afterTableY;
-
-    if (!vale.isDocenteRequest) {
-    const infoY = afterTableY + 6;
+      const titleY = imageY + headerHeight + 10;
+      doc.setFontSize(20);
+      doc.setTextColor(...primary);
       doc.setFont('helvetica', 'bold');
-    doc.text('Profesor:', marginLeft, infoY);
-      doc.setFont('helvetica', 'normal');
-      doc.text(profesor, marginLeft + 25, infoY);
+      doc.text('VALE DE ALMACÉN', pageWidth / 2, titleY, { align: 'center' });
+
+      const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
+      const grupo = vale.isDocenteRequest ? '' : (vale.grupo || '');
+      const fechaReco = formatFechaStr(vale.fecha_recoleccion);
+      const fechaDevolucion = formatFechaStr(vale.fecha_devolucion);
+
+      const headInfo = vale.isDocenteRequest
+        ? [['Nombre', 'Folio', 'Riesgo']]
+        : [['Nombre', 'Grupo', 'Folio', 'Riesgo']];
+      const bodyInfo = vale.isDocenteRequest
+        ? [[nombre, vale.folio, vale.riesgo || '']]
+        : [[nombre, grupo, vale.folio, vale.riesgo || '']];
+
+      autoTable(doc, {
+        startY: titleY + 6,
+        theme: 'grid',
+        head: headInfo,
+        body: bodyInfo,
+        headStyles: {
+          fillColor: [255, 255, 255],
+          textColor: [0, 0, 0],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        bodyStyles: { fontSize: 11, cellPadding: 3 },
+        styles: { lineColor: primary, lineWidth: 0.3 },
+        margin: { top: 0, bottom: 0, left: margin, right: margin },
+        tableWidth: pageWidth - margin * 2
+      });
+
+      const startY = doc.lastAutoTable.finalY + 5;
+      const items = vale.items || [];
+      const rows = [];
+      for (let i = 0; i < Math.ceil(items.length / 2); i++) {
+        const left = items[i];
+        const right = items[i + Math.ceil(items.length / 2)];
+        rows.push([
+          left ? `${left.cantidad} ${getUnidad(left.tipo)}` : '',
+          left ? left.nombre_material : '',
+          right ? `${right.cantidad} ${getUnidad(right.tipo)}` : '',
+          right ? right.nombre_material : ''
+        ]);
+      }
+
+      autoTable(doc, {
+        startY,
+        theme: 'grid',
+        head: [['Cantidad', 'Descripción', 'Cantidad', 'Descripción']],
+        body: rows,
+        headStyles: {
+          fillColor: [255, 255, 255],
+          textColor: [0, 0, 0],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        bodyStyles: { fontSize: 10, cellPadding: 3 },
+        styles: { lineColor: primary, lineWidth: 0.3 },
+        margin: { top: 0, bottom: 0, left: margin, right: margin },
+        tableWidth: pageWidth - margin * 2
+      });
+
+      const afterTableY = doc.lastAutoTable.finalY + 6;
+      const profesor = vale.profesor || '';
+      const materiaVal =
+        vale.materia === 'Otras'
+          ? vale.materia_otro || ''
+          : vale.materia || '';
+
+      doc.setFontSize(10);
+      doc.setTextColor(...primary);
 
       doc.setFont('helvetica', 'bold');
-      doc.text('Materia:', pageWidth / 2, infoY);
+      doc.text('Fecha recolección:', marginLeft, afterTableY);
       doc.setFont('helvetica', 'normal');
-      doc.text(materiaVal, pageWidth / 2 + 25, infoY);
+      doc.text(fechaReco, marginLeft + 40, afterTableY);
 
-      noteY = infoY;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Fecha devolución:', pageWidth / 2, afterTableY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(fechaDevolucion, pageWidth / 2 + 40, afterTableY);
+
+      let noteY = afterTableY;
+
+      if (!vale.isDocenteRequest) {
+        const infoY = afterTableY + 8;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Profesor:', marginLeft, infoY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(profesor, marginLeft + 25, infoY);
+
+        doc.setFont('helvetica', 'bold');
+        doc.text('Materia:', pageWidth / 2, infoY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(materiaVal, pageWidth / 2 + 25, infoY);
+
+        noteY = infoY;
+      }
+
+      doc.setFontSize(9);
+      doc.setTextColor(...secondary);
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        'NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
+        pageWidth / 2,
+        noteY + 8,
+        { align: 'center', maxWidth: pageWidth - margin * 2 }
+      );
+
+      const nombrePDF = vale.isDocenteRequest
+        ? `Vale_${vale.folio}_${(vale.profesor || '').replace(/\s+/g, '')}.pdf`
+        : `Vale_${vale.folio}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+      doc.save(nombrePDF);
+    } catch (err) {
+      console.error('Error al generar PDF:', err);
     }
+  };
 
-    // Nota
-    doc.setFontSize(8);
-    doc.setTextColor(...secondary);
-    doc.setFont('helvetica', 'normal');
-    doc.text(
-      'NOTA: LA FIRMA DEL PROFESOR AMPARA CUALQUIER EVENTO DURANTE EL TIEMPO QUE DURE LA PRÁCTICA, FAVOR DE RESPETAR LOS HORARIOS',
-      pageWidth / 2,
-      noteY + 6,
-      { align: 'center', maxWidth: pageWidth - margin * 2 }
-    );
-
-    const nombrePDF = vale.isDocenteRequest
-      ? `Vale_${vale.folio}_${(vale.profesor || '').replace(/\s+/g, '')}.pdf`
-      : `Vale_${vale.folio}_${new Date().toISOString().split('T')[0]}.pdf`;
-
-    doc.save(nombrePDF);
-  } catch (err) {
-    console.error('Error al generar PDF:', err);
-  }
-};
-
-  // --- RENDER POR ROL ---
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 min-h-screen font-sans">
-      {/* Error con mejor styling */}
+    <div className="p-6 sm:p-8 lg:p-10 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 min-h-screen font-sans">
       {error && (
-        <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl shadow-md animate-shake hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="mb-8 p-5 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl shadow-lg animate-shake hover:shadow-xl transition-shadow duration-300">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-red-800 flex items-center gap-2">
+                <h3 className="font-semibold text-lg text-red-800 flex items-center gap-2">
                   <span>⚠️</span> Error
                 </h3>
-                <p className="text-red-700 text-sm">{error}</p>
+                <p className="text-red-700 text-base">{error}</p>
               </div>
             </div>
             <button 
               onClick={() => setError('')} 
               className="text-red-500 hover:text-red-700 transition-colors duration-200 hover:scale-110 transform"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -1163,7 +1130,6 @@ const descargarPDF = async (vale) => {
         </div>
       )}
 
-      {/* ALUMNO */}
       {usuario?.rol === 'alumno' && (
         <FichasSolicitudes
           titulo="Mis solicitudes"
@@ -1171,7 +1137,7 @@ const descargarPDF = async (vale) => {
           loading={loading}
           showSolicitante
           showEncargado={false}
-          showGrupo={false} 
+          showGrupo={false}
           columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
           usuario={usuario}
           onAccion={actualizarEstado}
@@ -1181,166 +1147,162 @@ const descargarPDF = async (vale) => {
         />
       )}
 
-     {/* DOCENTE */}
-{usuario?.rol === 'docente' && (
-  <>
-  <div className="flex items-center gap-2 mb-4">
-        <span>🐺</span>
-        <h2 className="text-xl font-bold">Solicitudes de préstamo</h2>
-      </div>
-    <div className="flex flex-wrap items-center gap-4">
-  <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto gap-2">
-    <div className="relative flex-1">
-      {pendientesDocAlumnos > 0 && (
-        <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-20">
-          {pendientesDocAlumnos}
-        </span>
-      )}
-      <button
-        className={`w-full px-4 py-2 transition-all duration-200 font-medium min-h-[40px] flex items-center justify-center text-sm ${
-          activeTab === 'alumnos'
-            ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-         } hover:shadow-inner rounded-lg`}
-        onClick={() => setActiveTab('alumnos')}
-      >
-        <div className="flex items-center gap-2 justify-center">
-          <span>🎓</span>
-          <span className="whitespace-nowrap">Solicitudes de Alumnos</span>
-        </div>
-      </button>
-    </div>
-    <div className="relative flex-1">
-      <button
-        className={`w-full px-4 py-2 transition-all duration-200 font-medium min-h-[40px] flex items-center justify-center text-sm ${
-          activeTab === 'mias' 
-            ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-        } hover:shadow-inner rounded-lg`}
-        onClick={() => setActiveTab('mias')}
-      >
-        <div className="flex items-center gap-2 justify-center">
-          <span>👨‍🏫</span>
-          <span className="whitespace-nowrap">Mis Solicitudes</span>
-        </div>
-      </button>
-    </div>
-  </div>
-        <div className="relative flex-1 w-full sm:w-auto">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <span className="text-gray-400 animate-pulse">🔍</span>
-        </div>
-        <input
-          type="text"
-          placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
-        />
-      </div>
-        </div>
-    
-    {activeTab === 'alumnos' ? (
-      <FichasSolicitudes
-        titulo="Solicitudes de alumnos para aprobar"
-        data={filteredDocAprobar}
-        loading={loading}
-        showSolicitante
-        showEncargado={false}
-        showGrupo
-        columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
-        usuario={usuario}
-        onAccion={actualizarEstado}
-        onPDF={descargarPDF}
-        onDetail={abrirDetalle}
-        procesandoId={procesando}
-      />
-    ) : (
-      <FichasSolicitudes
-        titulo="Mis solicitudes como docente"
-        data={filteredDocMias}
-        loading={loading}
-        showSolicitante={false}
-        showEncargado={false}
-        showGrupo={false}
-        columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
-        usuario={usuario}
-        onAccion={actualizarEstado}
-        onPDF={descargarPDF}
-        onDetail={abrirDetalle}
-        procesandoId={procesando}
-      />
-    )}
-  </>
-)}
+      {usuario?.rol === 'docente' && (
+        <>
+          <div className="flex items-center gap-3 mb-6">
+            <span className="text-2xl">🐺</span>
+            <h2 className="text-2xl font-bold text-gray-800">Solicitudes de Préstamo</h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-4 mb-8">
+            <div className="relative flex rounded-xl shadow-lg border border-gray-200 w-full sm:w-auto gap-3 bg-white p-1">
+              <div className="relative flex-1">
+                {pendientesDocAlumnos > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2.5 py-1 shadow-lg animate-bounce z-20">
+                    {pendientesDocAlumnos}
+                  </span>
+                )}
+                <button
+                  className={`w-full px-5 py-3 transition-all duration-200 font-medium text-base flex items-center justify-center ${
+                    activeTab === 'alumnos'
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  } rounded-lg`}
+                  onClick={() => setActiveTab('alumnos')}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <span className="text-lg">🎓</span>
+                    <span className="whitespace-nowrap">Solicitudes de Alumnos</span>
+                  </div>
+                </button>
+              </div>
+              <div className="relative flex-1">
+                <button
+                  className={`w-full px-5 py-3 transition-all duration-200 font-medium text-base flex items-center justify-center ${
+                    activeTab === 'mias'
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  } rounded-lg`}
+                  onClick={() => setActiveTab('mias')}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <span className="text-lg">👨‍🏫</span>
+                    <span className="whitespace-nowrap">Mis Solicitudes</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className="relative flex-1 w-full sm:w-80">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className="text-gray-400 text-lg animate-pulse">🔍</span>
+              </div>
+              <input
+                type="text"
+                placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
+              />
+            </div>
+          </div>
 
-      {/* ALMACÉN */}
+          {activeTab === 'alumnos' ? (
+            <FichasSolicitudes
+              titulo="Solicitudes de alumnos para aprobar"
+              data={filteredDocAprobar}
+              loading={loading}
+              showSolicitante
+              showEncargado={false}
+              showGrupo
+              columnasFijas={{ folio: true, materiales: true, fecha: true, estado: true, acciones: true }}
+              usuario={usuario}
+              onAccion={actualizarEstado}
+              onPDF={descargarPDF}
+              onDetail={abrirDetalle}
+              procesandoId={procesando}
+            />
+          ) : (
+            <FichasSolicitudes
+              titulo="Mis solicitudes como docente"
+              data={filteredDocMias}
+              loading={loading}
+              showSolicitante={false}
+              showEncargado={false}
+              showGrupo={false}
+              columnasFijas={{ folio: true, materiales: true, fecha: false, estado: true, acciones: true }}
+              usuario={usuario}
+              onAccion={actualizarEstado}
+              onPDF={descargarPDF}
+              onDetail={abrirDetalle}
+              procesandoId={procesando}
+            />
+          )}
+        </>
+      )}
+
       {usuario?.rol === 'almacen' && (
         <>
-           <div className="flex items-center gap-2 mb-4">
-        <span>🐺</span>
-        <h2 className="text-xl font-bold">Solicitudes de préstamo</h2>
-      </div>
-         <div className="flex flex-wrap items-center gap-4">
-  <div className="relative flex rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full sm:w-auto gap-2">
-   <div className="relative flex-1">
-    {pendientesAlmAlumnos > 0 && (
-      <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-20">
-        {pendientesAlmAlumnos}
-      </span>
-    )}
-    <button
-      className={`w-full px-4 py-2 transition-all duration-200 font-medium min-h-[40px] flex items-center justify-center text-sm ${
-        activeTab === 'alumnos' 
-          ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-      } hover:shadow-inner rounded-lg`}
-      onClick={() => setActiveTab('alumnos')}
-    >
-      <div className="flex items-center gap-2 justify-center">
-        <span>🎓</span>
-        <span className="whitespace-nowrap">Solicitudes de Alumnos</span>
-      </div>
-    </button>
-  </div>
-
-    <div className="relative flex-1">
-      {pendientesAlmDocentes > 0 && (
-        <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2 py-1 shadow-lg animate-bounce z-20">
-          {pendientesAlmDocentes}
-        </span>
-      )}
-      <button
-        className={`w-full px-4 py-2 transition-all duration-200 font-medium min-h-[40px] flex items-center justify-center text-sm ${
-          activeTab === 'docentes' 
-            ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105' 
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-        } hover:shadow-inner rounded-lg`}
-        onClick={() => setActiveTab('docentes')}
-      >
-        <div className="flex items-center gap-2 justify-center">
-          <span>👨‍🏫</span>
-          <span className="whitespace-nowrap">Solicitudes de Docentes</span>
-        </div>
-      </button>
-    </div>
-  </div>
-                <div className="relative flex-1 w-full sm:w-auto">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <span className="text-gray-400 animate-pulse">🔍</span>
-        </div>
-        <input
-          type="text"
-          placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
-        />
-      </div>
-
-            <div className="flex flex-wrap items-center gap-3 bg-gray-50 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 w-full sm:w-auto">
-              <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <span>📅</span>
+          <div className="flex items-center gap-3 mb-6">
+            <span className="text-2xl">🐺</span>
+            <h2 className="text-2xl font-bold text-gray-800">Solicitudes de Préstamo</h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-4 mb-8">
+            <div className="relative flex rounded-xl shadow-lg border border-gray-200 w-full sm:w-auto gap-3 bg-white p-1">
+              <div className="relative flex-1">
+                {pendientesAlmAlumnos > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2.5 py-1 shadow-lg animate-bounce z-20">
+                    {pendientesAlmAlumnos}
+                  </span>
+                )}
+                <button
+                  className={`w-full px-5 py-3 transition-all duration-200 font-medium text-base flex items-center justify-center ${
+                    activeTab === 'alumnos'
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  } rounded-lg`}
+                  onClick={() => setActiveTab('alumnos')}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <span className="text-lg">🎓</span>
+                    <span className="whitespace-nowrap">Solicitudes de Alumnos</span>
+                  </div>
+                </button>
+              </div>
+              <div className="relative flex-1">
+                {pendientesAlmDocentes > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full px-2.5 py-1 shadow-lg animate-bounce z-20">
+                    {pendientesAlmDocentes}
+                  </span>
+                )}
+                <button
+                  className={`w-full px-5 py-3 transition-all duration-200 font-medium text-base flex items-center justify-center ${
+                    activeTab === 'docentes'
+                      ? 'bg-gradient-to-r from-[#003579] to-[#0056b3] text-white shadow-lg transform scale-105'
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  } rounded-lg`}
+                  onClick={() => setActiveTab('docentes')}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <span className="text-lg">👨‍🏫</span>
+                    <span className="whitespace-nowrap">Solicitudes de Docentes</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className="relative flex-1 w-full sm:w-80">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className="text-gray-400 text-lg animate-pulse">🔍</span>
+              </div>
+              <input
+                type="text"
+                placeholder={activeTab === 'alumnos' ? 'Buscar por nombre, folio o grupo...' : 'Buscar por nombre o folio...'}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white hover:shadow-md"
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-4 bg-gray-50 rounded-xl p-4 border border-gray-200 shadow-lg w-full sm:w-auto">
+              <label className="text-base font-medium text-gray-700 flex items-center gap-2">
+                <span className="text-lg">📅</span>
                 Filtrar por fecha:
               </label>
               <input
@@ -1353,33 +1315,31 @@ const descargarPDF = async (vale) => {
                   if (!v) { setFilterDate(''); return; }
                   const d = new Date(v);
                   const day = d.getDay();
-                  if (day === 0 || day === 6) return; // evitar fines de semana
+                  if (day === 0 || day === 6) return;
                   if (v >= minFilterDate && v <= maxFilterDate) {
                     setFilterDate(v);
                   }
                 }}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 hover:shadow-sm flex-1"
+                className="border border-gray-300 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 hover:shadow-sm flex-1"
               />
               {filterDate && (
                 <button
                   onClick={() => setFilterDate('')}
-                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center gap-1"
+                  className="text-base text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 flex items-center gap-2"
                 >
-                  <span>✖️</span>
+                  <span className="text-lg">✖️</span>
                   Limpiar
                 </button>
               )}
             </div>
-
-           
-           {notice && (
-            <div className="w-full sm:ml-auto">
-              <div className="px-4 py-2 text-sm bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-sm animate-pulse hover:shadow-md transition-shadow duration-200 flex items-center gap-2">
-                <span>🔔</span>
-                {notice}
+            {notice && (
+              <div className="w-full sm:ml-auto">
+                <div className="px-5 py-3 text-base bg-gradient-to-r from-yellow-100 to-amber-100 border border-yellow-200 text-yellow-800 rounded-xl shadow-lg animate-pulse hover:shadow-xl transition-shadow duration-200 flex items-center gap-3">
+                  <span className="text-lg">🔔</span>
+                  {notice}
+                </div>
               </div>
-            </div>
-          )}
+            )}
           </div>
 
           {activeTab === 'alumnos' ? (
@@ -1418,7 +1378,6 @@ const descargarPDF = async (vale) => {
         </>
       )}
 
-      {/* Modal de detalle */}
       <ModalDetalle
         solicitud={modalDetail}
         onClose={() => setModalDetail(null)}
@@ -1429,75 +1388,70 @@ const descargarPDF = async (vale) => {
         procesandoId={procesando}
       />
 
-      {/* Modal de entrega con mejor styling */}
       {modalEntrega && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn overflow-y-auto">
-          <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 my-8 sm:my-0 transform animate-slideUp border border-gray-200 hover:shadow-3xl transition-shadow duration-300">
+          <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl max-w-lg w-full mx-4 my-8 sm:my-0 transform animate-slideUp border border-gray-200 hover:shadow-3xl transition-shadow duration-300">
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl animate-spin-slow">🚚</span>
+              <span className="text-3xl animate-spin-slow">🚚</span>
               <h3 className="text-xl font-bold text-gray-800">Entregar materiales</h3>
             </div>
-            
-            <div className="space-y-3 mb-6 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200">
+            <div className="space-y-4 mb-6 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200">
               {modalEntrega.items.map(item => (
-                <label key={item.item_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer shadow-sm hover:shadow-md">
+                <label key={item.item_id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer shadow-sm hover:shadow-md">
                   <input
                     type="checkbox"
                     checked={selectedItems.includes(item.item_id)}
                     onChange={() => toggleItem(item.item_id)}
-                    className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 hover:scale-110 transition-transform duration-200"
+                    className="w-6 h-6 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 hover:scale-110 transition-transform duration-200"
                   />
                   <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div className="flex items-center gap-3">
+                      <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2.5 py-1 rounded-full text-sm font-medium shadow-sm hover:shadow-md transition-shadow duration-200">
                         {item.cantidad} {getUnidad(item.tipo)}
                       </span>
-                      <span className="font-medium text-gray-800 hover:text-blue-600 transition-colors duration-200">{item.nombre_material}</span>
+                      <span className="font-medium text-gray-800 text-base hover:text-blue-600 transition-colors duration-200">{item.nombre_material}</span>
                     </div>
                   </div>
                 </label>
               ))}
             </div>
-            
             <div className="flex justify-between mb-6">
               <button 
                 onClick={seleccionarTodos} 
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 flex items-center gap-1 hover:underline"
+                className="text-base text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 flex items-center gap-2 hover:underline"
               >
-                <span>✅</span>
+                <span className="text-lg">✅</span>
                 Seleccionar todo
               </button>
-              <span className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
+              <span className="text-base text-gray-500 hover:text-gray-700 transition-colors duration-200">
                 {selectedItems.length} de {modalEntrega.items.length} seleccionados
               </span>
             </div>
-            
-            <div className="flex justify-end gap-3 flex-wrap">
+            <div className="flex justify-end gap-4 flex-wrap">
               <button 
                 onClick={() => setModalEntrega(null)} 
-                className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium shadow-sm hover:shadow-md text-base"
               >
                 Cancelar
               </button>
               <button 
                 onClick={confirmarEntrega} 
                 disabled={selectedItems.length === 0}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105 transform"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:scale-105 transform text-base"
               >
-                <span>🚚</span>
+                <span className="text-lg">🚚</span>
                 Entregar ({selectedItems.length})
               </button>
             </div>
           </div>
         </div>
       )}
-      
+
       <style jsx>{`
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        
         @keyframes slideUp {
           from { 
             opacity: 0; 
@@ -1508,45 +1462,36 @@ const descargarPDF = async (vale) => {
             transform: translateY(0); 
           }
         }
-        
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           25% { transform: translateX(-5px); }
           75% { transform: translateX(5px); }
         }
-        
         @keyframes shimmer {
           0% { background-position: -200px 0; }
           100% { background-position: calc(200px + 100%) 0; }
         }
-
         @keyframes spin-slow {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-        
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
         }
-        
         .animate-slideUp {
           animation: slideUp 0.3s ease-out;
         }
-        
         .animate-shake {
           animation: shake 0.5s ease-in-out;
         }
-        
         .animate-shimmer {
           background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
           background-size: 200px 100%;
           animation: shimmer 1.5s infinite;
         }
-
         .animate-spin-slow {
           animation: spin-slow 10s linear infinite;
         }
-
         .scrollbar-thin {
           scrollbar-width: thin;
         }
