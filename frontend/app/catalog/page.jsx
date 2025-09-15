@@ -370,10 +370,9 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
 
       if (userPermissions.rol === 'alumno') {
         all = all.filter((m) => m.tipo === 'laboratorio' || m.tipo === 'equipo');
-      } else if (userPermissions.rol === 'docente') {
-        all = all.filter((m) => m.tipo === 'liquido' || m.tipo === 'solido');
       }
-
+       // Los docentes pueden ver y solicitar todos los tipos de materiales
+      
       setAllMaterials(all);
 
       if (canModifyStock()) {
