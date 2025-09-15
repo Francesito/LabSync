@@ -34,31 +34,17 @@ const EstadoBadge = ({ estado }) => {
   );
 };
 
-const SkeletonRow = ({ colCount }) => (
-  <tr className="animate-pulse">
-    {Array.from({ length: colCount }).map((_, i) => (
-      <td key={i} className="px-6 py-4">
-        <div className="h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-24 animate-shimmer" />
-      </td>
-    ))}
-  </tr>
-);
-
-const Th = ({ children, icon }) => (
-  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-[#003579] first:rounded-tl-lg last:rounded-tr-lg transition-colors duration-200 hover:bg-[#0056b3]">
-    <div className="flex items-center gap-2">
-      {icon && <span className="text-sm">{icon}</span>}
-      {children}
+const SkeletonCard = ({ colCount }) => (
+  <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 h-[300px] animate-pulse flex flex-col">
+    <div className="h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-24 mb-2" />
+    <div className="h-3 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-32 mb-4" />
+    <div className="space-y-2 flex-1">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="h-3 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded w-full" />
+      ))}
     </div>
-  </th>
-);
-
-const Td = ({ children, bold = false }) => (
-  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 transition-colors duration-200 hover:bg-gray-50">
-    <div className={`${bold ? 'font-semibold' : ''} transition-all duration-200`}>
-      {children}
-    </div>
-  </td>
+    <div className="h-8 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded mt-4" />
+  </div>
 );
 
 const Btn = ({ children, color, onClick, disabled, icon, className = '' }) => {
@@ -73,13 +59,13 @@ const Btn = ({ children, color, onClick, disabled, icon, className = '' }) => {
   return (
     <button
       type="button"
-      className={`${palette} text-white text-sm rounded-lg px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed 
+      className={`${palette} text-white text-xs sm:text-sm rounded-lg px-2 sm:px-3 py-1 sm:py-2 disabled:opacity-60 disabled:cursor-not-allowed 
         transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-1
-           shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2 ${className}`}
+           shadow-md hover:shadow-lg active:scale-95 flex items-center gap-1 ${className}`}
       onClick={onClick}
       disabled={disabled}
     >
-      {icon && <span className="text-sm">{icon}</span>}
+      {icon && <span className="text-xs sm:text-sm">{icon}</span>}
       {children}
     </button>
   );
@@ -107,8 +93,8 @@ function formatFechaStr(fecha) {
   }
 }
 
-/** Tabla genérica configurable por columnas */
-function TablaSolicitudes({
+/** Lista de fichas genérica configurable */
+function FichasSolicitudes({
   titulo,
   data,
   loading,
@@ -120,7 +106,8 @@ function TablaSolicitudes({
   onAccion,
   onEntregar,
   onPDF,
-  procesandoId
+  procesandoId,
+  onDetail
 }) {
   const columnas = {
     folio: columnasFijas.folio ?? true,
@@ -132,7 +119,6 @@ function TablaSolicitudes({
     estado: columnasFijas.estado ?? true,
     acciones: columnasFijas.acciones ?? true,
   };
-  const colCount = Object.values(columnas).filter(Boolean).length;
   const today = new Date();
   const todayStr = toLocalDateStr(today);
   const tomorrow = new Date(today);
@@ -165,208 +151,408 @@ function TablaSolicitudes({
         </div>
       </div>
 
-      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gradient-to-r from-[#003579] to-[#0056b3]">
-            <tr>
-              {columnas.folio && <Th icon="🏷️">Folio</Th>}
-              {columnas.solicitante && <Th icon="👤">Solicitante</Th>}
-              {columnas.encargado && <Th icon="👨‍🏫">Encargado</Th>}
-              {columnas.materiales && <Th icon="📦">Materiales</Th>}
-              {columnas.fecha && <Th icon="📅">Fecha</Th>}
-              {columnas.grupo && <Th icon="👥">Grupo</Th>}
-              {columnas.estado && <Th icon="📊">Estado</Th>}
-              {columnas.acciones && <Th icon="⚡">Acciones</Th>}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              [...Array(5)].map((_, i) => <SkeletonRow key={i} colCount={colCount} />)
-            ) : sortedData.length === 0 ? (
-              <tr>
-                <td className="px-6 py-10 text-center text-gray-500" colSpan={colCount}>
-                  <div className="flex flex-col items-center gap-2">
-                    <span className="text-4xl opacity-50 animate-bounce">📭</span>
-                    <span>No hay solicitudes para mostrar.</span>
+      <div className="p-4 sm:p-6">
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : sortedData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
+            <span className="text-4xl opacity-50 animate-bounce mb-4">📭</span>
+            <span className="text-lg">No hay solicitudes para mostrar.</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sortedData.map((s) => {
+              const createDateStr = (s.fecha_solicitud || '').split('T')[0];
+              const recoDateStr   = (s.fecha_recoleccion || '').split('T')[0];
+              const dateStr = usuario?.rol === 'almacen' ? recoDateStr : createDateStr;
+              const isOverdue =
+                recoDateStr && recoDateStr < todayStr && s.estado === 'entrega pendiente';
+              const showMsg =
+                usuario?.rol !== 'almacen' &&
+                recoDateStr &&
+                recoDateStr > todayStr &&
+                recoDateStr !== todayStr;
+                const isToday = recoDateStr === todayStr;
+              const isFuture = recoDateStr > todayStr;
+              const canDeliver =
+                usuario?.rol === 'almacen' &&
+                s.estado === 'entrega pendiente' &&
+                (isToday || isFuture);
+              const visibleItems = s.items.slice(0, 3);
+              const hasMoreItems = s.items.length > 3;
+              return (
+                <div
+                  key={s.id}
+                  className={`bg-white rounded-xl shadow-lg border border-gray-200 p-4 h-[300px] flex flex-col cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden ${
+                    isOverdue ? 'border-2 border-red-500 bg-red-50' : ''
+                  }`}
+                  onClick={() => onDetail && onDetail(s)}
+                >
+                  {/* Header: Folio y Estado */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="font-bold text-lg text-gray-900 truncate">{s.folio}</div>
+                    <EstadoBadge estado={isOverdue ? 'cancelada' : s.estado} />
                   </div>
-                </td>
-              </tr>
-            ) : (
-              sortedData.map((s) => {
-                const createDateStr = (s.fecha_solicitud || '').split('T')[0];
-                const recoDateStr   = (s.fecha_recoleccion || '').split('T')[0];
-                const dateStr = usuario?.rol === 'almacen' ? recoDateStr : createDateStr;
-                const isOverdue =
-                  recoDateStr && recoDateStr < todayStr && s.estado === 'entrega pendiente';
-                const showMsg =
-                  usuario?.rol !== 'almacen' &&
-                  recoDateStr &&
-                  recoDateStr > todayStr &&
-                  recoDateStr !== todayStr;
-                  const isToday = recoDateStr === todayStr;
-                const isFuture = recoDateStr > todayStr;
-                const canDeliver =
-                  usuario?.rol === 'almacen' &&
-                  s.estado === 'entrega pendiente' &&
-                  (isToday || isFuture);
-                return (
-                  <tr key={s.id} className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ${isOverdue ? 'border-2 border-red-500 bg-red-50' : ''}`}>
-                    {columnas.folio && <Td bold>{s.folio}</Td>}
 
+                  {/* Solicitante / Encargado / Grupo */}
+                  <div className="space-y-1 mb-3 flex-1 min-h-0">
                     {columnas.solicitante && (
-                      <Td>{s.isDocenteRequest ? s.profesor : s.nombre_alumno}</Td>
+                      <div className="text-sm text-gray-700 flex items-center gap-1">
+                        <span className="text-gray-500">👤</span>
+                        <span className="truncate">{s.isDocenteRequest ? s.profesor : s.nombre_alumno}</span>
+                      </div>
                     )}
-
-                    {columnas.encargado && <Td>{s.profesor || ''}</Td>}
-
-                    {columnas.materiales && (
-                      <td className="px-6 py-4">
-                        <div className="space-y-2">
-                          {(s.items || []).map((m) => (
-                            <div key={m.item_id} className="text-sm flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 shadow-sm hover:shadow-md">
-                              <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm">
-                                {m.cantidad} {getUnidad(m.tipo)}
-                              </span>
-                              <span className="flex-1">{m.nombre_material}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </td>
+                    {columnas.encargado && (
+                      <div className="text-sm text-gray-700 flex items-center gap-1">
+                        <span className="text-gray-500">👨‍🏫</span>
+                        <span>{s.profesor || ''}</span>
+                      </div>
                     )}
+                    {columnas.grupo && (
+                      <div className="text-sm text-gray-700 flex items-center gap-1">
+                        <span className="text-gray-500">👥</span>
+                        <span>{s.grupo || ''}</span>
+                      </div>
+                    )}
+                  </div>
 
-                    {columnas.fecha && (
-                      <Td>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm animate-pulse">📅</span>
-                          <span>
-                           {dateStr ? formatFechaStr(dateStr) : ''}
+                  {/* Materiales: Max 3 */}
+                  <div className="mb-3 space-y-2">
+                    <div className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+                      <span>📦</span> Materiales
+                    </div>
+                    <div className="space-y-1 max-h-20 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                      {visibleItems.map((m) => (
+                        <div key={m.item_id} className="text-xs flex items-center gap-2 p-1 bg-gray-50 rounded">
+                          <span className="bg-blue-100 text-blue-800 px-1 py-0.5 rounded text-xs font-medium">
+                            {m.cantidad} {getUnidad(m.tipo)}
                           </span>
+                          <span className="truncate flex-1">{m.nombre_material}</span>
                         </div>
-                        {isOverdue && (
-                          <div className="text-xs text-red-600 mt-1 p-2 bg-red-100 rounded-lg border-l-4 border-red-500 animate-pulse shadow-sm">
-                            ⚠️ Ha pasado la fecha.<br />
-                            Se eliminará la solicitud dentro de 1 día por falta de recolección
-                          </div>
+                      ))}
+                      {hasMoreItems && (
+                        <div className="text-xs text-gray-500 italic text-center py-1">
+                          +{s.items.length - 3} más...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Fecha */}
+                  {columnas.fecha && (
+                    <div className="text-sm text-gray-700 mb-3 flex items-center gap-1">
+                      <span className="text-gray-500">📅</span>
+                      <span>{dateStr ? formatFechaStr(dateStr) : ''}</span>
+                    </div>
+                  )}
+
+                  {/* Acciones compactas */}
+                  {columnas.acciones && (
+                    <div className="flex flex-wrap gap-1 pt-2 border-t border-gray-100">
+                      {/* Docente: aprobar / rechazar */}
+                      {usuario?.rol === 'docente' &&
+                        !s.isDocenteRequest &&
+                        (s.estado === 'aprobación pendiente') && (
+                          <>
+                            <Btn
+                              color="green"
+                              icon="✅"
+                              onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'aprobar', 'entrega pendiente'); }}
+                              disabled={procesandoId === s.id}
+                              className="flex-1 min-w-[60px]"
+                            >
+                              Aprobar
+                            </Btn>
+                            <Btn
+                              color="red"
+                              icon="❌"
+                              onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'rechazar', 'rechazada'); }}
+                              disabled={procesandoId === s.id}
+                              className="flex-1 min-w-[60px]"
+                            >
+                              Rechazar
+                            </Btn>
+                          </>
                         )}
-                       {showMsg && recoDateStr === tomorrowStr && (
-                          <div className="text-xs text-orange-600 mt-1 p-2 bg-orange-100 rounded-lg border-l-4 border-orange-500 shadow-sm">
-                            🕒 Entrega para mañana
-                          </div>
-                        )}
-                      </Td>
-                    )}
 
-                    {columnas.grupo && <Td>{s.grupo || ''}</Td>}
-
-                    {columnas.estado && (
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <EstadoBadge estado={isOverdue ? 'cancelada' : s.estado} />
-                      </td>
-                    )}
-
-                    {columnas.acciones && (
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          {/* Docente: aprobar / rechazar */}
-                          {usuario?.rol === 'docente' &&
-                            !s.isDocenteRequest &&
-                            (s.estado === 'aprobación pendiente') && (
-                              <>
-                                <Btn
-                                  color="green"
-                                  icon="✅"
-                                  onClick={() => onAccion(s.id, 'aprobar', 'entrega pendiente')}
-                                  disabled={procesandoId === s.id}
-                                >
-                                  Aprobar
-                                </Btn>
-                                <Btn
-                                  color="red"
-                                  icon="❌"
-                                  onClick={() => onAccion(s.id, 'rechazar', 'rechazada')}
-                                  disabled={procesandoId === s.id}
-                                >
-                                  Rechazar
-                                </Btn>
-                              </>
-                            )}
-
-                          {/* Almacén: Entregar cuando fecha no ha pasado */}
-                          {canDeliver && (
-                            <div className="flex rounded-lg overflow-hidden shadow-sm">
-                              <button
-                                type="button"
-                                className={`${
-                                  isToday
-                                    ? 'bg-green-500 hover:bg-green-600'
-                                    : 'bg-orange-500 hover:bg-orange-600'
-                                } text-white px-3 py-2 rounded-l-lg flex items-center justify-center cursor-default`}
-                                title={isToday ? 'Entrega hoy' : 'Entrega futura'}
-                                disabled
-                              >
-                                🕒
-                              </button>
-                              <Btn
-                                color="blue"
-                                icon="🚚"
-                                onClick={() =>
-                                  onEntregar ? onEntregar(s) : onAccion(s.id, 'entregar', 'entregada')
-                                }
-                                disabled={procesandoId === s.id}
-                                  className="rounded-none rounded-r-lg"
-                              >
-                                Entregar
-                              </Btn>
-                              </div>
-                          )}
-
-                            {/* Almacén: cancelar solicitud */}
-                          {usuario?.rol === 'almacen' &&
-                            !['entregada', 'cancelado', 'rechazada'].includes((s.estado || '').toLowerCase()) && (
-                              <Btn
-                                color="gray"
-                                icon="🗑️"
-                                onClick={() => onAccion(s.id, 'cancelar', 'cancelado')}
-                                disabled={procesandoId === s.id}
-                              >
-                                Cancelar
-                              </Btn>
-                            )}
-
-                          {/* Alumno: cancelar si está en aprobación pendiente */}
-                          {usuario?.rol === 'alumno' &&
-                            (s.estado === 'aprobación pendiente') && (
-                              <Btn
-                                color="gray"
-                                icon="🚫"
-                                onClick={() => onAccion(s.id, 'cancelar', 'cancelado')}
-                                disabled={procesandoId === s.id}
-                              >
-                                Cancelar
-                              </Btn>
-                            )}
-
-                          <Btn
-                            color="purple"
-                            icon="📄"
-                            onClick={() => onPDF(s)}
-                            disabled={procesandoId === s.id}
+                      {/* Almacén: Entregar cuando fecha no ha pasado */}
+                      {canDeliver && (
+                        <div className="flex rounded-lg overflow-hidden shadow-sm flex-1 min-w-0">
+                          <button
+                            type="button"
+                            className={`${
+                              isToday
+                                ? 'bg-green-500 hover:bg-green-600'
+                                : 'bg-orange-500 hover:bg-orange-600'
+                            } text-white px-1 py-1 rounded-l-lg flex items-center justify-center text-xs cursor-default`}
+                            title={isToday ? 'Entrega hoy' : 'Entrega futura'}
+                            disabled
                           >
-                            PDF
+                            🕒
+                          </button>
+                          <Btn
+                            color="blue"
+                            icon="🚚"
+                            onClick={(e) => { e.stopPropagation(); onEntregar ? onEntregar(s) : onAccion(s.id, 'entregar', 'entregada'); }}
+                            disabled={procesandoId === s.id}
+                            className="rounded-none rounded-r-lg flex-1 min-w-0 px-2"
+                          >
+                            Entregar
                           </Btn>
                         </div>
-                      </td>
-                    )}
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                      )}
+
+                      {/* Almacén: cancelar solicitud */}
+                      {usuario?.rol === 'almacen' &&
+                        !['entregada', 'cancelado', 'rechazada'].includes((s.estado || '').toLowerCase()) && (
+                          <Btn
+                            color="gray"
+                            icon="🗑️"
+                            onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'cancelar', 'cancelado'); }}
+                            disabled={procesandoId === s.id}
+                            className="flex-1 min-w-[60px]"
+                          >
+                            Cancelar
+                          </Btn>
+                        )}
+
+                      {/* Alumno: cancelar si está en aprobación pendiente */}
+                      {usuario?.rol === 'alumno' &&
+                        (s.estado === 'aprobación pendiente') && (
+                          <Btn
+                            color="gray"
+                            icon="🚫"
+                            onClick={(e) => { e.stopPropagation(); onAccion(s.id, 'cancelar', 'cancelado'); }}
+                            disabled={procesandoId === s.id}
+                            className="flex-1 min-w-[60px]"
+                          >
+                            Cancelar
+                          </Btn>
+                        )}
+
+                      <Btn
+                        color="purple"
+                        icon="📄"
+                        onClick={(e) => { e.stopPropagation(); onPDF(s); }}
+                        disabled={procesandoId === s.id}
+                        className="flex-1 min-w-[40px]"
+                      >
+                        PDF
+                      </Btn>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+/** Modal de detalle de solicitud */
+const ModalDetalle = ({ solicitud, onClose, usuario, onAccion, onEntregar, onPDF, procesandoId }) => {
+  if (!solicitud) return null;
+  const recoDateStr = (solicitud.fecha_recoleccion || '').split('T')[0];
+  const todayStr = toLocalDateStr(new Date());
+  const isOverdue = recoDateStr && recoDateStr < todayStr && solicitud.estado === 'entrega pendiente';
+  const isToday = recoDateStr === todayStr;
+  const isFuture = recoDateStr > todayStr;
+  const canDeliver = usuario?.rol === 'almacen' && solicitud.estado === 'entrega pendiente' && (isToday || isFuture);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn overflow-y-auto p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-gray-200 transform animate-slideUp border border-gray-200">
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl animate-spin-slow">📋</span>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-800">Detalle de Solicitud</h3>
+                <div className="text-lg font-semibold text-gray-900">{solicitud.folio}</div>
+              </div>
+            </div>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors duration-200 text-2xl">
+              ×
+            </button>
+          </div>
+          <div className="mt-3 flex items-center gap-4">
+            <EstadoBadge estado={isOverdue ? 'cancelada' : solicitud.estado} />
+            {isOverdue && (
+              <div className="text-sm text-red-600 bg-red-100 px-3 py-1 rounded-full border border-red-300">
+                ⚠️ Ha pasado la fecha de recolección
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Contenido */}
+        <div className="p-6 space-y-6">
+          {/* Información básica */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {solicitud.isDocenteRequest ? (
+              <>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Solicitante</label>
+                  <p className="text-sm font-semibold text-gray-900">{solicitud.profesor}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Riesgo</label>
+                  <p className="text-sm text-gray-700">{solicitud.riesgo || 'N/A'}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Solicitante</label>
+                  <p className="text-sm font-semibold text-gray-900">{solicitud.nombre_alumno}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Grupo</label>
+                  <p className="text-sm text-gray-700">{solicitud.grupo || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Encargado</label>
+                  <p className="text-sm text-gray-700">{solicitud.profesor || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Materia</label>
+                  <p className="text-sm text-gray-700">
+                    {solicitud.materia === 'Otras' ? solicitud.materia_otro : solicitud.materia || 'N/A'}
+                  </p>
+                </div>
+              </>
+            )}
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Solicitud</label>
+              <p className="text-sm text-gray-700">{formatFechaStr(solicitud.fecha_solicitud)}</p>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Recolección</label>
+              <p className="text-sm font-semibold text-blue-600">{formatFechaStr(solicitud.fecha_recoleccion)}</p>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Devolución</label>
+              <p className="text-sm text-gray-700">{formatFechaStr(solicitud.fecha_devolucion)}</p>
+            </div>
+          </div>
+
+          {/* Materiales completos */}
+          <div className="space-y-3">
+            <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <span>📦</span> Materiales Solicitados
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {solicitud.items.map((m) => (
+                <div key={m.item_id} className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-200">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                      {m.cantidad} {getUnidad(m.tipo)}
+                    </span>
+                  </div>
+                  <p className="text-sm font-medium text-gray-900">{m.nombre_material}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Acciones en footer */}
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 flex flex-wrap items-center justify-end gap-3">
+          {/* Docente: aprobar / rechazar */}
+          {usuario?.rol === 'docente' &&
+            !solicitud.isDocenteRequest &&
+            (solicitud.estado === 'aprobación pendiente') && (
+              <>
+                <Btn
+                  color="green"
+                  icon="✅"
+                  onClick={() => onAccion(solicitud.id, 'aprobar', 'entrega pendiente')}
+                  disabled={procesandoId === solicitud.id}
+                >
+                  Aprobar
+                </Btn>
+                <Btn
+                  color="red"
+                  icon="❌"
+                  onClick={() => onAccion(solicitud.id, 'rechazar', 'rechazada')}
+                  disabled={procesandoId === solicitud.id}
+                >
+                  Rechazar
+                </Btn>
+              </>
+            )}
+
+          {/* Almacén: Entregar cuando fecha no ha pasado */}
+          {canDeliver && (
+            <div className="flex rounded-lg overflow-hidden shadow-sm">
+              <button
+                type="button"
+                className={`${
+                  isToday
+                    ? 'bg-green-500 hover:bg-green-600'
+                    : 'bg-orange-500 hover:bg-orange-600'
+                } text-white px-3 py-2 rounded-l-lg flex items-center justify-center cursor-default`}
+                title={isToday ? 'Entrega hoy' : 'Entrega futura'}
+                disabled
+              >
+                🕒
+              </button>
+              <Btn
+                color="blue"
+                icon="🚚"
+                onClick={() => onEntregar ? onEntregar(solicitud) : onAccion(solicitud.id, 'entregar', 'entregada')}
+                disabled={procesandoId === solicitud.id}
+                className="rounded-none rounded-r-lg"
+              >
+                Entregar
+              </Btn>
+            </div>
+          )}
+
+          {/* Almacén: cancelar solicitud */}
+          {usuario?.rol === 'almacen' &&
+            !['entregada', 'cancelado', 'rechazada'].includes((solicitud.estado || '').toLowerCase()) && (
+              <Btn
+                color="gray"
+                icon="🗑️"
+                onClick={() => onAccion(solicitud.id, 'cancelar', 'cancelado')}
+                disabled={procesandoId === solicitud.id}
+              >
+                Cancelar
+              </Btn>
+            )}
+
+          {/* Alumno: cancelar si está en aprobación pendiente */}
+          {usuario?.rol === 'alumno' &&
+            (solicitud.estado === 'aprobación pendiente') && (
+              <Btn
+                color="gray"
+                icon="🚫"
+                onClick={() => onAccion(solicitud.id, 'cancelar', 'cancelado')}
+                disabled={procesandoId === solicitud.id}
+              >
+                Cancelar
+              </Btn>
+            )}
+
+          <Btn
+            color="purple"
+            icon="📄"
+            onClick={() => onPDF(solicitud)}
+            disabled={procesandoId === solicitud.id}
+          >
+            PDF
+          </Btn>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function SolicitudesPage() {
   const { usuario } = useAuth();
@@ -389,6 +575,7 @@ export default function SolicitudesPage() {
   const [search, setSearch] = useState('');
   const [modalEntrega, setModalEntrega] = useState(null); // {id, items}
   const [selectedItems, setSelectedItems] = useState([]);
+  const [modalDetail, setModalDetail] = useState(null); // Nueva: para detalle
 
   useEffect(() => {
     if (!notice) return;
@@ -736,7 +923,10 @@ export default function SolicitudesPage() {
     await actualizarEstado(modalEntrega.id, 'entregar', 'entregada', items);
     setModalEntrega(null);
   };
-  
+
+  const abrirDetalle = (sol) => {
+    setModalDetail(sol);
+  };
    
   /** PDF */
 const descargarPDF = async (vale) => {
@@ -975,7 +1165,7 @@ const descargarPDF = async (vale) => {
 
       {/* ALUMNO */}
       {usuario?.rol === 'alumno' && (
-        <TablaSolicitudes
+        <FichasSolicitudes
           titulo="Mis solicitudes"
           data={alumnoData}
           loading={loading}
@@ -986,6 +1176,7 @@ const descargarPDF = async (vale) => {
           usuario={usuario}
           onAccion={actualizarEstado}
           onPDF={descargarPDF}
+          onDetail={abrirDetalle}
           procesandoId={procesando}
         />
       )}
@@ -1050,7 +1241,7 @@ const descargarPDF = async (vale) => {
         </div>
     
     {activeTab === 'alumnos' ? (
-      <TablaSolicitudes
+      <FichasSolicitudes
         titulo="Solicitudes de alumnos para aprobar"
         data={filteredDocAprobar}
         loading={loading}
@@ -1061,10 +1252,11 @@ const descargarPDF = async (vale) => {
         usuario={usuario}
         onAccion={actualizarEstado}
         onPDF={descargarPDF}
+        onDetail={abrirDetalle}
         procesandoId={procesando}
       />
     ) : (
-      <TablaSolicitudes
+      <FichasSolicitudes
         titulo="Mis solicitudes como docente"
         data={filteredDocMias}
         loading={loading}
@@ -1075,6 +1267,7 @@ const descargarPDF = async (vale) => {
         usuario={usuario}
         onAccion={actualizarEstado}
         onPDF={descargarPDF}
+        onDetail={abrirDetalle}
         procesandoId={procesando}
       />
     )}
@@ -1190,7 +1383,7 @@ const descargarPDF = async (vale) => {
           </div>
 
           {activeTab === 'alumnos' ? (
-            <TablaSolicitudes
+            <FichasSolicitudes
               titulo="Solicitudes de alumnos"
               data={searchedAlmAlumnos}
               loading={loading}
@@ -1202,10 +1395,11 @@ const descargarPDF = async (vale) => {
               onAccion={actualizarEstado}
               onEntregar={abrirEntrega}
               onPDF={descargarPDF}
+              onDetail={abrirDetalle}
               procesandoId={procesando}
             />
           ) : (
-            <TablaSolicitudes
+            <FichasSolicitudes
               titulo="Solicitudes de docentes"
               data={searchedAlmDocentes}
               loading={loading}
@@ -1217,11 +1411,23 @@ const descargarPDF = async (vale) => {
               onAccion={actualizarEstado}
               onEntregar={abrirEntrega}
               onPDF={descargarPDF}
+              onDetail={abrirDetalle}
               procesandoId={procesando}
             />
           )}
         </>
       )}
+
+      {/* Modal de detalle */}
+      <ModalDetalle
+        solicitud={modalDetail}
+        onClose={() => setModalDetail(null)}
+        usuario={usuario}
+        onAccion={actualizarEstado}
+        onEntregar={abrirEntrega}
+        onPDF={descargarPDF}
+        procesandoId={procesando}
+      />
 
       {/* Modal de entrega con mejor styling */}
       {modalEntrega && (
