@@ -61,7 +61,7 @@ const Td = ({ children, bold = false }) => (
   </td>
 );
 
-const Btn = ({ children, color, onClick, disabled, icon }) => {
+const Btn = ({ children, color, onClick, disabled, icon, className = '' }) => {
   const palette = {
     green:  'bg-green-600 hover:bg-green-700 focus:ring-green-500',
     red:    'bg-red-600 hover:bg-red-700 focus:ring-red-500',
@@ -75,7 +75,7 @@ const Btn = ({ children, color, onClick, disabled, icon }) => {
       type="button"
       className={`${palette} text-white text-sm rounded-lg px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed 
         transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-1
-        shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2`}
+           shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2 ${className}`}
       onClick={onClick}
       disabled={disabled}
     >
@@ -203,6 +203,12 @@ function TablaSolicitudes({
                   recoDateStr &&
                   recoDateStr > todayStr &&
                   recoDateStr !== todayStr;
+                  const isToday = recoDateStr === todayStr;
+                const isFuture = recoDateStr > todayStr;
+                const canDeliver =
+                  usuario?.rol === 'almacen' &&
+                  s.estado === 'entrega pendiente' &&
+                  (isToday || isFuture);
                 return (
                   <tr key={s.id} className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ${isOverdue ? 'border-2 border-red-500 bg-red-50' : ''}`}>
                     {columnas.folio && <Td bold>{s.folio}</Td>}
@@ -285,10 +291,21 @@ function TablaSolicitudes({
                               </>
                             )}
 
-                          {/* Almacén: Entregar cuando UI = entrega pendiente */}
-                          {usuario?.rol === 'almacen' &&
-                            s.estado === 'entrega pendiente' &&
-                            (s.fecha_recoleccion || '').split('T')[0] === toLocalDateStr(new Date()) && (
+                          {/* Almacén: Entregar cuando fecha no ha pasado */}
+                          {canDeliver && (
+                            <div className="flex rounded-lg overflow-hidden shadow-sm">
+                              <button
+                                type="button"
+                                className={`${
+                                  isToday
+                                    ? 'bg-green-500 hover:bg-green-600'
+                                    : 'bg-orange-500 hover:bg-orange-600'
+                                } text-white px-3 py-2 rounded-l-lg flex items-center justify-center cursor-default`}
+                                title={isToday ? 'Entrega hoy' : 'Entrega futura'}
+                                disabled
+                              >
+                                🕒
+                              </button>
                               <Btn
                                 color="blue"
                                 icon="🚚"
@@ -296,10 +313,12 @@ function TablaSolicitudes({
                                   onEntregar ? onEntregar(s) : onAccion(s.id, 'entregar', 'entregada')
                                 }
                                 disabled={procesandoId === s.id}
+                                  className="rounded-none rounded-r-lg"
                               >
                                 Entregar
                               </Btn>
-                            )}
+                              </div>
+                          )}
 
                             {/* Almacén: cancelar solicitud */}
                           {usuario?.rol === 'almacen' &&
