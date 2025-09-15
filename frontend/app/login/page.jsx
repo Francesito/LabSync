@@ -52,7 +52,9 @@ export default function Auth() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('nombre', data.nombre);
       setRedirecting(true);
-      router.replace('/catalog');
+      setTimeout(() => {
+        router.replace('/catalog');
+      }, 0);
     } catch (err) {
       setError(err.response?.data?.error || 'Error al iniciar sesión');
     }
@@ -101,10 +103,7 @@ export default function Auth() {
  if (redirecting)
     return (
       <div className="min-vh-100 bg-white d-flex justify-content-center align-items-center">
-        <div className="text-center">
-          <div className="spinner-border text-primary mb-3" role="status"></div>
-          <p className="text-primary">Iniciando sesión...</p>
-        </div>
+       <p className="text-primary">Espere un segundo...</p>
       </div>
     );
 
