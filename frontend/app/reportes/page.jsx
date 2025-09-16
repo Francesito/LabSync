@@ -8,6 +8,8 @@ import {
   obtenerGrupos,
   obtenerInventarioLiquidos,
   obtenerInventarioSolidos,
+  obtenerPrestamosEquipos,
+  obtenerPrestamosLaboratorio,
 } from '../../lib/api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -25,7 +27,11 @@ export default function ReportesPage() {
   const [grupoDetalle, setGrupoDetalle] = useState(null);
   const [showGrupoAdeudosModal, setShowGrupoAdeudosModal] = useState(false);
 
-    const [ordenDesc, setOrdenDesc] = useState(false);
+  const [ordenDesc, setOrdenDesc] = useState(false);
+  const [ordenLiquidosDesc, setOrdenLiquidosDesc] = useState(true);
+  const [ordenSolidosDesc, setOrdenSolidosDesc] = useState(true);
+  const [ordenPrestamosEquiposDesc, setOrdenPrestamosEquiposDesc] = useState(true);
+  const [ordenPrestamosLaboratorioDesc, setOrdenPrestamosLaboratorioDesc] = useState(true);
   
   const [inventarioLiquidos, setInventarioLiquidos] = useState({ meses: [], datos: [] });
   const [showLiquidosModal, setShowLiquidosModal] = useState(false);
@@ -33,6 +39,9 @@ export default function ReportesPage() {
   const [inventarioSolidos, setInventarioSolidos] = useState({ meses: [], datos: [] });
   const [showSolidosModal, setShowSolidosModal] = useState(false);
 
+    const [prestamosEquipos, setPrestamosEquipos] = useState({ meses: [], datos: [] });
+  const [prestamosLaboratorio, setPrestamosLaboratorio] = useState({ meses: [], datos: [] });
+  
   const [searchHistorial, setSearchHistorial] = useState('');
   const [searchLiquidos, setSearchLiquidos] = useState('');
   const [searchSolidos, setSearchSolidos] = useState('');
@@ -115,6 +124,24 @@ export default function ReportesPage() {
         });
       })
       .catch(() => setInventarioSolidos({ meses: [], datos: [] }));
+
+      obtenerPrestamosEquipos()
+      .then((data) => {
+        setPrestamosEquipos({
+          meses: data.meses || [],
+          datos: Array.isArray(data.datos) ? data.datos : [],
+        });
+      })
+      .catch(() => setPrestamosEquipos({ meses: [], datos: [] }));
+
+    obtenerPrestamosLaboratorio()
+      .then((data) => {
+        setPrestamosLaboratorio({
+          meses: data.meses || [],
+          datos: Array.isArray(data.datos) ? data.datos : [],
+        });
+      })
+      .catch(() => setPrestamosLaboratorio({ meses: [], datos: [] }));
   }, []);
 
   const downloadHistorialCSV = (registros, nombre) => {
@@ -149,6 +176,30 @@ export default function ReportesPage() {
     r.nombre.replace(/_/g, ' ').toLowerCase().includes(searchSolidos.toLowerCase())
   );
 
+   const sortedLiquidos = [...filteredLiquidos].sort((a, b) => {
+    const totalA = Number(a.total_consumido) || 0;
+    const totalB = Number(b.total_consumido) || 0;
+    return ordenLiquidosDesc ? totalB - totalA : totalA - totalB;
+  });
+
+  const sortedSolidos = [...filteredSolidos].sort((a, b) => {
+    const totalA = Number(a.total_consumido) || 0;
+    const totalB = Number(b.total_consumido) || 0;
+    return ordenSolidosDesc ? totalB - totalA : totalA - totalB;
+  });
+
+  const sortedPrestamosEquipos = [...prestamosEquipos.datos].sort((a, b) => {
+    const totalA = Number(a.total) || 0;
+    const totalB = Number(b.total) || 0;
+    return ordenPrestamosEquiposDesc ? totalB - totalA : totalA - totalB;
+  });
+
+  const sortedPrestamosLaboratorio = [...prestamosLaboratorio.datos].sort((a, b) => {
+    const totalA = Number(a.total) || 0;
+    const totalB = Number(b.total) || 0;
+    return ordenPrestamosLaboratorioDesc ? totalB - totalA : totalA - totalB;
+  });
+  
     const downloadAdeudosPDF = () => {
     if (!grupoDetalle) return;
     const doc = new jsPDF();
@@ -173,7 +224,7 @@ export default function ReportesPage() {
       'Existencia Final',
       'Total',
     ];
-    const rows = filteredLiquidos.map((r) => [
+    const rows = sortedLiquidos.map((r) => [
       r.nombre.replace(/_/g, ' '),
       `${r.cantidad_inicial} ${r.unidad}`,
       ...inventarioLiquidos.meses.map((m) => r.consumos[m] || 0),
@@ -193,7 +244,7 @@ export default function ReportesPage() {
       'Existencia Final',
       'Total',
     ];
-    const rows = filteredSolidos.map((r) => [
+    const rows = sortedSolidos.map((r) => [  
       r.nombre.replace(/_/g, ' '),
       `${r.cantidad_inicial} ${r.unidad}`,
       ...inventarioSolidos.meses.map((m) => r.consumos[m] || 0),
@@ -414,10 +465,18 @@ export default function ReportesPage() {
                 <i className="bi bi-droplet-fill me-2 text-info"></i>Inventario Reactivos Líquidos
               </h2>
               <div className="ms-auto d-flex align-items-center">
+                 <button
+                  onClick={() => setOrdenLiquidosDesc((prev) => !prev)}
+                  className="btn btn-link btn-sm me-2 p-0 text-info"
+                  aria-label="Ordenar por consumo"
+                  title={ordenLiquidosDesc ? 'Ordenar de menor a mayor' : 'Ordenar de mayor a menor'}
+                >
+                  <i className={`bi ${ordenLiquidosDesc ? 'bi-sort-down-alt' : 'bi-sort-up'}`}></i>
+                </button>
                 <button
                   onClick={downloadInventarioLiquidosPDF}
                   className="btn btn-sm btn-outline-danger me-2 animate-button"
-                  disabled={filteredLiquidos.length === 0}
+                disabled={sortedLiquidos.length === 0}
                 >
                   <i className="bi bi-file-earmark-pdf"></i>
                 </button>
@@ -431,7 +490,7 @@ export default function ReportesPage() {
                 />
               </div>
             </div>
-            {filteredLiquidos.length === 0 ? (
+           {sortedLiquidos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
             ) : (
               <>
@@ -451,7 +510,7 @@ export default function ReportesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                     {filteredLiquidos.slice(0, 5).map((r, idx) => (
+                      {sortedLiquidos.slice(0, 5).map((r, idx) => (
                         <tr key={idx} className="animate-row">
                           <td className="py-2 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                           <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
@@ -467,7 +526,7 @@ export default function ReportesPage() {
                     </tbody>
                   </table>
                 </div>
-               {filteredLiquidos.length > 5 && (
+               {sortedLiquidos.length > 5 && (
                   <button
                     className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
                     onClick={() => setShowLiquidosModal(true)}
@@ -490,10 +549,18 @@ export default function ReportesPage() {
                 <i className="bi bi-cube-fill me-2 text-purple"></i>Inventario Reactivos Sólidos
               </h2>
             <div className="ms-auto d-flex align-items-center">
+               <button
+                  onClick={() => setOrdenSolidosDesc((prev) => !prev)}
+                  className="btn btn-link btn-sm me-2 p-0 text-purple"
+                  aria-label="Ordenar por consumo"
+                  title={ordenSolidosDesc ? 'Ordenar de menor a mayor' : 'Ordenar de mayor a menor'}
+                >
+                  <i className={`bi ${ordenSolidosDesc ? 'bi-sort-down-alt' : 'bi-sort-up'}`}></i>
+                </button>
                 <button
                   onClick={downloadInventarioSolidosPDF}
                   className="btn btn-sm btn-outline-danger me-2 animate-button"
-                  disabled={filteredSolidos.length === 0}
+                   disabled={sortedSolidos.length === 0}
                 >
                   <i className="bi bi-file-earmark-pdf"></i>
                 </button>
@@ -507,7 +574,7 @@ export default function ReportesPage() {
                 />
               </div>
             </div>
-            {filteredSolidos.length === 0 ? (
+           {sortedSolidos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
             ) : (
               <>
@@ -527,7 +594,7 @@ export default function ReportesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                       {filteredSolidos.slice(0, 5).map((r, idx) => (
+                        {sortedSolidos.slice(0, 5).map((r, idx) => (
                         <tr key={idx} className="animate-row">
                           <td className="py-2 text-capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                           <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
@@ -543,7 +610,7 @@ export default function ReportesPage() {
                     </tbody>
                   </table>
                 </div>
-                {filteredSolidos.length > 5 && (
+                  {sortedSolidos.length > 5 && (
                   <button
                     className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
                     onClick={() => setShowSolidosModal(true)}
@@ -557,6 +624,112 @@ export default function ReportesPage() {
         </div>
       </div>
 
+       {/* Cuarta fila: Préstamos por Cuatrimestre */}
+      <div className="row g-4 mb-5">
+        <div className="col-lg-6 col-12">
+          <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
+            <div className="d-flex align-items-center mb-3">
+              <h2 className="card-title h5 mb-0 text-orange">
+                <i className="bi bi-tools me-2 text-orange"></i>Préstamos Materiales de Equipo
+              </h2>
+              <div className="ms-auto d-flex align-items-center">
+                <button
+                  onClick={() => setOrdenPrestamosEquiposDesc((prev) => !prev)}
+                  className="btn btn-link btn-sm me-2 p-0 text-orange"
+                  aria-label="Ordenar por préstamos"
+                  title={ordenPrestamosEquiposDesc ? 'Ordenar de menor a mayor' : 'Ordenar de mayor a menor'}
+                >
+                  <i className={`bi ${ordenPrestamosEquiposDesc ? 'bi-sort-down-alt' : 'bi-sort-up'}`}></i>
+                </button>
+              </div>
+            </div>
+            {sortedPrestamosEquipos.length === 0 ? (
+              <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-sm table-hover table-bordered">
+                  <thead className="table-orange">
+                    <tr>
+                      <th>Nombre</th>
+                      {prestamosEquipos.meses.map((mes) => (
+                        <th key={mes} className="text-capitalize text-center">
+                          {mes}
+                        </th>
+                      ))}
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedPrestamosEquipos.map((item, idx) => (
+                      <tr key={idx} className="animate-row">
+                        <td className="py-2 text-capitalize">{item.nombre.replace(/_/g, ' ')}</td>
+                        {prestamosEquipos.meses.map((mes) => (
+                          <td key={mes} className="py-2 text-center">
+                            {item.consumos?.[mes] || 0}
+                          </td>
+                        ))}
+                        <td className="py-2 text-center fw-semibold">{item.total || 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="col-lg-6 col-12">
+          <div className="card p-4 shadow-lg animate-card border-0 bg-white bg-opacity-95 h-100">
+            <div className="d-flex align-items-center mb-3">
+              <h2 className="card-title h5 mb-0 text-slate">
+                <i className="bi bi-beaker me-2 text-slate"></i>Préstamos Materiales de Laboratorio
+              </h2>
+              <div className="ms-auto d-flex align-items-center">
+                <button
+                  onClick={() => setOrdenPrestamosLaboratorioDesc((prev) => !prev)}
+                  className="btn btn-link btn-sm me-2 p-0 text-slate"
+                  aria-label="Ordenar por préstamos"
+                  title={ordenPrestamosLaboratorioDesc ? 'Ordenar de menor a mayor' : 'Ordenar de mayor a menor'}
+                >
+                  <i className={`bi ${ordenPrestamosLaboratorioDesc ? 'bi-sort-down-alt' : 'bi-sort-up'}`}></i>
+                </button>
+              </div>
+            </div>
+            {sortedPrestamosLaboratorio.length === 0 ? (
+              <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-sm table-hover table-bordered">
+                  <thead className="table-slate">
+                    <tr>
+                      <th>Nombre</th>
+                      {prestamosLaboratorio.meses.map((mes) => (
+                        <th key={mes} className="text-capitalize text-center">
+                          {mes}
+                        </th>
+                      ))}
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedPrestamosLaboratorio.map((item, idx) => (
+                      <tr key={idx} className="animate-row">
+                        <td className="py-2 text-capitalize">{item.nombre.replace(/_/g, ' ')}</td>
+                        {prestamosLaboratorio.meses.map((mes) => (
+                          <td key={mes} className="py-2 text-center">
+                            {item.consumos?.[mes] || 0}
+                          </td>
+                        ))}
+                        <td className="py-2 text-center fw-semibold">{item.total || 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
       {/* Modales */}
       {showHistorialModal && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
@@ -712,7 +885,7 @@ export default function ReportesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                   {filteredLiquidos.map((r, idx) => (
+                   {sortedLiquidos.map((r, idx) => (
                     <tr key={idx} className="animate-row">
                       <td className="py-2 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                       <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
@@ -759,7 +932,7 @@ export default function ReportesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                 {filteredSolidos.map((r, idx) => (
+                 {sortedSolidos.map((r, idx) => (
                     <tr key={idx} className="animate-row">
                       <td className="py-2 capitalize">{r.nombre.replace(/_/g, ' ')}</td>
                       <td className="py-2">{r.cantidad_inicial} {r.unidad}</td>
@@ -915,6 +1088,20 @@ export default function ReportesPage() {
         }
         .table-purple {
           background-color: #8b5cf6 !important;
+          color: white !important;
+        }
+         .text-orange {
+          color: #f97316 !important;
+        }
+        .table-orange {
+          background-color: #f97316 !important;
+          color: white !important;
+        }
+        .text-slate {
+          color: #475569 !important;
+        }
+        .table-slate {
+          background-color: #475569 !important;
           color: white !important;
         }
         .h-100 {
