@@ -83,69 +83,74 @@ const SELECT_SOLICITUDES_CON_NOMBRE = `
 
 /**
  * Elimina solicitudes cuya fecha de recolección ya pasó y
- * que no han sido marcadas como entregadas.
- * Solo elimina solicitudes de ALUMNOS (nombre_alumno IS NOT NULL)
+ * que no han sido marcadas como entregadas (pendientes o aprobadas).
+ * Restaura el stock de las aprobadas antes de eliminarlas.
  */
 const cleanupExpiredSolicitudes = async () => {
   try {
-    // Obtener fecha actual en zona horaria de México
-    const hoyMexico = new Date().toLocaleDateString('en-CA', {
-      timeZone: 'America/Mexico_City'
-    });
-    
+const formatDateMexico = (value) =>
+      new Date(value).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+
+    const hoyMexico = formatDateMexico(new Date());
     console.log(`[DEBUG] Fecha actual México: ${hoyMexico}`);
     
-    // Primero obtener las solicitudes que van a ser eliminadas para debug
-    const [solicitudesAEliminar] = await pool.query(`
-      SELECT s.id, s.folio, s.fecha_recoleccion, s.estado, s.nombre_alumno
-      FROM Solicitud s
-      WHERE s.estado = 'aprobada'
-        AND s.nombre_alumno IS NOT NULL
-        AND s.fecha_recoleccion IS NOT NULL
-        AND s.fecha_recoleccion < ?
-    `, [hoyMexico]);
-    
-    if (solicitudesAEliminar.length > 0) {
-      console.log(`[DEBUG] Solicitudes a eliminar:`, solicitudesAEliminar);
-      
-      // Antes de eliminar, restaurar el stock que fue descontado
-      for (const sol of solicitudesAEliminar) {
-        const [items] = await pool.query(
-          'SELECT material_id, tipo, cantidad FROM SolicitudItem WHERE solicitud_id = ?',
-          [sol.id]
+   const [solicitudesExpiradas] = await pool.query(
+      `SELECT s.id, s.folio, s.fecha_recoleccion, s.estado
+       FROM Solicitud s
+       WHERE s.fecha_recoleccion IS NOT NULL
+         AND DATE(s.fecha_recoleccion) < ?
+         AND s.estado IN ('pendiente', 'aprobada')`,
+      [hoyMexico]
+    );
+
+    if (solicitudesExpiradas.length === 0) {
+      return;
+    }
+
+    console.log('[DEBUG] Solicitudes a eliminar:', solicitudesExpiradas);
+
+    const aprobadas = solicitudesExpiradas.filter((sol) => sol.estado === 'aprobada');
+    if (aprobadas.length > 0) {
+      const aprobadasIds = aprobadas.map((sol) => sol.id);
+      const placeholders = aprobadasIds.map(() => '?').join(',');
+      const [items] = await pool.query(
+        `SELECT solicitud_id, material_id, tipo, cantidad
+         FROM SolicitudItem
+         WHERE solicitud_id IN (${placeholders})`,
+        aprobadasIds
+      );
+
+      for (const item of items) {
+        const meta = detectTableAndField(item.tipo?.trim().toLowerCase());
+        if (!meta) continue;
+
+        await pool.query(
+          `UPDATE ${meta.table} SET ${meta.field} = ${meta.field} + ? WHERE id = ?`,
+          [item.cantidad, item.material_id]
         );
-        
-        for (const it of items) {
-          const meta = detectTableAndField(it.tipo);
-          if (meta) {
-            await pool.query(
-              `UPDATE ${meta.table} SET ${meta.field} = ${meta.field} + ? WHERE id = ?`,
-              [it.cantidad, it.material_id]
-            );
-            console.log(`[DEBUG] Stock restaurado: ${it.cantidad} de material ${it.material_id} tipo ${it.tipo}`);
-          }
-        }
+        console.log(
+          `[DEBUG] Stock restaurado: ${item.cantidad} de material ${item.material_id} tipo ${item.tipo}`
+        );
       }
     }
 
-    // Eliminar SolicitudItem primero (por integridad referencial)
-    await pool.query(`
-      DELETE si FROM SolicitudItem si
-      JOIN Solicitud s ON si.solicitud_id = s.id
-      WHERE s.estado = 'aprobada'
-        AND s.nombre_alumno IS NOT NULL
-        AND s.fecha_recoleccion IS NOT NULL
-        AND s.fecha_recoleccion < ?
-    `, [hoyMexico]);
+ const solicitudIds = solicitudesExpiradas.map((sol) => sol.id);
+    const placeholdersAll = solicitudIds.map(() => '?').join(',');
 
-    // Eliminar las solicitudes
-    const [result] = await pool.query(`
-      DELETE FROM Solicitud
-      WHERE estado = 'aprobada'
-        AND nombre_alumno IS NOT NULL
-        AND fecha_recoleccion IS NOT NULL
-        AND fecha_recoleccion < ?
-    `, [hoyMexico]);
+    await pool.query(
+      `DELETE FROM Adeudo WHERE solicitud_id IN (${placeholdersAll})`,
+      solicitudIds
+    );
+
+    await pool.query(
+      `DELETE FROM SolicitudItem WHERE solicitud_id IN (${placeholdersAll})`,
+      solicitudIds
+    );
+
+    const [result] = await pool.query(
+      `DELETE FROM Solicitud WHERE id IN (${placeholdersAll})`,
+      solicitudIds
+    );
 
     if (result.affectedRows > 0) {
       console.log(
@@ -925,24 +930,19 @@ const deliverSolicitud = async (req, res) => {
 
     // 2) Validar fecha de recolección - CORREGIDO CON ZONA HORARIA MÉXICO
     if (sol.fecha_recoleccion) {
-      // Obtener fecha actual en zona horaria de México
-      const hoyMexico = new Date().toLocaleDateString('en-CA', {
-        timeZone: 'America/Mexico_City'
-      });
-      
-      // Convertir fecha_recoleccion a string formato YYYY-MM-DD
-      const fechaRecoleccionStr = new Date(sol.fecha_recoleccion).toISOString().split('T')[0];
+    const formatDateMexico = (value) =>
+        new Date(value).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+      const hoyMexico = formatDateMexico(new Date());
+      const fechaRecoleccionStr = formatDateMexico(sol.fecha_recoleccion);
 
-      // Comparar las fechas como strings
-      if (fechaRecoleccionStr !== hoyMexico) {
-        // Debug para verificar las fechas
+       if (hoyMexico > fechaRecoleccionStr) {
         console.log('[DEBUG] Fecha actual México:', hoyMexico);
         console.log('[DEBUG] Fecha recolección:', fechaRecoleccionStr);
         console.log('[DEBUG] Fecha recolección original:', sol.fecha_recoleccion);
         console.log('[DEBUG] Zona horaria servidor:', Intl.DateTimeFormat().resolvedOptions().timeZone);
         
-        return res.status(400).json({ 
-          error: `La solicitud solo puede entregarse en su fecha de recolección (${fechaRecoleccionStr}). Hoy es ${hoyMexico}` 
+        return res.status(400).json({
+          error: `La solicitud ya no puede entregarse porque su fecha de recolección (${fechaRecoleccionStr}) ya pasó. Hoy es ${hoyMexico}.`
         });
       }
     }
