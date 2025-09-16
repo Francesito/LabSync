@@ -223,7 +223,8 @@ const getSolidos = async (req, res) => {
 // Función auxiliar para obtener meses del cuatrimestre actual
 function obtenerMesesCuatri() {
   const now = new Date();
-const start = 8; // septiembre
+ const mesActual = now.getMonth();
+  const year = now.getFullYear();
   const nombres = [
     'enero',
     'febrero',
@@ -238,15 +239,20 @@ const start = 8; // septiembre
     'noviembre',
     'diciembre',
   ];
- // Año base del ciclo escolar (comienza en septiembre)
-  const baseYear =
-    now.getMonth() >= start ? now.getFullYear() : now.getFullYear() - 1;
-  // Siempre retornar el primer cuatrimestre del ciclo (septiembre-diciembre)
-  const indices = [8, 9, 10, 11];
-  return indices.map((i) => ({
-    index: i,
-    nombre: nombres[i],
-    year: i >= start ? baseYear : baseYear + 1,
+
+   let indices;
+  if (mesActual >= 8) {
+    indices = [8, 9, 10, 11];
+  } else if (mesActual >= 4) {
+    indices = [4, 5, 6, 7];
+  } else {
+    indices = [0, 1, 2, 3];
+  }
+
+  return indices.map((indice) => ({
+    index: indice,
+    nombre: nombres[indice],
+    year,
   }));
 }
 
@@ -268,9 +274,12 @@ const getInventarioLiquidosReport = async (req, res) => {
         AND mov.fecha_movimiento BETWEEN ? AND ?
       GROUP BY ml.id`;
     const [rows] = await pool.query(query, [inicio, fin]);
-    const datos = rows.map(r => {
+     const datos = rows.map((r) => {
       const consumos = {};
-     meses.forEach(m => { consumos[m.nombre] = parseFloat(r[m.nombre]) || 0; });
+   meses.forEach((m) => {
+        const valor = parseFloat(r[m.nombre]);
+        consumos[m.nombre] = Number.isFinite(valor) ? Math.abs(valor) : 0;
+      });
       const total = Object.values(consumos).reduce((a, b) => a + b, 0);
       const disponible = parseFloat(r.cantidad_disponible_ml) || 0;
       return {
@@ -307,9 +316,12 @@ const getInventarioSolidosReport = async (req, res) => {
         AND mov.fecha_movimiento BETWEEN ? AND ?
       GROUP BY ms.id`;
     const [rows] = await pool.query(query, [inicio, fin]);
-    const datos = rows.map(r => {
+ const datos = rows.map((r) => {
       const consumos = {};
-meses.forEach(m => { consumos[m.nombre] = parseFloat(r[m.nombre]) || 0; });
+ meses.forEach((m) => {
+        const valor = parseFloat(r[m.nombre]);
+        consumos[m.nombre] = Number.isFinite(valor) ? Math.abs(valor) : 0;
+      });
       const total = Object.values(consumos).reduce((a, b) => a + b, 0);
       const disponible = parseFloat(r.cantidad_disponible_g) || 0;
       return {
@@ -352,8 +364,8 @@ const getPrestamosEquiposReport = async (req, res) => {
     const datos = rows.map((r) => {
       const consumos = {};
       meses.forEach((m) => {
-        const valor = parseFloat(r[m.nombre]) || 0;
-        consumos[m.nombre] = valor > 0 ? valor : 0;
+       const valor = parseFloat(r[m.nombre]);
+        consumos[m.nombre] = Number.isFinite(valor) ? Math.abs(valor) : 0;
       });
       const total = Object.values(consumos).reduce((a, b) => a + b, 0);
       return {
@@ -394,8 +406,8 @@ const getPrestamosLaboratorioReport = async (req, res) => {
     const datos = rows.map((r) => {
       const consumos = {};
       meses.forEach((m) => {
-        const valor = parseFloat(r[m.nombre]) || 0;
-        consumos[m.nombre] = valor > 0 ? valor : 0;
+     const valor = parseFloat(r[m.nombre]);
+        consumos[m.nombre] = Number.isFinite(valor) ? Math.abs(valor) : 0;
       });
       const total = Object.values(consumos).reduce((a, b) => a + b, 0);
       return {
