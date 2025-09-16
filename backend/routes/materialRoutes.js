@@ -60,6 +60,20 @@ router.get(
   materialController.getInventarioSolidosReport
 );
 
+router.get(
+  '/inventario/equipos',
+  verificarToken,
+  verificarRol([3, 4]),
+  materialController.getPrestamosEquiposReport
+);
+
+router.get(
+  '/inventario/laboratorio',
+  verificarToken,
+  verificarRol([3, 4]),
+  materialController.getPrestamosLaboratorioReport
+);
+
 /**
  * ========================
  * RUTAS PARA ALUMNOS (ROL 1) Y DOCENTES (ROL 2)
