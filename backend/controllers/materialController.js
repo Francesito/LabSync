@@ -328,6 +328,90 @@ meses.forEach(m => { consumos[m.nombre] = parseFloat(r[m.nombre]) || 0; });
   }
 };
 
+const getPrestamosEquiposReport = async (req, res) => {
+  logRequest('getPrestamosEquiposReport');
+  try {
+    const meses = obtenerMesesCuatri();
+    const inicio = `${meses[0].year}-${String(meses[0].index + 1).padStart(2, '0')}-01`;
+    const finDate = new Date(meses[3].year, meses[3].index + 1, 0);
+    const fin = `${finDate.getFullYear()}-${String(finDate.getMonth() + 1).padStart(2, '0')}-${String(finDate.getDate()).padStart(2, '0')}`;
+    const consumoSelect = meses
+      .map(
+        (m) =>
+          `SUM(CASE WHEN MONTH(mov.fecha_movimiento) = ${m.index + 1} AND YEAR(mov.fecha_movimiento) = ${m.year} THEN -mov.cantidad ELSE 0 END) AS ${m.nombre}`
+      )
+      .join(', ');
+    const query = `
+      SELECT me.id, me.nombre, ${consumoSelect}
+      FROM MaterialEquipo me
+      LEFT JOIN MovimientosInventario mov
+        ON mov.material_id = me.id AND mov.tipo = 'equipo' AND mov.tipo_movimiento = 'salida'
+        AND mov.fecha_movimiento BETWEEN ? AND ?
+      GROUP BY me.id`;
+    const [rows] = await pool.query(query, [inicio, fin]);
+    const datos = rows.map((r) => {
+      const consumos = {};
+      meses.forEach((m) => {
+        const valor = parseFloat(r[m.nombre]) || 0;
+        consumos[m.nombre] = valor > 0 ? valor : 0;
+      });
+      const total = Object.values(consumos).reduce((a, b) => a + b, 0);
+      return {
+        nombre: r.nombre,
+        unidad: 'u',
+        consumos,
+        total,
+      };
+    });
+    res.json({ meses: meses.map((m) => m.nombre), datos });
+  } catch (error) {
+    console.error('[Error] getPrestamosEquiposReport:', error);
+    res.status(500).json({ error: 'Error al obtener préstamos de equipos' });
+  }
+};
+
+const getPrestamosLaboratorioReport = async (req, res) => {
+  logRequest('getPrestamosLaboratorioReport');
+  try {
+    const meses = obtenerMesesCuatri();
+    const inicio = `${meses[0].year}-${String(meses[0].index + 1).padStart(2, '0')}-01`;
+    const finDate = new Date(meses[3].year, meses[3].index + 1, 0);
+    const fin = `${finDate.getFullYear()}-${String(finDate.getMonth() + 1).padStart(2, '0')}-${String(finDate.getDate()).padStart(2, '0')}`;
+    const consumoSelect = meses
+      .map(
+        (m) =>
+          `SUM(CASE WHEN MONTH(mov.fecha_movimiento) = ${m.index + 1} AND YEAR(mov.fecha_movimiento) = ${m.year} THEN -mov.cantidad ELSE 0 END) AS ${m.nombre}`
+      )
+      .join(', ');
+    const query = `
+      SELECT mlab.id, mlab.nombre, ${consumoSelect}
+      FROM MaterialLaboratorio mlab
+      LEFT JOIN MovimientosInventario mov
+        ON mov.material_id = mlab.id AND mov.tipo = 'laboratorio' AND mov.tipo_movimiento = 'salida'
+        AND mov.fecha_movimiento BETWEEN ? AND ?
+      GROUP BY mlab.id`;
+    const [rows] = await pool.query(query, [inicio, fin]);
+    const datos = rows.map((r) => {
+      const consumos = {};
+      meses.forEach((m) => {
+        const valor = parseFloat(r[m.nombre]) || 0;
+        consumos[m.nombre] = valor > 0 ? valor : 0;
+      });
+      const total = Object.values(consumos).reduce((a, b) => a + b, 0);
+      return {
+        nombre: r.nombre,
+        unidad: 'u',
+        consumos,
+        total,
+      };
+    });
+    res.json({ meses: meses.map((m) => m.nombre), datos });
+  } catch (error) {
+    console.error('[Error] getPrestamosLaboratorioReport:', error);
+    res.status(500).json({ error: 'Error al obtener préstamos de laboratorio' });
+  }
+};
+
 /** Obtener equipos */
 const getEquipos = async (req, res) => {
   logRequest('getEquipos');
@@ -2631,6 +2715,8 @@ module.exports = {
   getLaboratorio,
   getInventarioLiquidosReport,
   getInventarioSolidosReport,
+    getPrestamosEquiposReport,
+  getPrestamosLaboratorioReport,
   
   // Materiales generales
   getMaterials,
