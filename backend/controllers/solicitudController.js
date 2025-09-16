@@ -2,6 +2,18 @@
 const pool = require('../config/db');
 const { crearNotificacion } = require('../models/notificacion');
 
+const STOCK_FIELDS_BY_TIPO = {
+  liquido: { table: 'MaterialLiquido', field: 'cantidad_disponible_ml' },
+  solido: { table: 'MaterialSolido', field: 'cantidad_disponible_g' },
+  equipo: { table: 'MaterialEquipo', field: 'cantidad_disponible_u' },
+  laboratorio: { table: 'MaterialLaboratorio', field: 'cantidad_disponible' },
+};
+
+const getStockMetaByTipo = (tipo) => {
+  if (!tipo) return null;
+  return STOCK_FIELDS_BY_TIPO[String(tipo).trim().toLowerCase()] || null;
+};
+
 // Crear solicitud sin adeudo
 
 const obtenerMisSolicitudes = async (req, res) => {
@@ -493,12 +505,21 @@ const entregarMateriales = async (req, res) => {
     const fechaDevolucion = solicitud[0].fecha_devolucion;
     const solicitanteId = solicitud[0].usuario_id;
     const docenteId = solicitud[0].docente_id;
-const formatDate = (date) => new Date(date).toISOString().split('T')[0];
-    if (!reco || formatDate(reco) !== formatDate(new Date())) {
-      await connection.rollback();
-      return res
-        .status(400)
-        .json({ error: 'La solicitud solo puede entregarse en su fecha de recolección' });
+
+      if (reco) {
+      const formatDateMexico = (date) =>
+        new Date(date).toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+      const hoyMexico = new Date().toLocaleDateString('en-CA', {
+        timeZone: 'America/Mexico_City',
+      });
+      const fechaRecoleccionMx = formatDateMexico(reco);
+
+      if (hoyMexico > fechaRecoleccionMx) {
+        await connection.rollback();
+        return res.status(400).json({
+          error: `La solicitud ya no puede entregarse porque su fecha de recolección (${fechaRecoleccionMx}) ya pasó. Hoy es ${hoyMexico}.`,
+        });
+      }
     }
     
     // Verificar permisos de modificar stock solo para usuarios de almacén
@@ -1610,17 +1631,74 @@ const rechazarSolicitud = async (req, res) => {
 
 // Cancelar solicitudes cuya fecha de recolección ya pasó
 const cancelarSolicitudesVencidas = async () => {
+    const connection = await pool.getConnection();
+  
   try {
-    const [result] = await pool.query(
-    `DELETE FROM Solicitud
-       WHERE estado IN ('pendiente','aprobada')
-       AND fecha_recoleccion < CURDATE()`
+    await connection.beginTransaction();
+
+    const [solicitudes] = await connection.query(
+      `SELECT id, estado
+       FROM Solicitud
+       WHERE estado IN ('pendiente', 'aprobada')
+         AND fecha_recoleccion IS NOT NULL
+         AND DATE(fecha_recoleccion) < CURDATE()`
     );
+
+    if (solicitudes.length === 0) {
+      await connection.commit();
+      return;
+    }
+
+    const aprobadasIds = solicitudes
+      .filter((sol) => sol.estado === 'aprobada')
+      .map((sol) => sol.id);
+
+    if (aprobadasIds.length > 0) {
+      const placeholders = aprobadasIds.map(() => '?').join(',');
+      const [items] = await connection.query(
+        `SELECT solicitud_id, material_id, tipo, cantidad
+         FROM SolicitudItem
+         WHERE solicitud_id IN (${placeholders})`,
+        aprobadasIds
+      );
+
+      for (const item of items) {
+        const meta = getStockMetaByTipo(item.tipo);
+        if (!meta) continue;
+
+        await connection.query(
+          `UPDATE ${meta.table} SET ${meta.field} = ${meta.field} + ? WHERE id = ?`,
+          [item.cantidad, item.material_id]
+        );
+      }
+    }
+
+    const solicitudIds = solicitudes.map((sol) => sol.id);
+    const placeholdersAll = solicitudIds.map(() => '?').join(',');
+
+    await connection.query(
+      `DELETE FROM Adeudo WHERE solicitud_id IN (${placeholdersAll})`,
+      solicitudIds
+    );
+     await connection.query(
+      `DELETE FROM SolicitudItem WHERE solicitud_id IN (${placeholdersAll})`,
+      solicitudIds
+    );
+    const [result] = await connection.query(
+      `DELETE FROM Solicitud WHERE id IN (${placeholdersAll})`,
+      solicitudIds
+    );
+
+    await connection.commit();
+
     if (result.affectedRows > 0) {
      console.log(`⏰ Eliminadas ${result.affectedRows} solicitudes por falta de recolección`);
     }
   } catch (error) {
- console.error('Error al eliminar solicitudes vencidas:', error);
+  await connection.rollback();
+    console.error('Error al eliminar solicitudes vencidas:', error);
+  } finally {
+    connection.release();
   }
 };
 
