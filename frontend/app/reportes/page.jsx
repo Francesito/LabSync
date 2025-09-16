@@ -41,14 +41,20 @@ export default function ReportesPage() {
 
     const [prestamosEquipos, setPrestamosEquipos] = useState({ meses: [], datos: [] });
   const [prestamosLaboratorio, setPrestamosLaboratorio] = useState({ meses: [], datos: [] });
+  const [showPrestamosEquiposModal, setShowPrestamosEquiposModal] = useState(false);
+  const [showPrestamosLaboratorioModal, setShowPrestamosLaboratorioModal] = useState(false);
   
   const [searchHistorial, setSearchHistorial] = useState('');
   const [searchLiquidos, setSearchLiquidos] = useState('');
   const [searchSolidos, setSearchSolidos] = useState('');
+    const [searchPrestamosEquipos, setSearchPrestamosEquipos] = useState('');
+  const [searchPrestamosLaboratorio, setSearchPrestamosLaboratorio] = useState('');
 
     const gruposOrdenados = [...grupos].sort((a, b) =>
     ordenDesc ? b.adeudos.length - a.adeudos.length : a.adeudos.length - b.adeudos.length
   );
+
+    const formatNombreMaterial = (nombre) => String(nombre || '').replace(/_/g, ' ');
   
   useEffect(() => {
     obtenerResiduos()
@@ -188,13 +194,27 @@ export default function ReportesPage() {
     return ordenSolidosDesc ? totalB - totalA : totalA - totalB;
   });
 
-  const sortedPrestamosEquipos = [...prestamosEquipos.datos].sort((a, b) => {
+ const filteredPrestamosEquipos = prestamosEquipos.datos.filter((item) =>
+    item.nombre
+      ?.replace(/_/g, ' ')
+      .toLowerCase()
+      .includes(searchPrestamosEquipos.toLowerCase())
+  );
+
+  const sortedPrestamosEquipos = [...filteredPrestamosEquipos].sort((a, b) => {
     const totalA = Number(a.total) || 0;
     const totalB = Number(b.total) || 0;
     return ordenPrestamosEquiposDesc ? totalB - totalA : totalA - totalB;
   });
 
-  const sortedPrestamosLaboratorio = [...prestamosLaboratorio.datos].sort((a, b) => {
+  const filteredPrestamosLaboratorio = prestamosLaboratorio.datos.filter((item) =>
+    item.nombre
+      ?.replace(/_/g, ' ')
+      .toLowerCase()
+      .includes(searchPrestamosLaboratorio.toLowerCase())
+  );
+
+  const sortedPrestamosLaboratorio = [...filteredPrestamosLaboratorio].sort((a, b) => {
     const totalA = Number(a.total) || 0;
     const totalB = Number(b.total) || 0;
     return ordenPrestamosLaboratorioDesc ? totalB - totalA : totalA - totalB;
@@ -253,6 +273,81 @@ export default function ReportesPage() {
     ]);
     autoTable(doc, { head: [headers], body: rows });
     doc.save('inventario_solidos.pdf');
+  };
+
+   const downloadPrestamosEquiposPDF = () => {
+    if (sortedPrestamosEquipos.length === 0) return;
+    const doc = new jsPDF('landscape');
+    const headers = ['Nombre', ...prestamosEquipos.meses, 'Total'];
+    const rows = sortedPrestamosEquipos.map((item) => [
+      formatNombreMaterial(item.nombre),
+      ...prestamosEquipos.meses.map((mes) => item.consumos?.[mes] || 0),
+      item.total || 0,
+    ]);
+    autoTable(doc, { head: [headers], body: rows });
+    doc.save('prestamos_material_equipo.pdf');
+  };
+
+  const downloadPrestamosLaboratorioPDF = () => {
+    if (sortedPrestamosLaboratorio.length === 0) return;
+    const doc = new jsPDF('landscape');
+    const headers = ['Nombre', ...prestamosLaboratorio.meses, 'Total'];
+    const rows = sortedPrestamosLaboratorio.map((item) => [
+      formatNombreMaterial(item.nombre),
+      ...prestamosLaboratorio.meses.map((mes) => item.consumos?.[mes] || 0),
+      item.total || 0,
+    ]);
+    autoTable(doc, { head: [headers], body: rows });
+    doc.save('prestamos_material_laboratorio.pdf');
+  };
+
+  const escapeExcelCell = (value) =>
+    String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const downloadPrestamosExcel = (items, meses, fileName) => {
+    if (items.length === 0) return;
+    const headers = ['Nombre', ...meses, 'Total'];
+    const headerRow = `<tr>${headers
+      .map((cell) => `<th>${escapeExcelCell(cell)}</th>`)
+      .join('')}</tr>`;
+    const bodyRows = items
+      .map((item) => {
+        const cells = [
+          formatNombreMaterial(item.nombre),
+          ...meses.map((mes) => item.consumos?.[mes] || 0),
+          item.total || 0,
+        ];
+        return `<tr>${cells.map((cell) => `<td>${escapeExcelCell(cell)}</td>`).join('')}</tr>`;
+      })
+      .join('');
+    const table = `<table>${headerRow}${bodyRows}</table>`;
+    const blob = new Blob([table], { type: 'application/vnd.ms-excel' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${fileName}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadPrestamosEquiposExcel = () => {
+    downloadPrestamosExcel(
+      sortedPrestamosEquipos,
+      prestamosEquipos.meses,
+      'prestamos_material_equipo'
+    );
+  };
+
+  const downloadPrestamosLaboratorioExcel = () => {
+    downloadPrestamosExcel(
+      sortedPrestamosLaboratorio,
+      prestamosLaboratorio.meses,
+      'prestamos_material_laboratorio'
+    );
   };
   
   if (![3, 4].includes(usuario?.rol_id)) return (
@@ -632,48 +727,82 @@ export default function ReportesPage() {
               <h2 className="card-title h5 mb-0 text-orange">
                 <i className="bi bi-tools me-2 text-orange"></i>Préstamos Materiales de Equipo
               </h2>
-              <div className="ms-auto d-flex align-items-center">
+              <div className="ms-auto d-flex align-items-center flex-wrap gap-2 justify-content-end">
                 <button
                   onClick={() => setOrdenPrestamosEquiposDesc((prev) => !prev)}
-                  className="btn btn-link btn-sm me-2 p-0 text-orange"
+            className="btn btn-link btn-sm p-0 text-orange"
                   aria-label="Ordenar por préstamos"
                   title={ordenPrestamosEquiposDesc ? 'Ordenar de menor a mayor' : 'Ordenar de mayor a menor'}
                 >
                   <i className={`bi ${ordenPrestamosEquiposDesc ? 'bi-sort-down-alt' : 'bi-sort-up'}`}></i>
                 </button>
+                 <button
+                  onClick={downloadPrestamosEquiposExcel}
+                  className="btn btn-sm btn-outline-success animate-button"
+                  disabled={sortedPrestamosEquipos.length === 0}
+                  title="Descargar Excel"
+                >
+                  <i className="bi bi-file-earmark-excel"></i>
+                </button>
+                <button
+                  onClick={downloadPrestamosEquiposPDF}
+                  className="btn btn-sm btn-outline-danger animate-button"
+                  disabled={sortedPrestamosEquipos.length === 0}
+                  title="Descargar PDF"
+                >
+                  <i className="bi bi-file-earmark-pdf"></i>
+                </button>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Buscar por nombre..."
+                  value={searchPrestamosEquipos}
+                  onChange={(e) => setSearchPrestamosEquipos(e.target.value)}
+                  style={{ maxWidth: '200px' }}
+                />
               </div>
             </div>
             {sortedPrestamosEquipos.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
             ) : (
-              <div className="table-responsive">
-                <table className="table table-sm table-hover table-bordered">
-                  <thead className="table-orange">
-                    <tr>
-                      <th>Nombre</th>
-                      {prestamosEquipos.meses.map((mes) => (
-                        <th key={mes} className="text-capitalize text-center">
-                          {mes}
-                        </th>
-                      ))}
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedPrestamosEquipos.map((item, idx) => (
-                      <tr key={idx} className="animate-row">
-                        <td className="py-2 text-capitalize">{item.nombre.replace(/_/g, ' ')}</td>
+              <>
+                <div className="table-responsive">
+                  <table className="table table-sm table-hover table-bordered">
+                    <thead className="table-orange">
+                      <tr>
+                        <th>Nombre</th>
                         {prestamosEquipos.meses.map((mes) => (
-                          <td key={mes} className="py-2 text-center">
-                            {item.consumos?.[mes] || 0}
-                          </td>
+                          <th key={mes} className="text-capitalize text-center">
+                            {mes}
+                          </th>
                         ))}
-                        <td className="py-2 text-center fw-semibold">{item.total || 0}</td>
+                      <th>Total</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {sortedPrestamosEquipos.slice(0, 5).map((item, idx) => (
+                        <tr key={idx} className="animate-row">
+                          <td className="py-2 text-capitalize">{formatNombreMaterial(item.nombre)}</td>
+                          {prestamosEquipos.meses.map((mes) => (
+                            <td key={mes} className="py-2 text-center">
+                              {item.consumos?.[mes] || 0}
+                            </td>
+                          ))}
+                          <td className="py-2 text-center fw-semibold">{item.total || 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {sortedPrestamosEquipos.length > 5 && (
+                  <button
+                    className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                    onClick={() => setShowPrestamosEquiposModal(true)}
+                  >
+                    <i className="bi bi-chevron-double-down me-1"></i>Ver más
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -683,48 +812,82 @@ export default function ReportesPage() {
               <h2 className="card-title h5 mb-0 text-slate">
                 <i className="bi bi-beaker me-2 text-slate"></i>Préstamos Materiales de Laboratorio
               </h2>
-              <div className="ms-auto d-flex align-items-center">
+             <div className="ms-auto d-flex align-items-center flex-wrap gap-2 justify-content-end">
                 <button
                   onClick={() => setOrdenPrestamosLaboratorioDesc((prev) => !prev)}
-                  className="btn btn-link btn-sm me-2 p-0 text-slate"
+                   className="btn btn-link btn-sm p-0 text-slate"
                   aria-label="Ordenar por préstamos"
                   title={ordenPrestamosLaboratorioDesc ? 'Ordenar de menor a mayor' : 'Ordenar de mayor a menor'}
                 >
                   <i className={`bi ${ordenPrestamosLaboratorioDesc ? 'bi-sort-down-alt' : 'bi-sort-up'}`}></i>
                 </button>
+                               <button
+                  onClick={downloadPrestamosLaboratorioExcel}
+                  className="btn btn-sm btn-outline-success animate-button"
+                  disabled={sortedPrestamosLaboratorio.length === 0}
+                  title="Descargar Excel"
+                >
+                  <i className="bi bi-file-earmark-excel"></i>
+                </button>
+                <button
+                  onClick={downloadPrestamosLaboratorioPDF}
+                  className="btn btn-sm btn-outline-danger animate-button"
+                  disabled={sortedPrestamosLaboratorio.length === 0}
+                  title="Descargar PDF"
+                >
+                  <i className="bi bi-file-earmark-pdf"></i>
+                </button>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Buscar por nombre..."
+                  value={searchPrestamosLaboratorio}
+                  onChange={(e) => setSearchPrestamosLaboratorio(e.target.value)}
+                  style={{ maxWidth: '200px' }}
+                />
               </div>
             </div>
             {sortedPrestamosLaboratorio.length === 0 ? (
               <p className="text-muted"><i className="bi bi-info-circle me-2"></i>No hay registros.</p>
             ) : (
-              <div className="table-responsive">
-                <table className="table table-sm table-hover table-bordered">
-                  <thead className="table-slate">
-                    <tr>
-                      <th>Nombre</th>
-                      {prestamosLaboratorio.meses.map((mes) => (
-                        <th key={mes} className="text-capitalize text-center">
-                          {mes}
-                        </th>
-                      ))}
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedPrestamosLaboratorio.map((item, idx) => (
-                      <tr key={idx} className="animate-row">
-                        <td className="py-2 text-capitalize">{item.nombre.replace(/_/g, ' ')}</td>
+             <>
+                <div className="table-responsive">
+                  <table className="table table-sm table-hover table-bordered">
+                    <thead className="table-slate">
+                      <tr>
+                        <th>Nombre</th>
                         {prestamosLaboratorio.meses.map((mes) => (
-                          <td key={mes} className="py-2 text-center">
-                            {item.consumos?.[mes] || 0}
-                          </td>
+                         <th key={mes} className="text-capitalize text-center">
+                            {mes}
+                          </th>
                         ))}
-                        <td className="py-2 text-center fw-semibold">{item.total || 0}</td>
+                      <th>Total</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                   </thead>
+                    <tbody>
+                      {sortedPrestamosLaboratorio.slice(0, 5).map((item, idx) => (
+                        <tr key={idx} className="animate-row">
+                          <td className="py-2 text-capitalize">{formatNombreMaterial(item.nombre)}</td>
+                          {prestamosLaboratorio.meses.map((mes) => (
+                            <td key={mes} className="py-2 text-center">
+                              {item.consumos?.[mes] || 0}
+                            </td>
+                          ))}
+                          <td className="py-2 text-center fw-semibold">{item.total || 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {sortedPrestamosLaboratorio.length > 5 && (
+                  <button
+                    className="btn btn-link text-decoration-underline text-primary mt-2 animate-button"
+                    onClick={() => setShowPrestamosLaboratorioModal(true)}
+                  >
+                    <i className="bi bi-chevron-double-down me-1"></i>Ver más
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -943,6 +1106,150 @@ export default function ReportesPage() {
                       ))}
                       <td className="py-2">{r.existencia_final} {r.unidad}</td>
                       <td className="py-2">{r.total_consumido} {r.unidad}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+             </div>
+        </div>
+      )}
+
+      {showPrestamosEquiposModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
+          <div className="bg-white w-full max-w-5xl p-5 max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl bg-opacity-95">
+            <div className="flex flex-wrap justify-between gap-3 mb-3">
+              <h3 className="font-semibold text-lg text-orange">
+                <i className="bi bi-tools me-2 text-orange"></i>Préstamos Materiales de Equipo
+              </h3>
+              <div className="d-flex flex-wrap align-items-center gap-2 justify-content-end">
+                <button
+                  onClick={downloadPrestamosEquiposExcel}
+                  className="btn btn-sm btn-outline-success animate-button"
+                  disabled={sortedPrestamosEquipos.length === 0}
+                  title="Descargar Excel"
+                >
+                  <i className="bi bi-file-earmark-excel"></i>
+                </button>
+                <button
+                  onClick={downloadPrestamosEquiposPDF}
+                  className="btn btn-sm btn-outline-danger animate-button"
+                  disabled={sortedPrestamosEquipos.length === 0}
+                  title="Descargar PDF"
+                >
+                  <i className="bi bi-file-earmark-pdf"></i>
+                </button>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Buscar por nombre..."
+                  value={searchPrestamosEquipos}
+                  onChange={(e) => setSearchPrestamosEquipos(e.target.value)}
+                  style={{ maxWidth: '220px' }}
+                />
+                <button
+                  onClick={() => setShowPrestamosEquiposModal(false)}
+                  className="btn btn-outline-danger btn-sm animate-button"
+                >
+                  <i className="bi bi-x-lg"></i> Cerrar
+                </button>
+              </div>
+            </div>
+            <div className="table-responsive">
+              <table className="table table-sm table-hover table-bordered">
+                <thead className="table-orange">
+                  <tr>
+                    <th>Nombre</th>
+                    {prestamosEquipos.meses.map((mes) => (
+                      <th key={mes} className="text-capitalize text-center">
+                        {mes}
+                      </th>
+                    ))}
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedPrestamosEquipos.map((item, idx) => (
+                    <tr key={idx} className="animate-row">
+                      <td className="py-2 text-capitalize">{formatNombreMaterial(item.nombre)}</td>
+                      {prestamosEquipos.meses.map((mes) => (
+                        <td key={mes} className="py-2 text-center">
+                          {item.consumos?.[mes] || 0}
+                        </td>
+                      ))}
+                      <td className="py-2 text-center fw-semibold">{item.total || 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPrestamosLaboratorioModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center animate-slide-in">
+          <div className="bg-white w-full max-w-5xl p-5 max-h-[80vh] overflow-y-auto rounded-lg shadow-2xl bg-opacity-95">
+            <div className="flex flex-wrap justify-between gap-3 mb-3">
+              <h3 className="font-semibold text-lg text-slate">
+                <i className="bi bi-beaker me-2 text-slate"></i>Préstamos Materiales de Laboratorio
+              </h3>
+              <div className="d-flex flex-wrap align-items-center gap-2 justify-content-end">
+                <button
+                  onClick={downloadPrestamosLaboratorioExcel}
+                  className="btn btn-sm btn-outline-success animate-button"
+                  disabled={sortedPrestamosLaboratorio.length === 0}
+                  title="Descargar Excel"
+                >
+                  <i className="bi bi-file-earmark-excel"></i>
+                </button>
+                <button
+                  onClick={downloadPrestamosLaboratorioPDF}
+                  className="btn btn-sm btn-outline-danger animate-button"
+                  disabled={sortedPrestamosLaboratorio.length === 0}
+                  title="Descargar PDF"
+                >
+                  <i className="bi bi-file-earmark-pdf"></i>
+                </button>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Buscar por nombre..."
+                  value={searchPrestamosLaboratorio}
+                  onChange={(e) => setSearchPrestamosLaboratorio(e.target.value)}
+                  style={{ maxWidth: '220px' }}
+                />
+                <button
+                  onClick={() => setShowPrestamosLaboratorioModal(false)}
+                  className="btn btn-outline-danger btn-sm animate-button"
+                >
+                  <i className="bi bi-x-lg"></i> Cerrar
+                </button>
+              </div>
+            </div>
+            <div className="table-responsive">
+              <table className="table table-sm table-hover table-bordered">
+                <thead className="table-slate">
+                  <tr>
+                    <th>Nombre</th>
+                    {prestamosLaboratorio.meses.map((mes) => (
+                      <th key={mes} className="text-capitalize text-center">
+                        {mes}
+                      </th>
+                    ))}
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedPrestamosLaboratorio.map((item, idx) => (
+                    <tr key={idx} className="animate-row">
+                      <td className="py-2 text-capitalize">{formatNombreMaterial(item.nombre)}</td>
+                      {prestamosLaboratorio.meses.map((mes) => (
+                        <td key={mes} className="py-2 text-center">
+                          {item.consumos?.[mes] || 0}
+                        </td>
+                      ))}
+                      <td className="py-2 text-center fw-semibold">{item.total || 0}</td>
                     </tr>
                   ))}
                 </tbody>
