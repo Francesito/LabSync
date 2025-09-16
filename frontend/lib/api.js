@@ -239,3 +239,21 @@ export async function obtenerInventarioSolidos() {
   });
   return data;
 }
+
+export async function obtenerPrestamosEquipos() {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No hay token de autenticación');
+  const { data } = await API.get('/materials/inventario/equipos', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return data;
+}
+
+export async function obtenerPrestamosLaboratorio() {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No hay token de autenticación');
+  const { data } = await API.get('/materials/inventario/laboratorio', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return data;
+}
