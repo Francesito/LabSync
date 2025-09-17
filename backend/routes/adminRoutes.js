@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { sendEmail } = require('../utils/email');
 const { verificarToken, requireAdmin } = require('../middleware/authMiddleware');
+const { crearRateLimiter } = require('../middleware/rateLimitMiddleware');
 
 const router = express.Router();
 
@@ -25,30 +26,54 @@ const generarContrasenaAleatoria = () => {
 // ==================== GESTIÓN DE USUARIOS ====================
 
 // Crear nuevo usuario
-router.post('/crear-usuario', async (req, res) => {
+const crearUsuarioLimiter = crearRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'Has alcanzado el límite para crear usuarios. Inténtalo más tarde.'
+});
+
+router.post('/crear-usuario', crearUsuarioLimiter, async (req, res) => {
   const { nombre, correo_institucional, rol_id, contrasena } = req.body;
 
-  console.log('Datos recibidos:', { nombre, correo_institucional, rol_id, contrasena });
+  const nombreLimpio = typeof nombre === 'string' ? nombre.trim() : '';
+  const correoLimpio = typeof correo_institucional === 'string'
+    ? correo_institucional.trim().toLowerCase()
+    : '';
+  const rolIdNumerico = Number.parseInt(rol_id, 10);
+  const contrasenaLimpia = typeof contrasena === 'string' ? contrasena.trim() : '';
 
   // Validaciones
-  if (!nombre || !correo_institucional || !rol_id) {
+  if (!nombreLimpio || !correoLimpio || Number.isNaN(rolIdNumerico)) {  
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
   }
 
-  if (!correo_institucional.endsWith('@utsjr.edu.mx')) {
+ if (nombreLimpio.length < 3 || nombreLimpio.length > 100) {
+    return res.status(400).json({ error: 'El nombre debe tener entre 3 y 100 caracteres' });
+  }
+
+  if (!/^[\p{L}\s'.-]+$/u.test(nombreLimpio)) {
+    return res.status(400).json({ error: 'El nombre contiene caracteres no permitidos' });
+  }
+
+  const correoInstitucionalRegex = /^[a-z0-9._%+-]+@utsjr\.edu\.mx$/i;
+  if (!correoInstitucionalRegex.test(correoLimpio)) {
     return res.status(400).json({ error: 'Correo institucional inválido' });
   }
 
   // Solo permitir roles de docente, almacen y administrador
-  if (![2, 3, 4].includes(parseInt(rol_id))) {
+  if (![2, 3, 4].includes(rolIdNumerico)) {
     return res.status(400).json({ error: 'Rol no válido' });
   }
 
+  if (contrasenaLimpia && contrasenaLimpia.length < 12) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 12 caracteres' });
+  }
+  
   try {
     // Verificar si el usuario ya existe
     const [existingUser] = await pool.query(
-      'SELECT * FROM Usuario WHERE correo_institucional = ?', 
-      [correo_institucional]
+       'SELECT id FROM Usuario WHERE correo_institucional = ?',
+      [correoLimpio]
     );
     
     if (existingUser.length > 0) {
@@ -56,21 +81,17 @@ router.post('/crear-usuario', async (req, res) => {
     }
 
     // Generar contraseña si no se proporciona
-    const passwordToUse = contrasena || generarContrasenaAleatoria();
+   const passwordToUse = contrasenaLimpia || generarContrasenaAleatoria();
     const hash = await bcrypt.hash(passwordToUse, 10);
-
-    console.log('Creando usuario con hash:', hash.substring(0, 20) + '...');
 
     // Crear usuario activo
     const [result] = await pool.query(
       'INSERT INTO Usuario (nombre, correo_institucional, contrasena, rol_id, activo) VALUES (?, ?, ?, ?, TRUE)',
-      [nombre, correo_institucional, hash, parseInt(rol_id)]
+    [nombreLimpio, correoLimpio, hash, rolIdNumerico]
     );
 
-    console.log('Usuario creado con ID:', result.insertId);
-
     // Si es usuario de almacén, crear registro en tabla de permisos
-    if (parseInt(rol_id) === 3) {
+ if (rolIdNumerico === 3) {
       try {
         await pool.query(
           'INSERT INTO PermisosAlmacen (usuario_id, acceso_chat, modificar_stock) VALUES (?, FALSE, FALSE)',
@@ -85,10 +106,13 @@ router.post('/crear-usuario', async (req, res) => {
 
     // Generar token para reset de contraseña
     const resetToken = jwt.sign(
-      { correo_institucional }, 
-      process.env.JWT_SECRET, 
+     { correo_institucional: correoLimpio },
+      process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
+
+      const frontendUrl = process.env.FRONTEND_URL || 'https://labsync-frontend.onrender.com';
+    const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
 
     // Actualizar usuario con token de reset
     await pool.query(
@@ -98,9 +122,7 @@ router.post('/crear-usuario', async (req, res) => {
 
     // Enviar correo con enlace para establecer contraseña
     try {
-      const frontendUrl = process.env.FRONTEND_URL || 'https://labsync-frontend.onrender.com';
-     const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
-      const emailText = `Cuenta creada - Establece tu contraseña: ${resetUrl}`;
+       const cleanName = nombreLimpio.replace(/\b(Almacen|Docente|Administrador)\b/gi, '').trim();
       const cleanName = nombre.replace(/\b(Almacen|Docente|Administrador)\b/gi, '').trim();
   const emailHtml = `
   <div style="font-family:Arial, sans-serif; background-color:#f4f6f8; padding:30px;">
@@ -155,7 +177,8 @@ router.post('/crear-usuario', async (req, res) => {
 
     res.status(201).json({ 
       mensaje: 'Usuario creado exitosamente. Se ha enviado un enlace para establecer la contraseña.',
-      usuario_id: result.insertId
+        usuario_id: result.insertId,
+      enlace_recuperacion: resetUrl
     });
 
   } catch (error) {
