@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
@@ -25,6 +25,9 @@ export default function Auth() {
   const [selectedGrupo, setSelectedGrupo] = useState(null);
   const [showPasswordRegister, setShowPasswordRegister] = useState(false);
   const [loading, setLoading] = useState(false);
+    const gruposScrollRef = useRef(null);
+  const [showLeftShadow, setShowLeftShadow] = useState(false);
+  const [showRightShadow, setShowRightShadow] = useState(false);
 
   // Cargar grupos al montar el componente
   useEffect(() => {
@@ -41,6 +44,42 @@ export default function Auth() {
     cargarGrupos();
   }, []);
 
+   useEffect(() => {
+    const updateShadows = () => {
+      const container = gruposScrollRef.current;
+      if (!container) return;
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      const maxScrollLeft = Math.max(scrollWidth - clientWidth, 0);
+      setShowLeftShadow(scrollLeft > 4);
+      setShowRightShadow(scrollLeft < maxScrollLeft - 4);
+    };
+
+    const container = gruposScrollRef.current;
+    updateShadows();
+
+    if (container) {
+      container.addEventListener('scroll', updateShadows, { passive: true });
+    }
+    window.addEventListener('resize', updateShadows);
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', updateShadows);
+      }
+      window.removeEventListener('resize', updateShadows);
+    };
+  }, [grupos]);
+
+  useEffect(() => {
+    const container = gruposScrollRef.current;
+    if (!container) return;
+    const id = requestAnimationFrame(() => {
+      const { scrollWidth, clientWidth } = container;
+      setShowRightShadow(scrollWidth > clientWidth + 4);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [isSignUp, grupos]);
+  
   // Handle Login
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -239,8 +278,12 @@ export default function Auth() {
 
                 {/* Mostrar botones solo si no hay grupo seleccionado */}
                 {!selectedGrupo && (
-                  <div className="grupos-container">
-                    <div className="grupos-grid-mobile">
+                 <div
+                    className={`grupos-scroll-wrapper ${
+                      showLeftShadow ? 'has-left-shadow' : ''
+                    } ${showRightShadow ? 'has-right-shadow' : ''}`}
+                  >
+                    <div className="grupos-scroll" ref={gruposScrollRef}>
                       {grupos.map((grupo) => (
                         <button
                           key={grupo.id}
@@ -572,28 +615,81 @@ export default function Auth() {
           gap: 8px;
         }
 
-        /* Estilos para mobile - Grid de 4 columnas */
-        .grupos-grid-mobile {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 8px;
+        /* Carrusel de grupos */
+        .grupos-scroll-wrapper {
+          position: relative;
+          width: 100%;
+          max-width: 420px;
+          overflow: hidden;
+          margin: 0 auto;
+        }
+
+        .grupos-scroll {
+          display: flex;
+          gap: 12px;
+          overflow-x: auto;
+          padding: 6px 8px 12px;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-x: contain;
+          touch-action: pan-x;
+        }
+
+        .grupos-scroll::-webkit-scrollbar {
+          display: none;
+        }
+
+        .grupos-scroll-wrapper::before,
+        .grupos-scroll-wrapper::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 48px;
+          pointer-events: none;
+          transition: opacity 0.3s ease;
+          opacity: 0;
+          z-index: 2;
+        }
+
+        .grupos-scroll-wrapper::before {
+          left: 0;
+          background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+        }
+
+        .grupos-scroll-wrapper::after {
+          right: 0;
+          background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+        }
+
+        .grupos-scroll-wrapper.has-left-shadow::before {
+          opacity: 1;
+        }
+
+        .grupos-scroll-wrapper.has-right-shadow::after {
+          opacity: 1;
         }
 
         .grupo-btn {
-          padding: 8px 12px;
+            padding: 10px 18px;
           border: 2px solid #ddd;
           border-radius: 25px;
           background: #fff;
           color: #444;
-          font-size: 0.85rem;
+         font-size: 0.9rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
           text-align: center;
-          min-height: 40px;
+       min-height: 44px;
           display: flex;
           align-items: center;
           justify-content: center;
+           flex: 0 0 clamp(160px, 42%, 220px);
+          scroll-snap-align: start;
+          box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+          background-image: linear-gradient(135deg, rgba(89, 149, 253, 0.12), rgba(89, 149, 253, 0));
         }
 
         .grupo-btn:hover:not(:disabled) {
@@ -858,16 +954,20 @@ export default function Auth() {
             transform: translate(-50%, -50%);
           }
 
-          /* Mantener grid de 4 columnas en mobile */
-          .grupos-grid-mobile {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
+        .grupos-scroll-wrapper {
+            max-width: 100%;
+          }
+
+          .grupos-scroll {
+            gap: 10px;
+            padding: 6px 4px 10px;
           }
 
           .grupo-btn {
-            font-size: 0.7rem;
-            padding: 6px 4px;
-            min-height: 35px;
+           font-size: 0.8rem;
+            padding: 8px 12px;
+            min-height: 40px;
+            flex-basis: clamp(150px, 55%, 210px);
           }
         }
 
@@ -928,16 +1028,16 @@ export default function Auth() {
             transform: translate(-50%, -50%);
           }
 
-          /* Mantener grid de 4 columnas incluso en pantallas pequeñas */
-          .grupos-grid-mobile {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 4px;
+          .grupos-scroll {
+            gap: 8px;
+            padding: 4px 2px 8px;
           }
 
           .grupo-btn {
-            font-size: 0.6rem;
-            padding: 4px 2px;
-            min-height: 32px;
+          font-size: 0.75rem;
+            padding: 6px 10px;
+            min-height: 36px;
+            flex-basis: clamp(140px, 70%, 200px);
           }
 
           .btn.transparent {
