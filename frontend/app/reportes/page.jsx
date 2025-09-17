@@ -56,16 +56,118 @@ export default function ReportesPage() {
 
  const formatNombreMaterial = (nombre) => String(nombre || '').replace(/_/g, ' ');
 
-  const normalizarNombreMaterial = (nombre) =>
-    formatNombreMaterial(nombre)
-      .toLowerCase()
-      .trim();
+const normalizarNombreMaterial = (nombre) =>
+  formatNombreMaterial(nombre)
+    .toLowerCase()
+    .trim();
 
-  const obtenerMesDesdeFecha = (fecha) => {
-    if (!fecha) return null;
-    const date = new Date(`${fecha}T00:00:00`);
-    if (Number.isNaN(date.getTime())) return null;
-    return date.toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+const HISTORIAL_PRESTAMOS_KEY = 'reporte-prestamos-historial';
+
+const cargarHistorialPrestamos = () => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const almacenado = window.localStorage.getItem(HISTORIAL_PRESTAMOS_KEY);
+    if (!almacenado) return {};
+    const parsed = JSON.parse(almacenado);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (error) {
+    console.warn('No se pudo leer historial de préstamos almacenado:', error);
+    return {};
+  }
+};
+
+const guardarHistorialPrestamos = (historial) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      HISTORIAL_PRESTAMOS_KEY,
+      JSON.stringify(historial)
+    );
+  } catch (error) {
+    console.warn('No se pudo guardar historial de préstamos:', error);
+  }
+};
+
+const obtenerClaveAdeudo = (adeudo) => {
+  if (!adeudo || typeof adeudo !== 'object') return null;
+  if (adeudo.id != null) return String(adeudo.id);
+  const solicitud =
+    adeudo.solicitud_id ?? adeudo.solicitudId ?? adeudo.solicitud ?? null;
+  const item =
+    adeudo.solicitud_item_id ?? adeudo.solicitudItemId ?? adeudo.item_id ?? null;
+  const material = adeudo.material_id ?? adeudo.materialId ?? null;
+  if (solicitud != null && item != null) return `${solicitud}-${item}`;
+  if (solicitud != null && material != null) return `${solicitud}-${material}`;
+  if (adeudo.nombre_material) return `nombre-${normalizarNombreMaterial(adeudo.nombre_material)}-${adeudo.mes || ''}`;
+  return null;
+};
+
+const sincronizarHistorialAdeudos = (adeudos) => {
+  const historial = cargarHistorialPrestamos();
+  let seActualizo = false;
+
+  adeudos.forEach((adeudo) => {
+    const clave = obtenerClaveAdeudo(adeudo);
+    if (!clave) return;
+
+    const almacenado = historial[clave] || {};
+    const cantidadAlmacenada = Number(almacenado.cantidad_original) || 0;
+    const cantidadActual = Number(adeudo.cantidad) || 0;
+    const cantidadOriginal = Math.max(cantidadAlmacenada, cantidadActual);
+    const nombreMaterial =
+      almacenado.nombre_material ||
+      adeudo.nombre_material ||
+      adeudo.material_nombre ||
+      adeudo.materialNombre ||
+      adeudo.nombre ||
+      '';
+    const tipoMaterial = (almacenado.tipo || adeudo.tipo || '').toLowerCase();
+    const unidadMaterial = almacenado.unidad || adeudo.unidad || '';
+    const mesPrestamo = almacenado.mes || adeudo.mes || null;
+
+    const registroActualizado = {
+      ...almacenado,
+      ...adeudo,
+      cantidad: cantidadOriginal,
+      cantidad_original: cantidadOriginal,
+      mes: mesPrestamo,
+      nombre_material: nombreMaterial,
+      nombre_normalizado: normalizarNombreMaterial(nombreMaterial),
+      tipo: tipoMaterial,
+      unidad: unidadMaterial,
+    };
+
+    const haCambiado =
+      !almacenado ||
+      almacenado.cantidad_original !== registroActualizado.cantidad_original ||
+      almacenado.mes !== registroActualizado.mes ||
+      almacenado.nombre_material !== registroActualizado.nombre_material ||
+      almacenado.tipo !== registroActualizado.tipo ||
+      almacenado.unidad !== registroActualizado.unidad;
+
+    if (haCambiado) {
+      historial[clave] = registroActualizado;
+      seActualizo = true;
+    }
+  });
+
+   if (seActualizo) {
+    guardarHistorialPrestamos(historial);
+  }
+
+  return Object.values(historial).map((registro) => ({
+    ...registro,
+    nombre_normalizado: normalizarNombreMaterial(
+      registro.nombre_material || registro.nombre || ''
+    ),
+  }));
+};
+
+const obtenerMesDesdeFecha = (fecha) => {
+  if (!fecha) return null;
+  const date = new Date(`${fecha}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleString('es-ES', { month: 'long' }).toLowerCase();
   };
 
   const normalizarAdeudos = (lista) =>
@@ -199,6 +301,7 @@ export default function ReportesPage() {
         const listaGrupos = grRes?.status === 'fulfilled' ? grRes.value : [];
         const adeudosOriginales = adeRes?.status === 'fulfilled' ? adeRes.value : [];
         const adeudosNormalizados = normalizarAdeudos(adeudosOriginales);
+         const adeudosHistoricos = sincronizarHistorialAdeudos(adeudosNormalizados);
 
         if (isMounted) {
           const grouped = {};
@@ -273,25 +376,25 @@ export default function ReportesPage() {
         setInventarioLiquidos(
           integrarAdeudosEnInventario(
             liquidosData,
-            adeudosNormalizados.filter((a) => a.tipo === 'liquido')
+            adeudosHistoricos.filter((a) => a.tipo === 'liquido')
           )
         );
        setInventarioSolidos(
           integrarAdeudosEnInventario(
             solidosData,
-            adeudosNormalizados.filter((a) => a.tipo === 'solido')
+         adeudosHistoricos.filter((a) => a.tipo === 'solido')
           )
         );
         setPrestamosEquipos(
           integrarAdeudosEnPrestamos(
             equiposData,
-            adeudosNormalizados.filter((a) => a.tipo === 'equipo')
+            adeudosHistoricos.filter((a) => a.tipo === 'equipo')
           )
         );
         setPrestamosLaboratorio(
           integrarAdeudosEnPrestamos(
             laboratorioData,
-            adeudosNormalizados.filter((a) => a.tipo === 'laboratorio')
+          adeudosHistoricos.filter((a) => a.tipo === 'laboratorio')
           )
         );
       } catch (error) {
