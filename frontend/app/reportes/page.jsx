@@ -209,15 +209,22 @@ const obtenerMesDesdeFecha = (fecha) => {
       const cantidadOriginal = Number(
         item.cantidad_inicial ?? item.cantidad ?? item.cantidad_inicial_original
       );
+    const existenciaFinal = Number(
+        item.existencia_final ?? item.existenciaFinal
+      );
 
       return {
         ...item,
         consumos: { ...(item.consumos || {}) },
         nombre_normalizado: normalizarNombreMaterial(item.nombre),
-        existencia_final: Number(item.existencia_final) || 0,
+         existencia_final: Number.isFinite(existenciaFinal) ? existenciaFinal : 0,
+        existencia_final_original: Number.isFinite(existenciaFinal)
+          ? existenciaFinal
+          : undefined,
         cantidad_inicial_original: Number.isFinite(cantidadOriginal)
           ? cantidadOriginal
           : undefined,
+         prestado_total: 0,
       };
     });
     
@@ -229,6 +236,7 @@ const obtenerMesDesdeFecha = (fecha) => {
       if (!target) return;
       const actual = Number(target.consumos[adeudo.mes]) || 0;
       target.consumos[adeudo.mes] = actual + adeudo.cantidad;
+        target.prestado_total = (Number(target.prestado_total) || 0) + adeudo.cantidad;
     });
 
     const datos = datosActualizados.map((item) => {
@@ -239,10 +247,19 @@ const obtenerMesDesdeFecha = (fecha) => {
          const cantidadInicial = Number.isFinite(item.cantidad_inicial_original)
         ? item.cantidad_inicial_original
         : Number(item.cantidad_inicial ?? item.cantidad ?? item.existencia_final);
+       const existenciaFinalBase = Number.isFinite(item.existencia_final_original)
+        ? item.existencia_final_original
+        : Number(item.existencia_final ?? 0);
+      const existenciaFinalAjustada = Math.max(
+        existenciaFinalBase - (Number(item.prestado_total) || 0),
+        0
+      );
 
       const {
         nombre_normalizado,
         cantidad_inicial_original,
+         existencia_final_original,
+        prestado_total,
         ...restoDatos
       } = item;
       
@@ -252,6 +269,7 @@ const obtenerMesDesdeFecha = (fecha) => {
         cantidad_inicial: Number.isFinite(cantidadInicial)
           ? cantidadInicial
           : 0,
+         existencia_final: existenciaFinalAjustada,
       };
     });
 
