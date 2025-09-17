@@ -1,6 +1,14 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../lib/auth';
+
+const ESTADO_INICIAL_MENSAJE = {
+  tipo: '',
+  texto: '',
+  enlace: '',
+  enlaceTexto: '',
+  persistir: false
+};
 
 export default function Configuracion() {
   const { usuario } = useAuth();
@@ -16,7 +24,8 @@ export default function Configuracion() {
   const [correoDesbloqueo, setCorreoDesbloqueo] = useState('');
   const [correoEliminacion, setCorreoEliminacion] = useState('');
   const [loading, setLoading] = useState(false);
-  const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+ const [mensaje, setMensaje] = useState({ ...ESTADO_INICIAL_MENSAJE });
+  const mensajeTimeoutRef = useRef(null);
   const [vistaActiva, setVistaActiva] = useState('crear');
   const [searchTerm, setSearchTerm] = useState('');
   const [grupos, setGrupos] = useState([]);
@@ -184,7 +193,15 @@ export default function Configuracion() {
       const data = await response.json();
       
       if (response.ok) {
-        mostrarMensaje('success', 'Usuario creado exitosamente. Se ha enviado un enlace de restablecimiento de contraseña al correo.');
+          mostrarMensaje(
+          'success',
+          data.mensaje || 'Usuario creado exitosamente. Se ha enviado un enlace para establecer la contraseña.',
+          {
+            enlace: data.enlace_recuperacion || '',
+            enlaceTexto: 'Abrir enlace de restablecimiento',
+            persistir: Boolean(data.enlace_recuperacion)
+          }
+        );
         setNuevoUsuario({ nombre: '', correo_institucional: '', rol_id: '' });
         cargarUsuariosAlmacen();
         cargarTodosUsuarios();
@@ -381,11 +398,47 @@ export default function Configuracion() {
     }
   };
 
-  const mostrarMensaje = (tipo, texto) => {
-    setMensaje({ tipo, texto });
-    setTimeout(() => setMensaje({ tipo: '', texto: '' }), 5000);
+ const ocultarMensaje = () => {
+    if (mensajeTimeoutRef.current) {
+      clearTimeout(mensajeTimeoutRef.current);
+      mensajeTimeoutRef.current = null;
+    }
+    setMensaje({ ...ESTADO_INICIAL_MENSAJE });
   };
 
+  const mostrarMensaje = (tipo, texto, opciones = {}) => {
+    if (mensajeTimeoutRef.current) {
+      clearTimeout(mensajeTimeoutRef.current);
+      mensajeTimeoutRef.current = null;
+    }
+
+    const payload = {
+      ...ESTADO_INICIAL_MENSAJE,
+      tipo,
+      texto,
+      enlace: opciones.enlace || '',
+      enlaceTexto: opciones.enlaceTexto || '',
+      persistir: Boolean(opciones.persistir)
+    };
+
+    setMensaje(payload);
+
+    if (!payload.persistir) {
+      mensajeTimeoutRef.current = setTimeout(() => {
+        setMensaje({ ...ESTADO_INICIAL_MENSAJE });
+        mensajeTimeoutRef.current = null;
+      }, 5000);
+    }
+  };
+
+    useEffect(() => {
+    return () => {
+      if (mensajeTimeoutRef.current) {
+        clearTimeout(mensajeTimeoutRef.current);
+      }
+    };
+  }, []);
+  
   // Filtrar usuarios
   const usuariosFiltrados = todosUsuarios.filter(usuario =>
     usuario.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -549,17 +602,45 @@ export default function Configuracion() {
               ? 'bg-green-50 border-green-500 text-green-700' 
               : 'bg-red-50 border-red-500 text-red-700'
           }`}>
-            <div className="flex items-center">
-              {mensaje.tipo === 'success' ? (
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              )}
-              {mensaje.texto}
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start">
+                {mensaje.tipo === 'success' ? (
+                  <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                )}
+                <p className="text-sm font-medium leading-6">{mensaje.texto}</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {mensaje.enlace && (
+                  <a
+                    href={mensaje.enlace}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-current/10 bg-white/80 px-4 py-2 text-sm font-semibold text-current shadow-sm transition hover:bg-white"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                    {mensaje.enlaceTexto || 'Abrir enlace'}
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={ocultarMensaje}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-current/10 bg-white/50 text-current transition hover:bg-white"
+                  aria-label="Cerrar mensaje"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         )}
