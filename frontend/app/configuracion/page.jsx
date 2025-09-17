@@ -32,6 +32,8 @@ export default function Configuracion() {
   const [grupoSeleccionado, setGrupoSeleccionado] = useState('');
   const [searchGrupo, setSearchGrupo] = useState('');
   const [usuariosSeleccionados, setUsuariosSeleccionados] = useState([]);
+    const [nuevoGrupo, setNuevoGrupo] = useState('');
+  const [loadingGrupo, setLoadingGrupo] = useState(false);
 
   const roles = [
     { id: 2, nombre: 'docente' },
@@ -123,7 +125,14 @@ export default function Configuracion() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/grupos`);
       if (response.ok) {
         const data = await response.json();
-        setGrupos(data);
+        if (Array.isArray(data)) {
+          const ordenados = [...data].sort((a, b) =>
+            a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' })
+          );
+          setGrupos(ordenados);
+        } else {
+          setGrupos([]);
+        }
       }
     } catch (error) {
       console.error('Error al cargar grupos:', error);
@@ -149,6 +158,63 @@ export default function Configuracion() {
       }
     } catch (error) {
       console.error('Error al cargar estadísticas:', error);
+    }
+  };
+
+   const agregarGrupo = async (e) => {
+    e.preventDefault();
+    const nombreLimpio = nuevoGrupo.trim();
+
+    if (!nombreLimpio) {
+      mostrarMensaje('error', 'Ingresa un nombre de grupo válido');
+      return;
+    }
+
+    if (nombreLimpio.length < 2 || nombreLimpio.length > 100) {
+      mostrarMensaje('error', 'El nombre del grupo debe tener entre 2 y 100 caracteres');
+      return;
+    }
+
+    setLoadingGrupo(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        mostrarMensaje('error', 'Token no encontrado');
+        setLoadingGrupo(false);
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/admin/grupos`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ nombre: nombreLimpio })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const nuevo = data.grupo || { id: data.id, nombre: nombreLimpio };
+        setGrupos((prev) => {
+          const sinDuplicados = prev.some((g) => g.nombre.toLowerCase() === nombreLimpio.toLowerCase())
+            ? prev
+            : [...prev, nuevo];
+          return [...sinDuplicados].sort((a, b) =>
+            a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' })
+          );
+        });
+        setNuevoGrupo('');
+        mostrarMensaje('success', data.mensaje || 'Grupo creado exitosamente');
+      } else {
+        mostrarMensaje('error', data.error || 'Error al crear el grupo');
+      }
+    } catch (error) {
+      console.error('Error al crear grupo:', error);
+      mostrarMensaje('error', 'Error de conexión al crear grupo');
+    } finally {
+      setLoadingGrupo(false);
     }
   };
 
@@ -1117,6 +1183,74 @@ export default function Configuracion() {
                   )}
                 </button>
               </form>
+            </div>
+
+             {/* Gestión de Grupos */}
+            <div className="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow">
+              <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7h16M4 12h10m-7 5h14" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Grupos disponibles</h3>
+                    <p className="text-gray-600 text-sm">Consulta los grupos activos y agrega nuevos en segundos</p>
+                  </div>
+                </div>
+
+                <form onSubmit={agregarGrupo} className="w-full md:w-auto">
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <input
+                      type="text"
+                      value={nuevoGrupo}
+                      onChange={(e) => setNuevoGrupo(e.target.value)}
+                      placeholder="Nombre del grupo"
+                      className="w-full sm:w-60 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all duration-200"
+                      maxLength={100}
+                      disabled={loadingGrupo}
+                    />
+                    <button
+                      type="submit"
+                      disabled={loadingGrupo}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500"
+                    >
+                      {loadingGrupo ? (
+                        <>
+                          <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Guardando...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                          </svg>
+                          Agregar grupo
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {grupos.length > 0 ? (
+                  grupos.map((grupo) => (
+                    <span
+                      key={grupo.id || grupo.nombre}
+                      className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm"
+                    >
+                      {grupo.nombre}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No hay grupos registrados todavía.</p>
+                )}
+              </div>
             </div>
           </div>
         )}
