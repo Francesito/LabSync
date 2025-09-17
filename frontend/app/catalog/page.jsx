@@ -21,7 +21,7 @@ export default function Catalog() {
   const [selectedCart, setSelectedCart] = useState([]);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
-    const [showMassAdjustModal, setShowMassAdjustModal] = useState(false);  
+  const [showMassAdjustModal, setShowMassAdjustModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [materialToAdjust, setMaterialToAdjust] = useState(null);
@@ -37,7 +37,7 @@ export default function Catalog() {
   const [selectedDocenteId, setSelectedDocenteId] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
-   const [riesgo, setRiesgo] = useState('');
+  const [riesgo, setRiesgo] = useState('');
   const [minPickupDate, setMinPickupDate] = useState('');
   const [maxPickupDate, setMaxPickupDate] = useState('');
   const [maxReturnDate, setMaxReturnDate] = useState('');
@@ -45,7 +45,7 @@ export default function Catalog() {
   const [materiaOtro, setMateriaOtro] = useState('');
   const [isSubmittingRequest, setIsSubmittingRequest] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-    const [massAdjustments, setMassAdjustments] = useState({});
+  const [massAdjustments, setMassAdjustments] = useState({});
   const [massSearchTerm, setMassSearchTerm] = useState('');
   const [massError, setMassError] = useState('');
   const [newMaterial, setNewMaterial] = useState({
@@ -71,7 +71,7 @@ export default function Catalog() {
   const [permissionsError, setPermissionsError] = useState('');
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showCart, setShowCart] = useState(true);
-  
+
   const LOW_STOCK_THRESHOLD = 50;
   const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'tu-cloud-name';
   const MATERIAS = [
@@ -93,10 +93,9 @@ export default function Catalog() {
     'Otras'
   ];
 
-    useEffect(() => {
+  useEffect(() => {
     const checkScreen = () => {
-      const small =
-        window.innerWidth <= 920 && window.innerHeight <= 920;
+      const small = window.innerWidth <= 920 && window.innerHeight <= 920;
       setIsSmallScreen(small);
     };
     checkScreen();
@@ -114,7 +113,7 @@ export default function Catalog() {
 
   const MX_TZ = 'America/Mexico_City';
 
-    const formatMX = (d) =>
+  const formatMX = (d) =>
     new Date(d).toLocaleDateString('en-CA', { timeZone: MX_TZ });
 
   const addDays = (date, days) => {
@@ -124,11 +123,11 @@ export default function Catalog() {
   };
 
   const isWeekend = (dateStr) => {
-   const day = new Date(`${dateStr}T00:00:00-06:00`).getUTCDay();
+    const day = new Date(`${dateStr}T00:00:00-06:00`).getUTCDay();
     return day === 0 || day === 6;
   };
 
-    const adjustToWeekday = (dateStr) => {
+  const adjustToWeekday = (dateStr) => {
     const d = new Date(dateStr);
     const day = d.getDay();
     if (day === 6) {
@@ -136,12 +135,12 @@ export default function Catalog() {
     } else if (day === 0) {
       d.setDate(d.getDate() + 1);
     }
-    return getFormattedDate(d);
+    return formatMX(d);
   };
-  
+
   const computeMinPickupDate = () => {
     const now = new Date();
-let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
+    let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
     const day = d.getDay();
     const hour = d.getHours();
 
@@ -156,26 +155,25 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
     }
     d.setHours(0, 0, 0, 0);
     return d;
-    };
+  };
 
-   const computeWeekEnd = (date) => {
+  const computeWeekEnd = (date) => {
     const d = new Date(date);
     const day = d.getDay();
     const diff = (5 - day + 7) % 7;
     d.setDate(d.getDate() + diff);
     return d;
   };
-  
+
   useEffect(() => {
-  const minDate = computeMinPickupDate();
+    const minDate = computeMinPickupDate();
     setMinPickupDate(formatMX(minDate));
     const pickupEnd = computeWeekEnd(addDays(minDate, 7));
     setMaxPickupDate(formatMX(pickupEnd));
     const returnEnd = computeWeekEnd(addDays(minDate, 14));
-   setMaxReturnDate(formatMX(returnEnd));
+    setMaxReturnDate(formatMX(returnEnd));
   }, []);
 
-  // Cargar permisos del usuario
   const loadUserPermissions = async () => {
     try {
       setPermissionsLoading(true);
@@ -213,7 +211,6 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
     }
   };
 
-  // Cargar lista de docentes
   const loadDocentes = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -224,7 +221,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       setDocentes(response.data);
       if (userPermissions.rol === 'docente') {
         setSelectedDocenteId(usuario.id.toString());
-      } else{
+      } else {
         setSelectedDocenteId('');
       }
     } catch (error) {
@@ -371,8 +368,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       if (userPermissions.rol === 'alumno') {
         all = all.filter((m) => m.tipo === 'laboratorio' || m.tipo === 'equipo');
       }
-       // Los docentes pueden ver y solicitar todos los tipos de materiales
-      
+
       setAllMaterials(all);
 
       if (canModifyStock()) {
@@ -441,7 +437,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
         console.error('[Error] Verificando imagen:', error);
       }
     }
-   return '';
+    return '';
   };
 
   const parseRiesgos = (riesgosString) => {
@@ -567,7 +563,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
 
   const totalItems = selectedCart.reduce((sum, item) => sum + (item.cantidad || 0), 0);
 
-    const cartContent = (
+  const cartContent = (
     <div className="cart-container">
       <div className="cart-header">
         <h4>Carrito de Solicitud</h4>
@@ -626,7 +622,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
   );
 
   const handleSubmitRequest = async () => {
-        if (isSubmittingRequest) return;
+    if (isSubmittingRequest) return;
 
     if (!canMakeRequests()) {
       handlePermissionError('make_request');
@@ -638,12 +634,12 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       return;
     }
 
-       if (!pickupDate || !returnDate) {
+    if (!pickupDate || !returnDate) {
       setError('Selecciona fechas de recolección y entrega.');
       return;
     }
 
-        if (!materia) {
+    if (!materia) {
       setError('Debes seleccionar la materia.');
       return;
     }
@@ -653,11 +649,11 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       return;
     }
 
-       if (!riesgo) {
+    if (!riesgo) {
       setError('Debes seleccionar el nivel de riesgo.');
       return;
     }
-    
+
     let docenteIdToUse = userPermissions.rol === 'docente' ? usuario.id : parseInt(selectedDocenteId);
     if (userPermissions.rol !== 'docente' && !docenteIdToUse) {
       setError('Debes seleccionar un docente encargado.');
@@ -669,7 +665,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       const selectedDocente = docentes.find((doc) => doc.id === docenteIdToUse);
       if (!selectedDocente) {
         setError('Docente seleccionado no válido.');
-         setIsSubmittingRequest(false);
+        setIsSubmittingRequest(false);
         return;
       }
 
@@ -682,7 +678,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
             tipo: item.tipo,
           })),
           motivo: 'Solicitud desde catálogo',
-         fecha_solicitud: toLocalDateStr(new Date()),
+          fecha_solicitud: toLocalDateStr(new Date()),
           fecha_recoleccion: pickupDate,
           fecha_devolucion: returnDate,
           materia,
@@ -695,7 +691,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       });
 
       setSelectedCart([]);
-         setPickupDate('');
+      setPickupDate('');
       setReturnDate('');
       setMateria('');
       setMateriaOtro('');
@@ -708,7 +704,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
     } catch (err) {
       console.error('Error al enviar solicitud:', err);
       setError('Error al enviar la solicitud: ' + (err.response?.data?.error || err.message));
-   } finally {
+    } finally {
       setIsSubmittingRequest(false);
     }
   };
@@ -792,7 +788,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
     }
   };
 
-   const handleMassAdjustChange = (material, value) => {
+  const handleMassAdjustChange = (material, value) => {
     const delta = parseInt(value, 10);
     const key = `${material.id}-${material.tipo}`;
     if (isNaN(delta) || delta === 0) {
@@ -849,7 +845,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       setMassError(err.response?.data?.error || 'No se pudo ajustar el stock');
     }
   };
-  
+
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     setAddError('');
@@ -956,12 +952,12 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
 
   return (
     <div className="catalog-container">
-    <div className="d-flex gap-4 align-items-start">
+      <div className="d-flex gap-4 align-items-start">
         <div className="flex-grow-1">
           <div className="main-card">
             <div className="header-section">
               {userPermissions.rol === 'almacen' && userPermissions.modificar_stock && (
-             <div className="header-buttons">
+                <div className="header-buttons">
                   <button
                     onClick={() => setShowAddModal(true)}
                     className="btn-add-material"
@@ -979,7 +975,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
               <h1>Catálogo de Materiales</h1>
             </div>
 
-         {userPermissions.rol === 'almacen' && canModifyStock() && lowStockMaterials.length > 0 && (
+            {userPermissions.rol === 'almacen' && canModifyStock() && lowStockMaterials.length > 0 && (
               <div className="low-stock-alerts">
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
                   <div
@@ -1130,24 +1126,23 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
           </div>
         </div>
 
-     {(userPermissions.rol === 'alumno' || userPermissions.rol === 'docente') && (
- <>
-    {isSmallScreen ? (
-      <>
-        <button
-          className="cart-toggle"
-          onClick={() => setShowCart((prev) => !prev)}
-        >
-          Carrito de solicitudes
-        </button>
-        {showCart && <div className="cart-overlay">{cartContent}</div>}
-      </>
-    ) : (
-      <div className="cart-sticky">{cartContent}</div>
-    )}
-  </>
-)}
-
+        {(userPermissions.rol === 'alumno' || userPermissions.rol === 'docente') && (
+          <>
+            {isSmallScreen ? (
+              <>
+                <button
+                  className="cart-toggle"
+                  onClick={() => setShowCart((prev) => !prev)}
+                >
+                  Carrito de solicitudes
+                </button>
+                {showCart && <div className="cart-overlay">{cartContent}</div>}
+              </>
+            ) : (
+              <div className="cart-sticky">{cartContent}</div>
+            )}
+          </>
+        )}
       </div>
 
       {showAddModal && (
@@ -1310,7 +1305,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
         </div>
       )}
 
-       {showMassAdjustModal && (
+      {showMassAdjustModal && (
         <div className="modal-overlay">
           <div className="modal-content-custom" style={{ maxWidth: '800px', width: '90%' }}>
             <div className="modal-header-custom">
@@ -1391,7 +1386,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
           </div>
         </div>
       )}
-      
+
       {showRequestModal && (
         <div className="modal-overlay">
           <div className="modal-content-custom">
@@ -1446,7 +1441,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
                   Esta solicitud será revisada por el docente seleccionado antes de ser aprobada.
                 </div>
               )}
-                <div className="mt-4">
+              <div className="mt-4">
                 <label className="form-label">Materia *</label>
                 <select
                   className="form-control"
@@ -1476,7 +1471,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
                   />
                 </div>
               )}
-               <div className="mt-4">
+              <div className="mt-4">
                 <label className="form-label">Nivel de riesgo *</label>
                 <select
                   className="form-control"
@@ -1518,7 +1513,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
                 </small>
               </div>
               <div className="mt-3">
-                <label className="form-label">Fecha de devolucion *</label>
+                <label className="form-label">Fecha de devolución *</label>
                 <input
                   type="date"
                   className="form-control"
@@ -1530,7 +1525,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
                     if (v && isWeekend(v)) v = adjustToWeekday(v);
                     if (!v || v <= maxReturnDate) setReturnDate(v);
                   }}
-                    required
+                  required
                 />
               </div>
             </div>
@@ -1558,86 +1553,80 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       )}
 
       {showAdjustModal && materialToAdjust && (
-  <div className="modal-overlay">
-    <div className="modal-content-custom">
-      <div className="modal-header-custom">
-        <h5 className="modal-title">Ajustar Inventario: {formatName(materialToAdjust.nombre)}</h5>
-        <button
-          className="btn-close btn-close-white"
-          onClick={() => setShowAdjustModal(false)}
-        ></button>
-      </div>
-      <div className="modal-body p-4">
-        {error && <div className="alert-custom mb-3">{error}</div>}
-        {!canModifyStock() && (
-          <div className="alert-custom mb-3">
-            ⚠️ No tienes permisos para modificar el stock. Esta funcionalidad está restringida.
-          </div>
-        )}
-        <div className="mb-3">
-          <label className="form-label">
-            Stock actual: {materialToAdjust.cantidad} {getUnidad(materialToAdjust.tipo)}
-          </label>
-          <input
-            type="number"
-            className="form-control mt-2"
-            value={adjustAmount}
-            onChange={(e) => setAdjustAmount(e.target.value)}
-            placeholder="Añade o quita stock"
-            disabled={!canModifyStock()}
-          />
-        </div>
-      </div>
- {(() => {
-        const delta = parseInt(adjustAmount, 10);
-        const newStock =
-          materialToAdjust && !isNaN(delta) ? materialToAdjust.cantidad + delta : null;
-        const disableGuardar =
-          adjustAmount === '' || isNaN(delta) || newStock < 0 || !canModifyStock();
-
-        return (
-          <div className="modal-footer-custom">
-            <div className="footer-actions">
-              {/* Izquierda: Cancelar */}
-              <div className="footer-col-left">
-                <button
-                  type="button"
-                  className="btn-secondary-custom btn-w-sm"
-                  onClick={() => setShowAdjustModal(false)}
-                >
-                  Cancelar
-                </button>
-              </div>
-
-              {/* Centro: Guardar */}
-              <div className="footer-col-center">
-                <button
-                  className="btn-adjust btn-w-md"
-                  onClick={handleAdjustSubmit}
-                  disabled={disableGuardar}
-                >
-                  Guardar
-                </button>
-              </div>
-
-              {/* Derecha: Eliminar */}
-              <div className="footer-col-right">
-                <button
-                  type="button"
-                  className="btn-danger btn-w-sm"
-                  onClick={handleDeleteMaterial}
-                >
-                  Eliminar
-                </button>
+        <div className="modal-overlay">
+          <div className="modal-content-custom">
+            <div className="modal-header-custom">
+              <h5 className="modal-title">Ajustar Inventario: {formatName(materialToAdjust.nombre)}</h5>
+              <button
+                className="btn-close btn-close-white"
+                onClick={() => setShowAdjustModal(false)}
+              ></button>
+            </div>
+            <div className="modal-body p-4">
+              {error && <div className="alert-custom mb-3">{error}</div>}
+              {!canModifyStock() && (
+                <div className="alert-custom mb-3">
+                  ⚠️ No tienes permisos para modificar el stock. Esta funcionalidad está restringida.
+                </div>
+              )}
+              <div className="mb-3">
+                <label className="form-label">
+                  Stock actual: {materialToAdjust.cantidad} {getUnidad(materialToAdjust.tipo)}
+                </label>
+                <input
+                  type="number"
+                  className="form-control mt-2"
+                  value={adjustAmount}
+                  onChange={(e) => setAdjustAmount(e.target.value)}
+                  placeholder="Añade o quita stock"
+                  disabled={!canModifyStock()}
+                />
               </div>
             </div>
-          </div>
-        );
-      })()}
-    </div>
-  </div>
-)}
+            {(() => {
+              const delta = parseInt(adjustAmount, 10);
+              const newStock =
+                materialToAdjust && !isNaN(delta) ? materialToAdjust.cantidad + delta : null;
+              const disableGuardar =
+                adjustAmount === '' || isNaN(delta) || newStock < 0 || !canModifyStock();
 
+              return (
+                <div className="modal-footer-custom">
+                  <div className="footer-actions">
+                    <div className="footer-col-left">
+                      <button
+                        type="button"
+                        className="btn-secondary-custom btn-w-sm"
+                        onClick={() => setShowAdjustModal(false)}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                    <div className="footer-col-center">
+                      <button
+                        className="btn-adjust btn-w-md"
+                        onClick={handleAdjustSubmit}
+                        disabled={disableGuardar}
+                      >
+                        Guardar
+                      </button>
+                    </div>
+                    <div className="footer-col-right">
+                      <button
+                        type="button"
+                        className="btn-danger btn-w-sm"
+                        onClick={handleDeleteMaterial}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {showDetailModal && selectedMaterial && (
         <div className="modal-overlay">
