@@ -122,9 +122,9 @@ router.post('/crear-usuario', crearUsuarioLimiter, async (req, res) => {
 
     // Enviar correo con enlace para establecer contraseña
     try {
-       const cleanName = nombreLimpio.replace(/\b(Almacen|Docente|Administrador)\b/gi, '').trim();
-      const cleanName = nombre.replace(/\b(Almacen|Docente|Administrador)\b/gi, '').trim();
-  const emailHtml = `
+    const cleanName = nombreLimpio.replace(/\b(Almacen|Docente|Administrador)\b/gi, '').trim();
+      const emailText = `Hola ${cleanName},\n\nSe ha creado una cuenta para ti en el sistema LabSync.\n\nPara establecer tu contraseña, visita el siguiente enlace: ${resetUrl}\n\nEste enlace expirará en 24 horas.\n\nSaludos,\nEquipo LabSync`;
+      const emailHtml = `
   <div style="font-family:Arial, sans-serif; background-color:#f4f6f8; padding:30px;">
     <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:8px; padding:30px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
 
