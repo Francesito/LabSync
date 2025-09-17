@@ -54,100 +54,262 @@ export default function ReportesPage() {
     ordenDesc ? b.adeudos.length - a.adeudos.length : a.adeudos.length - b.adeudos.length
   );
 
-    const formatNombreMaterial = (nombre) => String(nombre || '').replace(/_/g, ' ');
+ const formatNombreMaterial = (nombre) => String(nombre || '').replace(/_/g, ' ');
+
+  const normalizarNombreMaterial = (nombre) =>
+    formatNombreMaterial(nombre)
+      .toLowerCase()
+      .trim();
+
+  const obtenerMesDesdeFecha = (fecha) => {
+    if (!fecha) return null;
+    const date = new Date(`${fecha}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleString('es-ES', { month: 'long' }).toLowerCase();
+  };
+
+  const normalizarAdeudos = (lista) =>
+    (Array.isArray(lista) ? lista : [])
+      .map((adeudo) => {
+        const nombre_material =
+          adeudo?.nombre_material ??
+          adeudo?.material_nombre ??
+          adeudo?.materialNombre ??
+          adeudo?.nombre ??
+          '';
+        const cantidad = Number(adeudo?.cantidad) || 0;
+        const tipo = String(adeudo?.tipo || '').toLowerCase();
+        const mes = obtenerMesDesdeFecha(adeudo?.fecha_solicitud || adeudo?.fecha_entrega);
+        const nombre_normalizado = normalizarNombreMaterial(nombre_material);
+        return {
+          ...adeudo,
+          cantidad,
+          tipo,
+          mes,
+          nombre_normalizado,
+        };
+      })
+      .filter(
+        (adeudo) =>
+          adeudo.cantidad > 0 &&
+          adeudo.mes &&
+          adeudo.nombre_normalizado &&
+          ['liquido', 'solido', 'equipo', 'laboratorio'].includes(adeudo.tipo)
+      );
+
+  const integrarAdeudosEnInventario = (inventario, adeudos) => {
+    if (!inventario || !Array.isArray(inventario.meses) || !Array.isArray(inventario.datos)) {
+      return inventario;
+    }
+
+    const mesesSet = new Set(inventario.meses);
+    const datosActualizados = inventario.datos.map((item) => ({
+      ...item,
+      consumos: { ...(item.consumos || {}) },
+      nombre_normalizado: normalizarNombreMaterial(item.nombre),
+      existencia_final: Number(item.existencia_final) || 0,
+    }));
+
+    adeudos.forEach((adeudo) => {
+      if (!mesesSet.has(adeudo.mes)) return;
+      const target = datosActualizados.find(
+        (item) => item.nombre_normalizado === adeudo.nombre_normalizado
+      );
+      if (!target) return;
+      const actual = Number(target.consumos[adeudo.mes]) || 0;
+      target.consumos[adeudo.mes] = actual + adeudo.cantidad;
+    });
+
+    const datos = datosActualizados.map((item) => {
+      const total = inventario.meses.reduce(
+        (acc, mes) => acc + (Number(item.consumos[mes]) || 0),
+        0
+      );
+      return {
+        ...item,
+        total_consumido: total,
+        cantidad_inicial: item.existencia_final + total,
+      };
+    });
+
+    return {
+      meses: inventario.meses,
+      datos: datos.map(({ nombre_normalizado, ...rest }) => rest),
+    };
+  };
+
+  const integrarAdeudosEnPrestamos = (prestamos, adeudos) => {
+    if (!prestamos || !Array.isArray(prestamos.meses) || !Array.isArray(prestamos.datos)) {
+      return prestamos;
+    }
+
+    const mesesSet = new Set(prestamos.meses);
+    const datosActualizados = prestamos.datos.map((item) => ({
+      ...item,
+      consumos: { ...(item.consumos || {}) },
+      total: Number(item.total) || 0,
+      nombre_normalizado: normalizarNombreMaterial(item.nombre),
+    }));
+
+    adeudos.forEach((adeudo) => {
+      if (!mesesSet.has(adeudo.mes)) return;
+      const target = datosActualizados.find(
+        (item) => item.nombre_normalizado === adeudo.nombre_normalizado
+      );
+      if (!target) return;
+      const actual = Number(target.consumos[adeudo.mes]) || 0;
+      target.consumos[adeudo.mes] = actual + adeudo.cantidad;
+      target.total += adeudo.cantidad;
+    });
+
+    return {
+      meses: prestamos.meses,
+      datos: datosActualizados.map(({ nombre_normalizado, ...rest }) => rest),
+    };
+  };
   
   useEffect(() => {
-    obtenerResiduos()
-      .then((data) => {
-        const grouped = {};
-        (Array.isArray(data) ? data : []).forEach((e) => {
-          const fecha = e.fecha ? new Date(e.fecha).toISOString().split('T')[0] : '';
-          const key = `${e.nombre || ''}-${e.grupo || ''}`;
-          if (!grouped[key]) {
-            grouped[key] = { nombre: e.nombre || '', grupo: e.grupo || '', registros: [] };
-          }
-          grouped[key].registros.push({ ...e, fecha });
-        });
-        setHistorial(Object.values(grouped));
-      })
-      .catch(() => setHistorial([]));
+    let isMounted = true;
 
-    Promise.allSettled([obtenerGrupos(), obtenerAdeudosGlobal()])
-      .then(([grRes, adeRes]) => {
-        const listaGrupos = grRes.status === 'fulfilled' ? grRes.value : [];
-        const adeudos = adeRes.status === 'fulfilled' ? adeRes.value : [];
-        const grouped = {};
-        (Array.isArray(adeudos) ? adeudos : []).forEach((a) => {
-          const g = a.grupo || 'Sin grupo';
-          if (!grouped[g]) grouped[g] = [];
-          const rawNombre =
-            a.nombre_material ??
-            a.nombreMaterial ??
-            a.material_nombre ??
-            a.materialNombre ??
-            a.material ??
-            a.nombre ??
-            '';
-         const nombre = String(rawNombre || '').trim().replace(/_/g, ' ');
-          grouped[g].push({
-            nombre_material: nombre || '(Sin nombre)',
-            cantidad: a.cantidad,
-            unidad: a.unidad,
-            solicitante: a.solicitante,
+    const fetchData = async () => {
+      try {
+        const [residuosRes, gruposAdeudos] = await Promise.allSettled([
+          obtenerResiduos(),
+          Promise.allSettled([obtenerGrupos(), obtenerAdeudosGlobal()]),
+        ]);
+
+        if (residuosRes.status === 'fulfilled') {
+          const grouped = {};
+          (Array.isArray(residuosRes.value) ? residuosRes.value : []).forEach((e) => {
+            const fecha = e.fecha ? new Date(e.fecha).toISOString().split('T')[0] : '';
+            const key = `${e.nombre || ''}-${e.grupo || ''}`;
+            if (!grouped[key]) {
+              grouped[key] = { nombre: e.nombre || '', grupo: e.grupo || '', registros: [] };
+            }
+            grouped[key].registros.push({ ...e, fecha });
           });
-        });
-        const all = (Array.isArray(listaGrupos) ? listaGrupos : []).map((g) => ({
-          nombre: g.nombre,
-          adeudos: grouped[g.nombre] || [],
-        }));
-        Object.keys(grouped).forEach((g) => {
-          if (!all.some((gr) => gr.nombre === g)) {
-            all.push({ nombre: g, adeudos: grouped[g] });
-          }
-        });
-       const filtered = all.filter(
-          (g) =>
-            g.nombre &&
-            !['sin grupo', 'docente'].includes(g.nombre.toLowerCase())
+    if (isMounted) setHistorial(Object.values(grouped));
+        } else if (isMounted) {
+          setHistorial([]);
+        }
+
+        const [grRes, adeRes] = gruposAdeudos.status === 'fulfilled'
+          ? gruposAdeudos.value
+          : [null, null];
+        const listaGrupos = grRes?.status === 'fulfilled' ? grRes.value : [];
+        const adeudosOriginales = adeRes?.status === 'fulfilled' ? adeRes.value : [];
+        const adeudosNormalizados = normalizarAdeudos(adeudosOriginales);
+
+        if (isMounted) {
+          const grouped = {};
+          (Array.isArray(adeudosOriginales) ? adeudosOriginales : []).forEach((a) => {
+            const g = a.grupo || 'Sin grupo';
+            if (!grouped[g]) grouped[g] = [];
+            const rawNombre =
+              a.nombre_material ??
+              a.nombreMaterial ??
+              a.material_nombre ??
+              a.materialNombre ??
+              a.material ??
+              a.nombre ??
+              '';
+            const nombre = String(rawNombre || '').trim().replace(/_/g, ' ');
+            grouped[g].push({
+              nombre_material: nombre || '(Sin nombre)',
+              cantidad: a.cantidad,
+              unidad: a.unidad,
+              solicitante: a.solicitante,
+            });
+          });
+          const all = (Array.isArray(listaGrupos) ? listaGrupos : []).map((g) => ({
+            nombre: g.nombre,
+            adeudos: grouped[g.nombre] || [],
+          }));
+          Object.keys(grouped).forEach((g) => {
+            if (!all.some((gr) => gr.nombre === g)) {
+              all.push({ nombre: g, adeudos: grouped[g] });
+            }
+          });
+          const filtered = all.filter(
+            (g) => g.nombre && !['sin grupo', 'docente'].includes(g.nombre.toLowerCase())
+          );
+          setGrupos(filtered);
+        }
+
+        const [liqRes, solRes, eqRes, labRes] = await Promise.allSettled([
+          obtenerInventarioLiquidos(),
+          obtenerInventarioSolidos(),
+          obtenerPrestamosEquipos(),
+          obtenerPrestamosLaboratorio(),
+        ]);
+
+        if (!isMounted) return;
+
+        const liquidosData = liqRes.status === 'fulfilled'
+          ? {
+              meses: liqRes.value.meses || [],
+              datos: Array.isArray(liqRes.value.datos) ? liqRes.value.datos : [],
+            }
+          : { meses: [], datos: [] };
+        const solidosData = solRes.status === 'fulfilled'
+          ? {
+              meses: solRes.value.meses || [],
+              datos: Array.isArray(solRes.value.datos) ? solRes.value.datos : [],
+            }
+          : { meses: [], datos: [] };
+        const equiposData = eqRes.status === 'fulfilled'
+          ? {
+              meses: eqRes.value.meses || [],
+              datos: Array.isArray(eqRes.value.datos) ? eqRes.value.datos : [],
+            }
+          : { meses: [], datos: [] };
+        const laboratorioData = labRes.status === 'fulfilled'
+          ? {
+              meses: labRes.value.meses || [],
+              datos: Array.isArray(labRes.value.datos) ? labRes.value.datos : [],
+            }
+          : { meses: [], datos: [] };
+
+        setInventarioLiquidos(
+          integrarAdeudosEnInventario(
+            liquidosData,
+            adeudosNormalizados.filter((a) => a.tipo === 'liquido')
+          )
         );
-        setGrupos(filtered);
-      });
+       setInventarioSolidos(
+          integrarAdeudosEnInventario(
+            solidosData,
+            adeudosNormalizados.filter((a) => a.tipo === 'solido')
+          )
+        );
+        setPrestamosEquipos(
+          integrarAdeudosEnPrestamos(
+            equiposData,
+            adeudosNormalizados.filter((a) => a.tipo === 'equipo')
+          )
+        );
+        setPrestamosLaboratorio(
+          integrarAdeudosEnPrestamos(
+            laboratorioData,
+            adeudosNormalizados.filter((a) => a.tipo === 'laboratorio')
+          )
+        );
+      } catch (error) {
+        if (!isMounted) return;
+        setHistorial([]);
+        setGrupos([]);
+        setInventarioLiquidos({ meses: [], datos: [] });
+        setInventarioSolidos({ meses: [], datos: [] });
+        setPrestamosEquipos({ meses: [], datos: [] });
+        setPrestamosLaboratorio({ meses: [], datos: [] });
+      }
+    };
 
-    obtenerInventarioLiquidos()
-      .then((data) => {
-        setInventarioLiquidos({
-          meses: data.meses || [],
-          datos: Array.isArray(data.datos) ? data.datos : [],
-        });
-      })
-      .catch(() => setInventarioLiquidos({ meses: [], datos: [] }));
+    fetchData();
 
-    obtenerInventarioSolidos()
-      .then((data) => {
-        setInventarioSolidos({
-          meses: data.meses || [],
-          datos: Array.isArray(data.datos) ? data.datos : [],
-        });
-      })
-      .catch(() => setInventarioSolidos({ meses: [], datos: [] }));
-
-      obtenerPrestamosEquipos()
-      .then((data) => {
-        setPrestamosEquipos({
-          meses: data.meses || [],
-          datos: Array.isArray(data.datos) ? data.datos : [],
-        });
-      })
-      .catch(() => setPrestamosEquipos({ meses: [], datos: [] }));
-
-    obtenerPrestamosLaboratorio()
-      .then((data) => {
-        setPrestamosLaboratorio({
-          meses: data.meses || [],
-          datos: Array.isArray(data.datos) ? data.datos : [],
-        });
-      })
-      .catch(() => setPrestamosLaboratorio({ meses: [], datos: [] }));
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const downloadHistorialCSV = (registros, nombre) => {
