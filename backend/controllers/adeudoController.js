@@ -104,6 +104,7 @@ async function getAllAdeudos(req, res) {
          a.id,
          a.solicitud_id,
          a.solicitud_item_id,
+         a.tipo,
          COALESCE(ml.nombre, ms.nombre, me.nombre, mlab.nombre) AS nombre_material,
          a.cantidad_pendiente AS cantidad,
          CASE a.tipo WHEN 'liquido' THEN 'ml' WHEN 'solido' THEN 'g' ELSE 'u' END AS unidad,
@@ -111,6 +112,7 @@ async function getAllAdeudos(req, res) {
          s.nombre_alumno AS solicitante,
          s.profesor,
          g.nombre AS grupo,
+           DATE_FORMAT(s.fecha_solicitud, '%Y-%m-%d') AS fecha_solicitud,
          DATE_FORMAT(a.fecha_entrega, '%Y-%m-%d') AS fecha_entrega
        FROM Adeudo a
      JOIN Solicitud s       ON a.solicitud_id = s.id
