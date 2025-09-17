@@ -264,7 +264,7 @@ function TarjetasSolicitudes({
 
                       {columnas.fecha && dateStr && (
                         <div className="mb-3">
-                          <span className="text-sm text-gray-600">Fecha:</span>
+                          <span className="text-sm text-gray-600">Fecha de recoleccion:</span>
                           <div className="flex items-center gap-1">
                             <span>📅</span>
                             <span>{formatFechaStr(dateStr)}</span>
