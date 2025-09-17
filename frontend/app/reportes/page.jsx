@@ -205,13 +205,22 @@ const obtenerMesDesdeFecha = (fecha) => {
     }
 
     const mesesSet = new Set(inventario.meses);
-    const datosActualizados = inventario.datos.map((item) => ({
-      ...item,
-      consumos: { ...(item.consumos || {}) },
-      nombre_normalizado: normalizarNombreMaterial(item.nombre),
-      existencia_final: Number(item.existencia_final) || 0,
-    }));
+  const datosActualizados = inventario.datos.map((item) => {
+      const cantidadOriginal = Number(
+        item.cantidad_inicial ?? item.cantidad ?? item.cantidad_inicial_original
+      );
 
+      return {
+        ...item,
+        consumos: { ...(item.consumos || {}) },
+        nombre_normalizado: normalizarNombreMaterial(item.nombre),
+        existencia_final: Number(item.existencia_final) || 0,
+        cantidad_inicial_original: Number.isFinite(cantidadOriginal)
+          ? cantidadOriginal
+          : undefined,
+      };
+    });
+    
     adeudos.forEach((adeudo) => {
       if (!mesesSet.has(adeudo.mes)) return;
       const target = datosActualizados.find(
@@ -227,10 +236,22 @@ const obtenerMesDesdeFecha = (fecha) => {
         (acc, mes) => acc + (Number(item.consumos[mes]) || 0),
         0
       );
+         const cantidadInicial = Number.isFinite(item.cantidad_inicial_original)
+        ? item.cantidad_inicial_original
+        : Number(item.cantidad_inicial ?? item.cantidad ?? item.existencia_final);
+
+      const {
+        nombre_normalizado,
+        cantidad_inicial_original,
+        ...restoDatos
+      } = item;
+      
       return {
-        ...item,
+      ...restoDatos,
         total_consumido: total,
-        cantidad_inicial: item.existencia_final + total,
+        cantidad_inicial: Number.isFinite(cantidadInicial)
+          ? cantidadInicial
+          : 0,
       };
     });
 
