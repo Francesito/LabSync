@@ -611,4 +611,47 @@ router.get('/estadisticas', async (req, res) => {
   }
 });
 
+// Crear nuevo grupo académico
+router.post('/grupos', async (req, res) => {
+  const { nombre } = req.body;
+  const nombreLimpio = typeof nombre === 'string' ? nombre.trim() : '';
+
+  if (!nombreLimpio) {
+    return res.status(400).json({ error: 'El nombre del grupo es obligatorio' });
+  }
+
+  if (nombreLimpio.length < 2 || nombreLimpio.length > 100) {
+    return res.status(400).json({ error: 'El nombre del grupo debe tener entre 2 y 100 caracteres' });
+  }
+
+  const nombreValido = /^[\p{L}0-9\s_.-]+$/u;
+  if (!nombreValido.test(nombreLimpio)) {
+    return res.status(400).json({ error: 'El nombre del grupo contiene caracteres no permitidos' });
+  }
+
+  try {
+    const [existente] = await pool.query(
+      'SELECT id FROM Grupo WHERE LOWER(nombre) = LOWER(?) LIMIT 1',
+      [nombreLimpio]
+    );
+
+    if (existente.length > 0) {
+      return res.status(400).json({ error: 'El grupo ya existe' });
+    }
+
+    const [resultado] = await pool.query('INSERT INTO Grupo (nombre) VALUES (?)', [nombreLimpio]);
+
+    return res.status(201).json({
+      mensaje: 'Grupo creado exitosamente',
+      grupo: {
+        id: resultado.insertId,
+        nombre: nombreLimpio
+      }
+    });
+  } catch (error) {
+    console.error('Error al crear grupo:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 module.exports = router;
