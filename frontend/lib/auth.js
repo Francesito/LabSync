@@ -9,6 +9,48 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://labsync-1090.onrend
 
 axios.defaults.withCredentials = true;
 
+const TOKEN_STORAGE_KEY = 'labsync_auth_token';
+const isBrowser = typeof window !== 'undefined';
+
+const setAxiosAuthHeader = token => {
+  if (token) {
+    axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete axios.defaults.headers.common.Authorization;
+  }
+};
+
+const persistToken = token => {
+  if (!isBrowser) return;
+
+  if (token) {
+    window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  } else {
+    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+  }
+};
+
+const applyStoredToken = () => {
+  if (!isBrowser) {
+    setAxiosAuthHeader(null);
+    return null;
+  }
+
+  const storedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY) || null;
+  setAxiosAuthHeader(storedToken);
+  return storedToken;
+};
+
+const storeAuthToken = token => {
+  persistToken(token || null);
+  setAxiosAuthHeader(token || null);
+};
+
+const clearAuthToken = () => {
+  persistToken(null);
+  setAxiosAuthHeader(null);
+};
+
 const AuthContext = createContext(null);
 
 const RUTAS_PUBLICAS = ['/login', '/register', '/forgot-password', '/logout'];
@@ -48,7 +90,8 @@ export function AuthProvider({ children }) {
 
   const limpiarSesion = useCallback(() => {
     setUsuario(null);
-   setPermissions(estadoInicialPermisos);
+    setPermissions(estadoInicialPermisos);
+    clearAuthToken();
   }, []);
 
     const fetchPermissions = useCallback(async () => {
@@ -87,6 +130,7 @@ export function AuthProvider({ children }) {
     useEffect(() => {
     let activo = true;
     const cargarSesion = async () => {
+          applyStoredToken();
       try {
         const { data } = await axios.get(`${API_BASE}/api/auth/session`);
         if (!activo) return;
@@ -152,8 +196,15 @@ return () => {
       { correo_institucional: correo, contrasena },
       { withCredentials: true }
     );
-      
-      const usuarioNormalizado = construirUsuario(response.data?.usuario);
+
+     const token = response.data?.token || null;
+    if (token) {
+      storeAuthToken(token);
+    } else {
+      clearAuthToken();
+    }
+
+    const usuarioNormalizado = construirUsuario(response.data?.usuario);
     setUsuario(usuarioNormalizado);
     await fetchPermissions();
     router.replace('/catalog');
