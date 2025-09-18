@@ -277,7 +277,7 @@ export default function Auth() {
                   onChange={(e) =>
                     setNumeroExpediente(e.target.value.replace(/\D/g, '').slice(0, 10))
                   }
-                  placeholder="2023123456"
+                  placeholder="No. Expediente"
                   required
                   disabled={loading}
                   maxLength={10}
