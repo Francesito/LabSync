@@ -1,6 +1,5 @@
 // backend/controllers/adeudoController.js
 const pool = require('../config/db');
-const jwt = require('jsonwebtoken');
 
 /** Log helper con timestamp */
 function logRequest(name) {
@@ -51,42 +50,105 @@ async function getUsuarioAdeudos(req, res) {
 async function ajustarAdeudo(req, res) {
   logRequest('ajustarAdeudo');
   const { solicitudId } = req.params;
-  const { entregados }  = req.body;
+ const { entregados } = req.body;
+  const usuario = req.usuario;
 
   if (!Array.isArray(entregados)) {
     return res.status(400).json({ error: 'Array de items entregados obligatorio' });
   }
 
   try {
-    if (entregados.length > 0) {
-      await pool.query(
-        `DELETE FROM Adeudo
-           WHERE solicitud_id = ?
-             AND solicitud_item_id IN (?)`,
-        [solicitudId, entregados]
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const [adeudosAsociados] = await connection.query(
+        `SELECT DISTINCT usuario_id
+           FROM Adeudo
+          WHERE solicitud_id = ?`,
+        [solicitudId]
       );
-    }
 
-    const [[{ cnt }]] = await pool.query(
-      `SELECT COUNT(*) AS cnt
-         FROM Adeudo
-        WHERE solicitud_id = ?`,
-      [solicitudId]
-    );
+    if (adeudosAsociados.length === 0) {
+        await connection.rollback();
+        return res.status(404).json({ error: 'Adeudo no encontrado para la solicitud indicada' });
+      }
 
-    if (cnt === 0) {
-      await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [solicitudId]);
-      await pool.query('DELETE FROM Solicitud WHERE id = ?', [solicitudId]);
+      const esPropietario = adeudosAsociados.some(({ usuario_id }) => usuario_id === usuario.id);
+      const esPersonalAlmacen = [3, 4].includes(usuario.rol_id);
+
+      if (!esPropietario && !esPersonalAlmacen) {
+        await connection.rollback();
+        return res.status(403).json({ error: 'No tienes permisos para ajustar este adeudo' });
+      }
+
+      const itemsParseados = entregados.map(id => Number.parseInt(id, 10));
+      if (itemsParseados.some(id => !Number.isInteger(id))) {
+        await connection.rollback();
+        return res.status(400).json({ error: 'Los identificadores de items deben ser números enteros' });
+      }
+      const itemsNormalizados = Array.from(new Set(itemsParseados));
+
+      if (itemsNormalizados.length > 0) {
+        const [itemsValidos] = await connection.query(
+          `SELECT solicitud_item_id
+             FROM Adeudo
+            WHERE solicitud_id = ?
+              AND solicitud_item_id IN (?)`,
+          [solicitudId, itemsNormalizados]
+        );
+
+        const idsValidos = new Set(itemsValidos.map(row => row.solicitud_item_id));
+        const idsInvalidos = itemsNormalizados.filter(id => !idsValidos.has(id));
+
+        if (idsInvalidos.length > 0) {
+          await connection.rollback();
+          return res.status(400).json({ error: 'Se enviaron items que no pertenecen al adeudo' });
+        }
+
+        await connection.query(
+          `DELETE FROM Adeudo
+             WHERE solicitud_id = ?
+               AND solicitud_item_id IN (?)`,
+          [solicitudId, itemsNormalizados]
+        );
+      }
+
+      const [[{ cnt }]] = await connection.query(
+        `SELECT COUNT(*) AS cnt
+           FROM Adeudo
+          WHERE solicitud_id = ?`,
+        [solicitudId]
+      );
+
+      if (cnt === 0) {
+        await connection.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [solicitudId]);
+        await connection.query('DELETE FROM Solicitud WHERE id = ?', [solicitudId]);
+      }
+
+      await connection.commit();
+
+      if (cnt === 0) {
+        return res.json({
+          message: 'Adeudo completado y solicitud eliminada',
+          pendingItems: 0
+        });
+      }
+
       return res.json({
-        message: 'Adeudo completado y solicitud eliminada',
-        pendingItems: 0
+       message: 'Adeudo parcial registrado',
+        pendingItems: cnt
       });
+        } catch (transactionError) {
+      try {
+        await connection.rollback();
+      } catch (rollbackError) {
+        console.error('[Error] ajustarAdeudo rollback:', rollbackError);
+      }
+      throw transactionError;
+    } finally {
+      connection.release();
     }
-    
-    return res.json({
-     message: 'Adeudo parcial registrado',
-      pendingItems: cnt
-    });
   } catch (error) {
     console.error('[Error] ajustarAdeudo:', error);
     res.status(500).json({ error: 'Error al ajustar adeudo' });
