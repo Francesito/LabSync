@@ -10,7 +10,7 @@ export default function Cuenta() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://labsync-1090.onrender.com';
 
   const handleActualizar = async (e) => {
     e.preventDefault();
@@ -19,7 +19,7 @@ export default function Cuenta() {
       const { data } = await axios.put(
         `${baseUrl}/api/usuarios/nombre`,
         { nombre },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        { withCredentials: true }
       );
       setUsuario({ ...usuario, nombre: data.nombre });
       setMensaje(data.mensaje);
@@ -39,7 +39,7 @@ export default function Cuenta() {
     setLoading(true);
     try {
       await axios.delete(`${baseUrl}/api/usuarios/me`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+       withCredentials: true,
       });
       logout();
     } catch (err) {
