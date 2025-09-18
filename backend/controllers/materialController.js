@@ -1083,6 +1083,7 @@ const deliverSolicitud = async (req, res) => {
     }
 
     // 5) Insertar un registro de adeudo por cada ítem seleccionado
+      const movimientosRegistrados = [];
     for (const it of items) {
       await pool.query(
         `INSERT INTO Adeudo
@@ -1099,6 +1100,13 @@ const deliverSolicitud = async (req, res) => {
         ]
       );
 
+         movimientosRegistrados.push({
+        solicitudItemId: it.solicitud_item_id,
+        materialId: it.material_id,
+        tipo: it.tipo,
+        cantidad: Number(it.cantidad) || 0
+      });
+      
        // Actualizar la cantidad del item al valor realmente entregado
       await pool.query(
         'UPDATE SolicitudItem SET cantidad = ? WHERE id = ?',
@@ -1116,6 +1124,38 @@ const deliverSolicitud = async (req, res) => {
       );
     } else {
       await pool.query('DELETE FROM SolicitudItem WHERE solicitud_id = ?', [id]);
+    }
+
+      // 6) Registrar movimientos de inventario para reflejar consumo real
+    for (const mov of movimientosRegistrados) {
+      if (!mov || !mov.materialId || !mov.tipo) continue;
+
+      const cantidadEntregada = Math.abs(Number(mov.cantidad)) || 0;
+      if (cantidadEntregada === 0) continue;
+
+      const motivo = `Entrega solicitud ${id} - item ${mov.solicitudItemId}`;
+
+      const [existing] = await pool.query(
+        `SELECT id FROM MovimientosInventario
+         WHERE material_id = ? AND tipo = ? AND tipo_movimiento = 'salida' AND motivo = ?
+         LIMIT 1`,
+        [mov.materialId, mov.tipo, motivo]
+      );
+
+      if (existing.length > 0) continue;
+
+      await pool.query(
+        `INSERT INTO MovimientosInventario
+           (usuario_id, material_id, tipo, cantidad, tipo_movimiento, motivo, fecha_movimiento)
+         VALUES (?, ?, ?, ?, 'salida', ?, NOW())`,
+        [
+          req.usuario?.id || null,
+          mov.materialId,
+          mov.tipo,
+          -cantidadEntregada,
+          motivo
+        ]
+      );
     }
     
      // Notificar al solicitante y al docente si aplica
