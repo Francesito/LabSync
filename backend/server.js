@@ -233,14 +233,24 @@ const initializeNotificacionTable = async () => {
 // Asegura columna para control de cambio de nombre
 const initializeUsuarioTable = async () => {
   try {
-    const [columns] = await pool.query(
+       const [nombreCambioColumn] = await pool.query(
       "SHOW COLUMNS FROM Usuario LIKE 'ultimo_cambio_nombre'"
     );
-    if (columns.length === 0) {
+    if (nombreCambioColumn.length === 0) {
       await pool.query(
         'ALTER TABLE Usuario ADD COLUMN ultimo_cambio_nombre DATETIME NULL'
       );
     }
+
+      const [expedienteColumn] = await pool.query(
+      "SHOW COLUMNS FROM Usuario LIKE 'numero_expediente'"
+    );
+    if (expedienteColumn.length === 0) {
+      await pool.query(
+        "ALTER TABLE Usuario ADD COLUMN numero_expediente VARCHAR(20) NULL AFTER grupo_id"
+      );
+    }
+    
     console.log('✅ Tabla Usuario actualizada correctamente');
   } catch (error) {
     console.error('❌ Error actualizando tabla Usuario:', error);
