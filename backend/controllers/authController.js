@@ -250,7 +250,10 @@ const iniciarSesion = async (req, res) => {
 
     res
       .cookie('labsync_token', token, getCookieOptions())
-      .json({ usuario: usuarioRespuesta });
+        .json({
+        token,
+        usuario: usuarioRespuesta
+      });
   } catch (error) {
     console.error('Error al iniciar sesión:', error);
     res.status(500).json({ error: 'Error al iniciar sesión' });
