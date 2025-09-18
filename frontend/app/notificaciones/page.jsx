@@ -5,38 +5,41 @@ import axios from 'axios';
 
 export default function Notificaciones() {
   const [notificaciones, setNotificaciones] = useState([]);
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+ const [authError, setAuthError] = useState(false);
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://labsync-1090.onrender.com';
 
   useEffect(() => {
-    if (!token) return;
     const cargar = async () => {
       try {
         const { data } = await axios.get(
         `${baseUrl}/api/notificaciones`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          { withCredentials: true }
         );
         setNotificaciones(data);
+          setAuthError(false);
         
         if (data.some(n => !n.leida)) {
           await axios.put(
             `${baseUrl}/api/notificaciones/marcar-leidas`,
             {},
-            { headers: { Authorization: `Bearer ${token}` } }
+            { withCredentials: true }
           );
            setNotificaciones(prev => prev.map(n => ({ ...n, leida: 1 })));
         }
       } catch (err) {
         console.error('Error al cargar notificaciones:', err);
+         if (err.response?.status === 401) {
+          setAuthError(true);
+        }
       }
     };
     cargar();
-    }, [token]);
+     }, [baseUrl]);
 
   const eliminar = async (id) => {
     try {
       await axios.delete(`${baseUrl}/api/notificaciones/${id}`, {
-     headers: { Authorization: `Bearer ${token}` }
+    withCredentials: true
       });
       setNotificaciones(prev => prev.filter(n => n.id !== id));
     } catch (err) {
@@ -44,7 +47,7 @@ export default function Notificaciones() {
     }
   };
 
-  if (!token) {
+ if (authError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="max-w-4xl mx-auto px-6 py-12">
