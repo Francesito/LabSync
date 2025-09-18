@@ -256,15 +256,79 @@ function obtenerMesesCuatri() {
   }));
 }
 
+function startOfISOWeek(date) {
+  const tmp = new Date(date);
+  tmp.setHours(0, 0, 0, 0);
+  const day = tmp.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  tmp.setDate(tmp.getDate() + diff);
+  return tmp;
+}
+
+function endOfISOWeek(date) {
+  const start = startOfISOWeek(date);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+  return end;
+}
+
+function getISOWeekYear(date) {
+  const tmp = new Date(date);
+  tmp.setHours(0, 0, 0, 0);
+  tmp.setDate(tmp.getDate() + 4 - (tmp.getDay() || 7));
+  return tmp.getFullYear();
+}
+
+function getISOWeekNumber(date) {
+  const tmp = new Date(date);
+  tmp.setHours(0, 0, 0, 0);
+  tmp.setDate(tmp.getDate() + 4 - (tmp.getDay() || 7));
+  const yearStart = new Date(tmp.getFullYear(), 0, 1);
+  const diff = tmp - yearStart;
+  return Math.ceil(((diff / 86400000) + 1) / 7);
+}
+
+function obtenerSemanasReferencia(cantidadSemanas = 12) {
+  const hoy = new Date();
+  const inicioSemanaActual = startOfISOWeek(hoy);
+  const semanas = [];
+
+  for (let i = cantidadSemanas - 1; i >= 0; i -= 1) {
+    const inicio = new Date(inicioSemanaActual);
+    inicio.setDate(inicio.getDate() - i * 7);
+    const fin = endOfISOWeek(inicio);
+    const isoWeek = getISOWeekNumber(inicio);
+    const isoYear = getISOWeekYear(inicio);
+    const yearWeek = Number(`${isoYear}${String(isoWeek).padStart(2, '0')}`);
+    semanas.push({
+      isoWeek,
+      isoYear,
+      yearWeek,
+      label: `Sem ${String(isoWeek).padStart(2, '0')} ${isoYear}`,
+      inicio,
+      fin,
+    });
+  }
+
+  return semanas;
+}
+
+function formatDateToYMD(date) {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 const getInventarioLiquidosReport = async (req, res) => {
   logRequest('getInventarioLiquidosReport');
   try {
-    const meses = obtenerMesesCuatri();
-    const inicio = `${meses[0].year}-${String(meses[0].index + 1).padStart(2, '0')}-01`;
-    const finDate = new Date(meses[3].year, meses[3].index + 1, 0);
-    const fin = `${finDate.getFullYear()}-${String(finDate.getMonth() + 1).padStart(2, '0')}-${String(finDate.getDate()).padStart(2, '0')}`;
-    const consumoSelect = meses
-      .map(m => `SUM(CASE WHEN MONTH(mov.fecha_movimiento) = ${m.index + 1} AND YEAR(mov.fecha_movimiento) = ${m.year} THEN -mov.cantidad ELSE 0 END) AS ${m.nombre}`)
+       const semanas = obtenerSemanasReferencia();
+    const inicio = formatDateToYMD(semanas[0].inicio);
+    const fin = formatDateToYMD(semanas[semanas.length - 1].fin);
+    const consumoSelect = semanas
+      .map((semana, index) =>
+        `SUM(CASE WHEN YEARWEEK(mov.fecha_movimiento, 3) = ${semana.yearWeek} THEN -mov.cantidad ELSE 0 END) AS semana_${index}`,
+      )
       .join(', ');
     const query = `
       SELECT ml.id, ml.nombre, ml.cantidad_disponible_ml, ${consumoSelect}
@@ -276,11 +340,13 @@ const getInventarioLiquidosReport = async (req, res) => {
     const [rows] = await pool.query(query, [inicio, fin]);
      const datos = rows.map((r) => {
       const consumos = {};
-   meses.forEach((m) => {
-        const valor = parseFloat(r[m.nombre]);
-        consumos[m.nombre] = Number.isFinite(valor) ? Math.abs(valor) : 0;
+  let total = 0;
+      semanas.forEach((semana, index) => {
+        const valor = parseFloat(r[`semana_${index}`]);
+        const consumo = Number.isFinite(valor) ? Math.abs(valor) : 0;
+        consumos[semana.label] = consumo;
+        total += consumo;
       });
-      const total = Object.values(consumos).reduce((a, b) => a + b, 0);
       const disponible = parseFloat(r.cantidad_disponible_ml) || 0;
       return {
         nombre: r.nombre,
@@ -291,7 +357,7 @@ const getInventarioLiquidosReport = async (req, res) => {
         total_consumido: total,
       };
     });
-    res.json({ meses: meses.map(m => m.nombre), datos });
+      res.json({ semanas: semanas.map((semana) => semana.label), datos });
   } catch (error) {
     console.error('[Error] getInventarioLiquidosReport:', error);
     res.status(500).json({ error: 'Error al obtener inventario de líquidos' });
@@ -301,12 +367,13 @@ const getInventarioLiquidosReport = async (req, res) => {
 const getInventarioSolidosReport = async (req, res) => {
   logRequest('getInventarioSolidosReport');
   try {
-    const meses = obtenerMesesCuatri();
-    const inicio = `${meses[0].year}-${String(meses[0].index + 1).padStart(2, '0')}-01`;
-    const finDate = new Date(meses[3].year, meses[3].index + 1, 0);
-    const fin = `${finDate.getFullYear()}-${String(finDate.getMonth() + 1).padStart(2, '0')}-${String(finDate.getDate()).padStart(2, '0')}`;
-    const consumoSelect = meses
-      .map(m => `SUM(CASE WHEN MONTH(mov.fecha_movimiento) = ${m.index + 1} AND YEAR(mov.fecha_movimiento) = ${m.year} THEN -mov.cantidad ELSE 0 END) AS ${m.nombre}`)
+   const semanas = obtenerSemanasReferencia();
+    const inicio = formatDateToYMD(semanas[0].inicio);
+    const fin = formatDateToYMD(semanas[semanas.length - 1].fin);
+    const consumoSelect = semanas
+      .map((semana, index) =>
+        `SUM(CASE WHEN YEARWEEK(mov.fecha_movimiento, 3) = ${semana.yearWeek} THEN -mov.cantidad ELSE 0 END) AS semana_${index}`,
+      )
       .join(', ');
     const query = `
       SELECT ms.id, ms.nombre, ms.cantidad_disponible_g, ${consumoSelect}
@@ -318,11 +385,13 @@ const getInventarioSolidosReport = async (req, res) => {
     const [rows] = await pool.query(query, [inicio, fin]);
  const datos = rows.map((r) => {
       const consumos = {};
- meses.forEach((m) => {
-        const valor = parseFloat(r[m.nombre]);
-        consumos[m.nombre] = Number.isFinite(valor) ? Math.abs(valor) : 0;
+ let total = 0;
+      semanas.forEach((semana, index) => {
+        const valor = parseFloat(r[`semana_${index}`]);
+        const consumo = Number.isFinite(valor) ? Math.abs(valor) : 0;
+        consumos[semana.label] = consumo;
+        total += consumo;
       });
-      const total = Object.values(consumos).reduce((a, b) => a + b, 0);
       const disponible = parseFloat(r.cantidad_disponible_g) || 0;
       return {
         nombre: r.nombre,
@@ -333,7 +402,7 @@ const getInventarioSolidosReport = async (req, res) => {
         total_consumido: total,
       };
     });
-    res.json({ meses: meses.map(m => m.nombre), datos });
+     res.json({ semanas: semanas.map((semana) => semana.label), datos });
   } catch (error) {
     console.error('[Error] getInventarioSolidosReport:', error);
     res.status(500).json({ error: 'Error al obtener inventario de sólidos' });
