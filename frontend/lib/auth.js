@@ -1,261 +1,173 @@
 // frontend/lib/auth.js
 'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
+
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import axios from 'axios';
 
-// Función para decodificar JWT manualmente (sin librerías externas)
-const decodeJWT = (token) => {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map(function (c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        })
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error('Error decodificando JWT:', error);
-    return null;
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://labsync-1090.onrender.com';
+
+axios.defaults.withCredentials = true;
+
+const AuthContext = createContext(null);
+
+const RUTAS_PUBLICAS = ['/login', '/register', '/forgot-password', '/logout'];
+const esRutaPublica = pathname =>
+  RUTAS_PUBLICAS.includes(pathname) ||
+  pathname.startsWith('/reset-password') ||
+  pathname.startsWith('/verificar');
+
+const normalizarRol = rolId => {
+  switch (Number(rolId)) {
+    case 1:
+      return 'alumno';
+    case 2:
+      return 'docente';
+    case 3:
+      return 'almacen';
+    case 4:
+      return 'administrador';
+    default:
+      return 'desconocido';
   }
 };
 
-const AuthContext = createContext();
+const estadoInicialPermisos = {
+  acceso_chat: false,
+  modificar_stock: false,
+  rol: null,
+};
 
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
-  const [permissions, setPermissions] = useState({
-    acceso_chat: false,
-    modificar_stock: false,
-    rol: null,
-  });
+  const [permissions, setPermissions] = useState(estadoInicialPermisos);
   const [loading, setLoading] = useState(true);
-  
   const router = useRouter();
   const pathname = usePathname();
 
-  // Función para limpiar la sesión
   const limpiarSesion = () => {
-    localStorage.removeItem('token');
     setUsuario(null);
+       setPermissions(estadoInicialPermisos);
   };
 
-  // Función para verificar si el token ha expirado
-  const tokenExpirado = (decoded) => {
-    if (!decoded.exp) return false;
-    const now = Date.now() / 1000;
-    return decoded.exp < now;
-  };
-
-   // ============================
-  // Carga permisos de chat y stock
-  // ============================
-  const fetchPermissions = async (token) => {
+    const fetchPermissions = async () => {
     try {
-     const [chatRes, stockRes] = await Promise.all([
- axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/permisos-chat`, {
-    headers: { Authorization: `Bearer ${token}` },
-  }),
-  axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/permisos-stock`, {
-   headers: { Authorization: `Bearer ${token}` },
- }),
- ]);
+  const [chatRes, stockRes] = await Promise.all([
+        axios.get(`${API_BASE}/api/auth/permisos-chat`),
+        axios.get(`${API_BASE}/api/auth/permisos-stock`),
+      ]);
       setPermissions({
-        acceso_chat: chatRes.data.acceso_chat,
-        modificar_stock: stockRes.data.modificar_stock,
-        rol: stockRes.data.rol,
+       acceso_chat: Boolean(chatRes.data?.acceso_chat),
+        modificar_stock: Boolean(stockRes.data?.modificar_stock),
+        rol: stockRes.data?.rol || chatRes.data?.rol || null,
       });
     } catch (err) {
       console.error('Error cargando permisos:', err);
-      if (err.response?.status === 401) limpiarSesion();
+     if (err.response?.status === 401) {
+        limpiarSesion();
+      }
     }
   };
-  
-  useEffect(() => {
-    const cargarUsuario = async () => {
-      const token = localStorage.getItem('token');
-      
-      // Rutas públicas que no requieren autenticación
-      const rutasPublicas = ['/login', '/register', '/forgot-password', '/logout'];
-      const esRutaPublica = rutasPublicas.includes(pathname) || 
-                           pathname.startsWith('/reset-password') || 
-                           pathname.startsWith('/verificar');
 
-      if (token) {
-        try {
-          const decoded = decodeJWT(token);
-          
-          if (!decoded) {
-            console.error('Token inválido');
-            limpiarSesion();
-            if (!esRutaPublica) {
-              router.push('/login');
-            }
-            setLoading(false);
-            return;
-          }
+ const construirUsuario = data => {
+    if (!data) return null;
+    return {
+      id: data.id,
+      nombre: data.nombre,
+      correo: data.correo || data.correo_institucional,
+      rol_id: Number(data.rol_id),
+      rol: data.rol || normalizarRol(data.rol_id),
+      grupo_id: data.grupo_id ?? null,
+      grupo: data.grupo_nombre || data.grupo || null,
+      numero_expediente: data.numero_expediente ?? null,
+    };
+  };
 
-          // Verificar si el token ha expirado
-          if (tokenExpirado(decoded)) {
-            console.error('Token expirado');
-            limpiarSesion();
-            if (!esRutaPublica) {
-              router.push('/login');
-            }
-            setLoading(false);
-            return;
-          }
+    useEffect(() => {
+    let activo = true;
+    const cargarSesion = async () => {
+      setLoading(true);
+      try {
+        const { data } = await axios.get(`${API_BASE}/api/auth/session`);
+        if (!activo) return;
+        const usuarioNormalizado = construirUsuario(data.usuario);
+        setUsuario(usuarioNormalizado);
+        await fetchPermissions();
 
-          // Convertir rol_id a texto si es necesario
-          let rolNombre = decoded.rol || decoded.rol_id;
-          if (typeof rolNombre === 'number') {
-            switch (rolNombre) {
-              case 1:
-                rolNombre = 'alumno';
-                break;
-              case 2:
-                rolNombre = 'docente';
-                break;
-              case 3:
-                rolNombre = 'almacen';
-                break;
-              case 4:
-                rolNombre = 'administrador';
-                break;
-              default:
-                rolNombre = 'desconocido';
-            }
-          }
-
-          // Obtener el nombre del grupo desde el backend si es alumno
-           let grupo = null;
-          const isAlumno =
-            decoded.rol_id === 1 ||
-            decoded.rol_id === '1' ||
-            decoded.rol === 'alumno';
-          if (isAlumno) {
-            try {
-              const { data } = await axios.get(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/usuarios/me`,
-                { headers: { Authorization: `Bearer ${token}` } }
-              );
-               grupo = data.grupo || 'No asignado';
-            } catch (err) {
-              console.error('Error al obtener el grupo:', err);
-              grupo = 'No asignado';
-            }
-          }
-
-          const usuarioData = {
-            id: decoded.id,
-            nombre: decoded.nombre,
-            correo: decoded.correo_institucional || decoded.correo,
-            rol: rolNombre,
-            rol_id: Number(decoded.rol_id),
-            grupo,
-          };
-
-          setUsuario(usuarioData);
-          await fetchPermissions(token);
-
-          // Redirecciones basadas en el estado de autenticación y rol
-          if (esRutaPublica && pathname !== '/reset-password' && !pathname.startsWith('/reset-password')) {
-            router.push('/catalog');
-          } else if (
-            (rolNombre === 'alumno' || rolNombre === 'almacen') &&
-            pathname === '/solicitudes/pendientes'
-          ) {
-            router.push('/solicitudes');
-          } else if (rolNombre !== 'administrador' && pathname === '/configuracion') {
-            router.push('/catalog');
-          }
-
-        } catch (error) {
-          console.error('Error procesando token:', error);
-          limpiarSesion();
-          if (!esRutaPublica) {
-            router.push('/login');
-          }
+        if (esRutaPublica(pathname)) {
+          router.replace('/catalog');
+          return;
         }
-      } else {
-        // No hay token
-        if (!esRutaPublica) {
-          router.push('/login');
+        
+     if (
+          usuarioNormalizado &&
+          (usuarioNormalizado.rol === 'alumno' || usuarioNormalizado.rol === 'almacen') &&
+          pathname === '/solicitudes/pendientes'
+        ) {
+          router.replace('/solicitudes');
+          return;
+        }
+
+    if (usuarioNormalizado && usuarioNormalizado.rol !== 'administrador' && pathname === '/configuracion') {
+          router.replace('/catalog');
+        }
+      } catch (error) {
+        if (!activo) return;
+        limpiarSesion();
+        if (!esRutaPublica(pathname)) {
+          router.replace('/login');
+        }
+      } finally {
+        if (activo) {
+          setLoading(false);
         }
       }
-      
-      setLoading(false);
     };
 
-    cargarUsuario();
-  }, [pathname, router]);
-
-  // Función para login
-  const login = async (correo, contrasena) => {
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        correo,
-        contrasena,
-      });
-      const { token } = response.data;
-      localStorage.setItem('token', token);
-      const decoded = decodeJWT(token);
-
-      if (!decoded) {
-        throw new Error('Token inválido');
-      }
-
-      // Convertir rol_id a texto
-      let rolNombre = decoded.rol || decoded.rol_id;
-      if (typeof rolNombre === 'number') {
-        switch (rolNombre) {
-          case 1:
-            rolNombre = 'alumno';
-            break;
-          case 2:
-            rolNombre = 'docente';
-            break;
-          case 3:
-            rolNombre = 'almacen';
-            break;
-          case 4:
-            rolNombre = 'administrador';
-            break;
-          default:
-            rolNombre = 'desconocido';
-        }
-      }
+      cargarSesion();
       
-      const usuarioData = {
-        id: decoded.id,
-        nombre: decoded.nombre,
-        correo: decoded.correo_institucional || decoded.correo,
-        rol: rolNombre,
-        rol_id: decoded.rol_id,
-        grupo: grupo,
-      };
+return () => {
+      activo = false;
+    };
+  }, [pathname]);
 
-      await fetchPermissions(token);
-      setUsuario(usuarioData);
-      router.push('/catalog');
-      return true;
-    } catch (err) {
-      console.error('Error en login:', err);
-      throw err;
+    const login = async (correo, contrasena) => {
+    const response = await axios.post(
+      `${API_BASE}/api/auth/login`,
+      { correo_institucional: correo, contrasena },
+      { withCredentials: true }
+    );
+      
+      const usuarioNormalizado = construirUsuario(response.data?.usuario);
+    setUsuario(usuarioNormalizado);
+    await fetchPermissions();
+    router.replace('/catalog');
+    return true;
+  };
+
+       const logout = async () => {
+    try {
+      await axios.post(`${API_BASE}/api/auth/logout`, {});
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    } finally {
+      limpiarSesion();
+      router.replace('/login');
     }
   };
 
-  // Función para logout
-  const logout = () => {
-    limpiarSesion();
-    router.push('/login');
-  };
+   const contextValue = useMemo(
+    () => ({
+      usuario,
+      permissions,
+      setUsuario,
+      login,
+      logout,
+      loading,
+    }),
+    [usuario, permissions, loading]
+  );
 
-  // Mostrar loading mientras se verifica la autenticación
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -268,18 +180,9 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ 
-      usuario, 
-    permissions,
-      setUsuario, 
-      login, 
-      logout,
-      loading 
-    }}>
+  <AuthContext.Provider value={contextValue}>
       <div className="flex min-h-screen">
-        <main className="flex-1 bg-light p-1">
-          {children}
-        </main>
+        <main className="flex-1 bg-light p-1">{children}</main>
       </div>
     </AuthContext.Provider>
   );
