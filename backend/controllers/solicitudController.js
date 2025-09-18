@@ -724,7 +724,17 @@ const recibirDevolucion = async (req, res) => {
         );
       }
 
-      if (tipo === 'equipo') {
+ if (tipo === 'liquido') {
+        await connection.query(
+          'UPDATE MaterialLiquido SET cantidad_disponible_ml = cantidad_disponible_ml + ? WHERE id = ?',
+          [cantidad_devuelta, material_id]
+        );
+      } else if (tipo === 'solido') {
+        await connection.query(
+          'UPDATE MaterialSolido SET cantidad_disponible_g = cantidad_disponible_g + ? WHERE id = ?',
+          [cantidad_devuelta, material_id]
+        );
+      } else if (tipo === 'equipo') {
         await connection.query(
           'UPDATE MaterialEquipo SET cantidad_disponible_u = cantidad_disponible_u + ? WHERE id = ?',
           [cantidad_devuelta, material_id]
