@@ -22,8 +22,9 @@ export default function Auth() {
   const [contrasenaRegister, setContrasenaRegister] = useState('');
   const [grupoId, setGrupoId] = useState('');
   const [grupos, setGrupos] = useState([]);
-  const [selectedGrupo, setSelectedGrupo] = useState(null);
   const [showPasswordRegister, setShowPasswordRegister] = useState(false);
+    const [numeroExpediente, setNumeroExpediente] = useState('');
+  const [passwordStatus, setPasswordStatus] = useState('empty');
   const [loading, setLoading] = useState(false);
     const gruposScrollRef = useRef(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
@@ -100,6 +101,21 @@ export default function Auth() {
   };
 
   // Handle Register
+    const evaluatePasswordStatus = (password) => {
+    if (!password) return 'empty';
+    const hasMinLength = password.length >= 8;
+    const hasNumber = /\d/.test(password);
+    const nearLength = password.length >= 6;
+
+    if (hasMinLength && hasNumber) return 'valid';
+    if (hasMinLength || (hasNumber && nearLength) || (nearLength && !hasNumber)) return 'almost';
+    return 'invalid';
+  };
+
+  useEffect(() => {
+    setPasswordStatus(evaluatePasswordStatus(contrasenaRegister));
+  }, [contrasenaRegister]);
+  
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     
@@ -108,6 +124,22 @@ export default function Auth() {
       return;
     }
 
+        const expedienteLimpio = numeroExpediente.trim();
+    if (!expedienteLimpio) {
+      setError('Por favor ingresa tu número de expediente');
+      return;
+    }
+
+    if (!/^\d{10}$/.test(expedienteLimpio)) {
+      setError('El número de expediente debe tener 10 dígitos');
+      return;
+    }
+
+    if (passwordStatus !== 'valid') {
+      setError('La contraseña debe tener al menos 8 caracteres y un número');
+      return;
+    }
+    
     setLoading(true);
     setError('');
 
@@ -117,8 +149,14 @@ export default function Auth() {
         correo_institucional: correoRegister,
         contrasena: contrasenaRegister,
         grupo_id: parseInt(grupoId),
+         numero_expediente: expedienteLimpio,
         rol: 'alumno',
       });
+
+        setNumeroExpediente('');
+      setGrupoId('');
+      setContrasenaRegister('');
+      setPasswordStatus('empty');
       
       alert('Usuario registrado. Verifica tu correo.');
       router.push('/login');
@@ -129,14 +167,8 @@ export default function Auth() {
     }
   };
 
-  const handleGrupoSelect = (id, nombre) => {
-    setGrupoId(id);
-    setSelectedGrupo({ id, nombre });
-  };
-
-  const handleRemoveGrupo = () => {
-    setGrupoId('');
-    setSelectedGrupo(null);
+  const handleGrupoSelect = (id) => {
+    setGrupoId((prev) => (prev === id ? '' : id));
   };
 
  if (redirecting)
@@ -238,6 +270,22 @@ export default function Auth() {
               </div>
               
               <div className="input-field">
+                 <i className="fas fa-id-card"></i>
+                <input
+                  type="text"
+                  value={numeroExpediente}
+                  onChange={(e) =>
+                    setNumeroExpediente(e.target.value.replace(/\D/g, '').slice(0, 10))
+                  }
+                  placeholder="2023123456"
+                  required
+                  disabled={loading}
+                  maxLength={10}
+                  inputMode="numeric"
+                />
+              </div>
+
+              <div className={`input-field password-field ${passwordStatus}`}>
                 <i className="fas fa-lock"></i>
                 <input 
                   type={showPasswordRegister ? 'text' : 'password'}
@@ -261,43 +309,30 @@ export default function Auth() {
               <div className="grupo-selection">
                 <label className="grupo-label">Selecciona tu Grupo:</label>
                 
-                {/* Grupo seleccionado como etiqueta */}
-                {selectedGrupo && (
-                  <div className="selected-grupo-tag">
-                    <span>{selectedGrupo.nombre}</span>
-                    <button
-                      type="button"
-                      className="remove-grupo-btn"
-                      onClick={handleRemoveGrupo}
-                      disabled={loading}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-
-                {/* Mostrar botones solo si no hay grupo seleccionado */}
-                {!selectedGrupo && (
-                 <div
-                    className={`grupos-scroll-wrapper ${
-                      showLeftShadow ? 'has-left-shadow' : ''
-                    } ${showRightShadow ? 'has-right-shadow' : ''}`}
-                  >
-                    <div className="grupos-scroll" ref={gruposScrollRef}>
-                      {grupos.map((grupo) => (
+               <div
+                  className={`grupos-scroll-wrapper ${
+                    showLeftShadow ? 'has-left-shadow' : ''
+                  } ${showRightShadow ? 'has-right-shadow' : ''}`}
+                >
+                  <div className="grupos-scroll" ref={gruposScrollRef}>
+                    {grupos.map((grupo) => {
+                      const idString = grupo.id.toString();
+                      const isSelected = grupoId === idString;
+                      return (
                         <button
                           key={grupo.id}
                           type="button"
-                          onClick={() => handleGrupoSelect(grupo.id.toString(), grupo.nombre)}
-                          className="grupo-btn"
+                          onClick={() => handleGrupoSelect(idString)}
+                          className={`grupo-btn ${isSelected ? 'selected' : ''}`}
                           disabled={loading}
+                           aria-pressed={isSelected}
                         >
                           {grupo.nombre}
                         </button>
-                      ))}
-                    </div>
+                       );
+                    })}
                   </div>
-                )}
+              </div>
               </div>
               
               <input 
@@ -498,6 +533,31 @@ export default function Auth() {
           position: relative;
         }
 
+  .password-field {
+          border: 2px solid transparent;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .password-field.valid {
+          border-color: #22c55e;
+          box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+        }
+
+        .password-field.almost {
+          border-color: #f97316;
+          box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+        }
+
+        .password-field.invalid {
+          border-color: #ef4444;
+          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
+
+        .password-field.empty {
+          border-color: transparent;
+          box-shadow: none;
+        }
+
         .input-field i {
           text-align: center;
           line-height: 55px;
@@ -567,39 +627,6 @@ export default function Auth() {
           font-size: 1rem;
           margin-bottom: 12px;
           text-align: left;
-        }
-
-        .selected-grupo-tag {
-          display: inline-flex;
-          align-items: center;
-          background: #5995fd;
-          color: white;
-          padding: 8px 12px;
-          border-radius: 25px;
-          font-size: 0.9rem;
-          font-weight: 600;
-          margin-bottom: 15px;
-          gap: 8px;
-        }
-
-        .remove-grupo-btn {
-          background: none;
-          border: none;
-          color: white;
-          font-size: 14px;
-          cursor: pointer;
-          padding: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          transition: background-color 0.3s ease;
-        }
-
-        .remove-grupo-btn:hover:not(:disabled) {
-          background-color: rgba(255, 255, 255, 0.2);
         }
 
         .grupos-grid {
@@ -692,11 +719,24 @@ export default function Auth() {
           background-image: linear-gradient(135deg, rgba(89, 149, 253, 0.12), rgba(89, 149, 253, 0));
         }
 
+ .grupo-btn.selected {
+          border-color: #1d4ed8;
+          background: linear-gradient(135deg, #1d4ed8, #2563eb);
+          color: #fff;
+          box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
+          transform: translateY(-2px);
+        }
+        
         .grupo-btn:hover:not(:disabled) {
           border-color: #5995fd;
           color: #5995fd;
         }
 
+ .grupo-btn.selected:hover:not(:disabled) {
+          color: #fff;
+          border-color: #1d4ed8;
+        }
+        
         .grupo-btn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
