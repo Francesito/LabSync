@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   obtenerInventarioLiquidos,
   obtenerInventarioSolidos,
@@ -135,18 +135,30 @@ export default function InventarioPage() {
   const [inventarioSolidos, setInventarioSolidos] = useState({ meses: [], datos: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+   const lastFetchedUserIdRef = useRef(null);
 
   useEffect(() => {
-    if (!usuario || !ALLOWED_ROLES.includes(usuario.rol_id)) return;
+    const userId = usuario?.id;
+    const userRole = usuario?.rol_id;
 
+        if (!userId || !ALLOWED_ROLES.includes(userRole)) {
+      lastFetchedUserIdRef.current = null;
+      return;
+    }
+
+    if (lastFetchedUserIdRef.current === userId) {
+      return;
+    }
+
+    const controller = new AbortController();
     let isMounted = true;
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
       try {
         const [liq, sol] = await Promise.all([
-          obtenerInventarioLiquidos(),
-          obtenerInventarioSolidos(),
+          obtenerInventarioLiquidos({ signal: controller.signal }),
+          obtenerInventarioSolidos({ signal: controller.signal }),
         ]);
         if (!isMounted) return;
         setInventarioLiquidos({
@@ -158,21 +170,27 @@ export default function InventarioPage() {
           datos: Array.isArray(sol?.datos) ? sol.datos : [],
         });
       } catch (err) {
-        if (!isMounted) return;
+          if (!isMounted || err?.name === 'CanceledError' || err?.code === 'ERR_CANCELED') {
+          return;
+        }
         setError('No fue posible cargar el inventario. Intenta nuevamente.');
         setInventarioLiquidos({ meses: [], datos: [] });
         setInventarioSolidos({ meses: [], datos: [] });
+        lastFetchedUserIdRef.current = null;
       } finally {
         if (isMounted) setIsLoading(false);
       }
     };
 
     fetchData();
-
+    lastFetchedUserIdRef.current = userId;
+    
     return () => {
       isMounted = false;
+            controller.abort();
+      lastFetchedUserIdRef.current = null;
     };
-  }, [usuario]);
+  }, [usuario?.id, usuario?.rol_id]);
 
   const proyeccionesLiquidos = useMemo(() => {
     if (!inventarioLiquidos.meses.length) return [];
@@ -201,6 +219,47 @@ export default function InventarioPage() {
     };
   }, [proyeccionesLiquidos, proyeccionesSolidos]);
 
+    const chartOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const unidad = context.dataset.unidad ? ` ${context.dataset.unidad}` : '';
+              return `${context.dataset.label}: ${context.parsed.y}${unidad}`;
+            },
+          },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    }),
+    [],
+  );
+
+  const chartDataLiquidos = useMemo(() => {
+    if (!inventarioLiquidos.meses.length || !proyeccionesLiquidos.length) {
+      return null;
+    }
+    return buildChartData(inventarioLiquidos.meses, proyeccionesLiquidos);
+  }, [inventarioLiquidos.meses, proyeccionesLiquidos]);
+
+  const chartDataSolidos = useMemo(() => {
+    if (!inventarioSolidos.meses.length || !proyeccionesSolidos.length) {
+      return null;
+    }
+    return buildChartData(inventarioSolidos.meses, proyeccionesSolidos);
+  }, [inventarioSolidos.meses, proyeccionesSolidos]);
+  
   if (!usuario) {
     return (
       <div className="p-8 text-center text-white">
@@ -291,38 +350,8 @@ export default function InventarioPage() {
                   </h2>
                   <StatusBadge status="planificar" />
                 </div>
-                {inventarioLiquidos.meses.length && proyeccionesLiquidos.length ? (
-                  <Line
-                    data={buildChartData(
-                      inventarioLiquidos.meses,
-                      proyeccionesLiquidos,
-                    )}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: {
-                          position: 'bottom',
-                        },
-                        tooltip: {
-                          callbacks: {
-                            label: (context) => {
-                              const unidad = context.dataset.unidad
-                                ? ` ${context.dataset.unidad}`
-                                : '';
-                              return `${context.dataset.label}: ${context.parsed.y}${unidad}`;
-                            },
-                          },
-                        },
-                      },
-                      scales: {
-                        y: {
-                          beginAtZero: true,
-                        },
-                      },
-                    }}
-                    height={260}
-                  />
+                 {chartDataLiquidos ? (
+                  <Line data={chartDataLiquidos} options={chartOptions} height={260} />
                 ) : (
                   <p className="text-sm text-gray-500">Sin datos disponibles.</p>
                 )}
@@ -335,38 +364,8 @@ export default function InventarioPage() {
                   </h2>
                   <StatusBadge status="ok" />
                 </div>
-                {inventarioSolidos.meses.length && proyeccionesSolidos.length ? (
-                  <Line
-                    data={buildChartData(
-                      inventarioSolidos.meses,
-                      proyeccionesSolidos,
-                    )}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: {
-                          position: 'bottom',
-                        },
-                        tooltip: {
-                          callbacks: {
-                            label: (context) => {
-                              const unidad = context.dataset.unidad
-                                ? ` ${context.dataset.unidad}`
-                                : '';
-                              return `${context.dataset.label}: ${context.parsed.y}${unidad}`;
-                            },
-                          },
-                        },
-                      },
-                      scales: {
-                        y: {
-                          beginAtZero: true,
-                        },
-                      },
-                    }}
-                    height={260}
-                  />
+                               {chartDataSolidos ? (
+                  <Line data={chartDataSolidos} options={chartOptions} height={260} />
                 ) : (
                   <p className="text-sm text-gray-500">Sin datos disponibles.</p>
                 )}
