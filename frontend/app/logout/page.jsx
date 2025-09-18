@@ -1,18 +1,13 @@
 'use client';
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '../../lib/auth';
 
 export default function LogoutPage() {
-  const router = useRouter();
-  const { setUsuario } = useAuth();
+  const { logout } = useAuth();
 
   useEffect(() => {
-    localStorage.removeItem('token');
-    if (setUsuario) setUsuario(null);
-    const timeout = setTimeout(() => router.replace('/login'), 1500);
-    return () => clearTimeout(timeout);
-  }, [router, setUsuario]);
+    logout();
+  }, [logout]);
 
   return (
     <div className="min-vh-100 d-flex justify-content-center align-items-center bg-white">
