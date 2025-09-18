@@ -153,10 +153,14 @@ export default function Auth() {
         rol: 'alumno',
       });
 
-        setNumeroExpediente('');
+      setNombre('');
+      setCorreoRegister('');
+      setNumeroExpediente('');
       setGrupoId('');
       setContrasenaRegister('');
       setPasswordStatus('empty');
+       setShowPasswordRegister(false);
+      setIsSignUp(false);
       
       alert('Usuario registrado. Verifica tu correo.');
       router.push('/login');
