@@ -118,12 +118,12 @@ export async function obtenerSolicitudesAprobadas() {
 }
 
 // --- Inventario ---
-export async function obtenerInventarioLiquidos() {
- return getData('/materials/inventario/liquidos');
+export async function obtenerInventarioLiquidos(config) {
+  return getData('/materials/inventario/liquidos', config);
 }
 
-export async function obtenerInventarioSolidos() {
- return getData('/materials/inventario/solidos');
+export async function obtenerInventarioSolidos(config) {
+  return getData('/materials/inventario/solidos', config);
 }
 
 export async function obtenerPrestamosEquipos() {
