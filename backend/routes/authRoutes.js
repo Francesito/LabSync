@@ -14,6 +14,8 @@ router.get('/verify/:token', authController.verificarCorreo);
 router.post('/login', authController.iniciarSesion);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password/:token', authController.resetPassword);
+router.get('/session', verificarToken, authController.obtenerSesion);
+router.post('/logout', verificarToken, authController.cerrarSesion);
 
 // ✅ Rutas protegidas para verificar permisos
 router.get('/permisos-chat', verificarToken, authController.verificarPermisosChat);
