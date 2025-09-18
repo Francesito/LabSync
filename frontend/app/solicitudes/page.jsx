@@ -9,6 +9,7 @@ import autoTable from 'jspdf-autotable';
 import { useAuth } from '../../lib/auth';
 
 const encabezadoUT = '/universidad.jpg';
+const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://labsync-1090.onrender.com';
 
 /** Badge de estado */
 const EstadoBadge = ({ estado }) => {
@@ -527,12 +528,6 @@ export default function SolicitudesPage() {
       router.push('/login');
       return;
     }
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError('Inicia sesión para ver solicitudes');
-      router.push('/login');
-      return;
-    }
 
     const fetchAll = async () => {
       try {
@@ -540,8 +535,8 @@ export default function SolicitudesPage() {
 
         // Grupos
         try {
-          const g = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/grupos`, {
-            headers: { Authorization: `Bearer ${token}` }
+        const g = await axios.get(`${apiBase}/api/grupos`, {
+            withCredentials: true,
           });
           const map = g.data.reduce((acc, it) => { acc[it.id] = it.nombre; return acc; }, {});
           setGrupos(map);
@@ -556,8 +551,8 @@ export default function SolicitudesPage() {
         // Alumno
         if (usuario.rol === 'alumno') {
           const { data } = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/materials/usuario/solicitudes`,
-            { headers: { Authorization: `Bearer ${token}` } }
+         `${apiBase}/api/materials/usuario/solicitudes`,
+            { withCredentials: true }
           );
           alumnoArr = agrupar(data, 'alumno', grupos);
           setAlumnoData(alumnoArr);
@@ -566,10 +561,10 @@ export default function SolicitudesPage() {
         // Docente
         if (usuario.rol === 'docente') {
           const [aprobarRes, miasRes] = await Promise.all([
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/docente/aprobar`,
-              { headers: { Authorization: `Bearer ${token}` } }),
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/docente/mias`,
-              { headers: { Authorization: `Bearer ${token}` } })
+          axios.get(`${apiBase}/api/materials/solicitudes/docente/aprobar`,
+              { withCredentials: true }),
+            axios.get(`${apiBase}/api/materials/solicitudes/docente/mias`,
+              { withCredentials: true })
           ]);
           docAprobarArr = agrupar(aprobarRes.data, 'docente', grupos);
           docMiasArr = agrupar(miasRes.data, 'docente', grupos);
@@ -580,8 +575,8 @@ export default function SolicitudesPage() {
         // Almacén (sin filtrar en cliente; solo mapeo de estado especial)
         if (usuario.rol === 'almacen') {
           const { data } = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes/almacen`,
-            { headers: { Authorization: `Bearer ${token}` } }
+           `${apiBase}/api/materials/solicitudes/almacen`,
+            { withCredentials: true }
           );
           const grouped = agrupar(data, 'almacen', grupos);
           almAlumnosArr = grouped.filter(s => !s.isDocenteRequest);
@@ -728,12 +723,11 @@ export default function SolicitudesPage() {
   const actualizarEstado = async (id, accion, nuevoEstadoUI, items = []) => {
     if (procesando) return;
     setProcesando(id);
-    const token = localStorage.getItem('token');
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitud/${id}/${accion}`,
+       `${apiBase}/api/materials/solicitud/${id}/${accion}`,
         accion === 'entregar' ? { items_entregados: items } : {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
 
       // Helpers para in-place update
@@ -854,12 +848,11 @@ export default function SolicitudesPage() {
   /** PDF */
 const descargarPDF = async (vale) => {
   try {
-      const token = localStorage.getItem('token');
-    if (token && vale?.id) {
+        if (vale?.id) {
       try {
         const { data } = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/solicitudes/detalle/${vale.id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+         `${apiBase}/api/solicitudes/detalle/${vale.id}`,
+          { withCredentials: true }
         );
        vale = { ...vale, ...(Array.isArray(data) ? data[0] : data) };
       } catch (e) {
