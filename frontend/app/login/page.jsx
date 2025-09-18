@@ -31,7 +31,7 @@ export default function Auth() {
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
 
-  import { useAuth } from '../../lib/auth';
+ const { login } = useAuth();
   
   // Cargar grupos al montar el componente
   useEffect(() => {
