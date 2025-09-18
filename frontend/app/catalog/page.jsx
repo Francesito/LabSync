@@ -71,6 +71,7 @@ export default function Catalog() {
   const [permissionsError, setPermissionsError] = useState('');
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [showCart, setShowCart] = useState(true);
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://labsync-1090.onrender.com';
   
   const LOW_STOCK_THRESHOLD = 50;
   const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'tu-cloud-name';
@@ -179,16 +180,9 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
   const loadUserPermissions = async () => {
     try {
       setPermissionsLoading(true);
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/permisos-stock`,
-        { headers: { Authorization: `Bearer ${token}` } }
+     `${apiBase}/api/auth/permisos-stock`,
+        { withCredentials: true }
       );
 
       setUserPermissions({
@@ -203,7 +197,6 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       setPermissionsError('Error al verificar permisos de usuario');
 
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
         router.push('/login');
       } else if (error.response?.status === 403) {
         setPermissionsError('Usuario bloqueado. Contacta al administrador.');
@@ -216,10 +209,9 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
   // Cargar lista de docentes
   const loadDocentes = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/materials/docentes`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${apiBase}/api/materials/docentes`,
+        { withCredentials: true }
       );
       setDocentes(response.data);
       if (userPermissions.rol === 'docente') {
@@ -266,7 +258,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
     if (!window.confirm('¿Seguro que quieres eliminar este material?')) return;
     try {
       await makeSecureApiCall(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/materials/${materialToAdjust.id}/eliminar?tipo=${materialToAdjust.tipo}`,
+        `${apiBase}/api/materials/${materialToAdjust.id}/eliminar?tipo=${materialToAdjust.tipo}`,
         { method: 'DELETE' }
       );
       setShowAdjustModal(false);
@@ -279,16 +271,14 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
 
   const makeSecureApiCall = async (url, options = {}) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = {
+      const response = await axios({
+        url,
+        withCredentials: true,
         ...options,
         headers: {
-          ...options.headers,
-          Authorization: `Bearer ${token}`,
+          ...(options.headers || {}),
         },
-      };
-
-      const response = await axios(url, config);
+      });
       return response;
     } catch (error) {
       if (error.response?.status === 403) {
@@ -300,7 +290,6 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
           setError('No tienes permisos para realizar esta acción.');
         }
       } else if (error.response?.status === 401) {
-        localStorage.removeItem('token');
         router.push('/login');
       } else {
         setError('Error al procesar la solicitud: ' + (error.response?.data?.error || error.message));
@@ -333,10 +322,10 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       setLoading(true);
 
       const [liquidoRes, solidoRes, laboratorioRes, equipoRes] = await Promise.all([
-        makeSecureApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/liquidos`),
-        makeSecureApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/solidos`),
-        makeSecureApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/laboratorio`),
-        makeSecureApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/tipo/equipos`),
+        makeSecureApiCall(`${apiBase}/api/materials/tipo/liquidos`),
+        makeSecureApiCall(`${apiBase}/api/materials/tipo/solidos`),
+        makeSecureApiCall(`${apiBase}/api/materials/tipo/laboratorio`),
+        makeSecureApiCall(`${apiBase}/api/materials/tipo/equipos`),
       ]);
 
       const liquidos = liquidoRes.data.map((m) => ({
@@ -673,7 +662,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
         return;
       }
 
-      await makeSecureApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/solicitudes`, {
+      await makeSecureApiCall(`${apiBase}/api/materials/solicitudes`, {
         method: 'POST',
         data: {
           materiales: selectedCart.map((item) => ({
@@ -765,7 +754,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
 
     try {
       await makeSecureApiCall(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/materials/material/${materialToAdjust.id}/ajustar`,
+       `${apiBase}/api/materials/material/${materialToAdjust.id}/ajustar`,
         {
           method: 'POST',
           data: {
@@ -833,7 +822,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
 
     try {
       await makeSecureApiCall(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/materials/ajuste-masivo`,
+         `${apiBase}/api/materials/ajuste-masivo`,
         {
           method: 'POST',
           data: { ajustes: ajustes.map(({ id, tipo, cantidad }) => ({ id, tipo, cantidad })) },
@@ -885,7 +874,7 @@ let d = new Date(now.toLocaleString('en-US', { timeZone: MX_TZ }));
       }
       formData.append('imagen', imagenFile);
 
-      await makeSecureApiCall(`${process.env.NEXT_PUBLIC_API_URL}/api/materials/crear`, {
+    await makeSecureApiCall(`${apiBase}/api/materials/crear`, {
         method: 'POST',
         data: formData,
       });
