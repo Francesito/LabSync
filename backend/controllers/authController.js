@@ -4,6 +4,49 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { sendEmail } = require('../utils/email');
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const mapRolNombre = rolId => {
+  switch (Number(rolId)) {
+    case 1:
+      return 'alumno';
+    case 2:
+      return 'docente';
+    case 3:
+      return 'almacen';
+    case 4:
+      return 'administrador';
+    default:
+      return 'desconocido';
+  }
+};
+
+const buildUsuarioResponse = usuario => ({
+  id: usuario.id,
+  nombre: usuario.nombre,
+  correo: usuario.correo_institucional || usuario.correo,
+  rol_id: Number(usuario.rol_id),
+  rol: mapRolNombre(usuario.rol_id),
+  grupo_id: usuario.grupo_id || null,
+  grupo_nombre: usuario.grupo_nombre || usuario.grupo || null,
+  numero_expediente: usuario.numero_expediente || null
+});
+
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/'
+});
+
+const getCookieClearOptions = () => ({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
+  path: '/'
+});
+
 // Nueva función para obtener grupos
 const obtenerGrupos = async (req, res) => {
   try {
@@ -203,18 +246,11 @@ const iniciarSesion = async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    res.json({ 
-      token,
-      usuario: {
-        id: usuario.id,
-        nombre: usuario.nombre,
-        correo: usuario.correo_institucional,
-        rol_id: usuario.rol_id,
-        grupo_id: usuario.grupo_id,
-       grupo_nombre: usuario.grupo_nombre,
-        numero_expediente: usuario.numero_expediente || null
-      }
-    });
+      const usuarioRespuesta = buildUsuarioResponse(usuario);
+
+    res
+      .cookie('labsync_token', token, getCookieOptions())
+      .json({ usuario: usuarioRespuesta });
   } catch (error) {
     console.error('Error al iniciar sesión:', error);
     res.status(500).json({ error: 'Error al iniciar sesión' });
@@ -442,12 +478,16 @@ const resetPassword = async (req, res) => {
   const { token } = req.params;
   const { contrasena } = req.body;
 
-  if (!contrasena) {
+   const contrasenaLimpia = typeof contrasena === 'string' ? contrasena.trim() : '';
+
+  if (!contrasenaLimpia) {
     return res.status(400).json({ error: 'La nueva contraseña es requerida' });
   }
 
-  if (contrasena.length < 6) {
-    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+  if (contrasenaLimpia.length < 8 || !/\d/.test(contrasenaLimpia)) {
+    return res
+      .status(400)
+      .json({ error: 'La contraseña debe tener al menos 8 caracteres y un número' });
   }
 
   try {
@@ -465,7 +505,7 @@ const resetPassword = async (req, res) => {
     }
 
     // Actualizar contraseña y limpiar token
-    const hash = await bcrypt.hash(contrasena, 10);
+     const hash = await bcrypt.hash(contrasenaLimpia, 10);
     const [result] = await pool.query(
       'UPDATE Usuario SET contrasena = ?, reset_token = NULL, reset_token_expires = NULL WHERE correo_institucional = ?',
       [hash, correo_institucional]
@@ -485,6 +525,43 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const obtenerSesion = async (req, res) => {
+  try {
+    if (!req.usuario) {
+      return res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+
+    const [rows] = await pool.query(
+      `SELECT u.id,
+              u.nombre,
+              u.correo_institucional,
+              u.rol_id,
+              u.grupo_id,
+              u.numero_expediente,
+              g.nombre AS grupo_nombre
+         FROM Usuario u
+    LEFT JOIN Grupo g ON u.grupo_id = g.id
+        WHERE u.id = ?`,
+      [req.usuario.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const usuarioRespuesta = buildUsuarioResponse(rows[0]);
+    res.json({ usuario: usuarioRespuesta });
+  } catch (error) {
+    console.error('Error al obtener sesión:', error);
+    res.status(500).json({ error: 'Error al obtener sesión' });
+  }
+};
+
+const cerrarSesion = (req, res) => {
+  res.clearCookie('labsync_token', getCookieClearOptions());
+  res.json({ mensaje: 'Sesión cerrada' });
+};
+
 module.exports = {
   obtenerGrupos,
   obtenerDocentes, // ✅ Nueva función exportada
@@ -494,5 +571,7 @@ module.exports = {
   verificarPermisosChat,
   verificarPermisosStock,
   forgotPassword,
-  resetPassword
+ resetPassword,
+  obtenerSesion,
+  cerrarSesion
 };
