@@ -1,7 +1,7 @@
 // frontend/lib/auth.js
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import axios from 'axios';
 
@@ -42,15 +42,16 @@ export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
   const [permissions, setPermissions] = useState(estadoInicialPermisos);
   const [loading, setLoading] = useState(true);
+    const [initialized, setInitialized] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
-  const limpiarSesion = () => {
+  const limpiarSesion = useCallback(() => {
     setUsuario(null);
-       setPermissions(estadoInicialPermisos);
-  };
+   setPermissions(estadoInicialPermisos);
+  }, []);
 
-    const fetchPermissions = async () => {
+    const fetchPermissions = useCallback(async () => {
     try {
   const [chatRes, stockRes] = await Promise.all([
         axios.get(`${API_BASE}/api/auth/permisos-chat`),
@@ -67,7 +68,7 @@ export function AuthProvider({ children }) {
         limpiarSesion();
       }
     }
-  };
+   }, [limpiarSesion]);
 
  const construirUsuario = data => {
     if (!data) return null;
@@ -86,40 +87,23 @@ export function AuthProvider({ children }) {
     useEffect(() => {
     let activo = true;
     const cargarSesion = async () => {
-      setLoading(true);
       try {
         const { data } = await axios.get(`${API_BASE}/api/auth/session`);
         if (!activo) return;
         const usuarioNormalizado = construirUsuario(data.usuario);
         setUsuario(usuarioNormalizado);
-        await fetchPermissions();
-
-        if (esRutaPublica(pathname)) {
-          router.replace('/catalog');
-          return;
-        }
-        
-     if (
-          usuarioNormalizado &&
-          (usuarioNormalizado.rol === 'alumno' || usuarioNormalizado.rol === 'almacen') &&
-          pathname === '/solicitudes/pendientes'
-        ) {
-          router.replace('/solicitudes');
-          return;
-        }
-
-    if (usuarioNormalizado && usuarioNormalizado.rol !== 'administrador' && pathname === '/configuracion') {
-          router.replace('/catalog');
+  if (usuarioNormalizado) {
+          await fetchPermissions();
+        } else {
+          setPermissions(estadoInicialPermisos);
         }
       } catch (error) {
         if (!activo) return;
         limpiarSesion();
-        if (!esRutaPublica(pathname)) {
-          router.replace('/login');
-        }
       } finally {
         if (activo) {
           setLoading(false);
+             setInitialized(true);
         }
       }
     };
@@ -129,9 +113,40 @@ export function AuthProvider({ children }) {
 return () => {
       activo = false;
     };
-  }, [pathname]);
+  }, [fetchPermissions, limpiarSesion]);
 
-    const login = async (correo, contrasena) => {
+  useEffect(() => {
+    if (!initialized || loading) {
+      return;
+    }
+
+    if (!usuario) {
+      if (!esRutaPublica(pathname)) {
+        router.replace('/login');
+      }
+      return;
+    }
+
+    if (esRutaPublica(pathname)) {
+      router.replace('/catalog');
+      return;
+    }
+
+    if (
+      usuario &&
+      (usuario.rol === 'alumno' || usuario.rol === 'almacen') &&
+      pathname === '/solicitudes/pendientes'
+    ) {
+      router.replace('/solicitudes');
+      return;
+    }
+
+    if (usuario && usuario.rol !== 'administrador' && pathname === '/configuracion') {
+      router.replace('/catalog');
+    }
+  }, [initialized, loading, pathname, router, usuario]);
+
+  const login = async (correo, contrasena) => {
     const response = await axios.post(
       `${API_BASE}/api/auth/login`,
       { correo_institucional: correo, contrasena },
