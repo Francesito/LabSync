@@ -14,7 +14,7 @@ export default function Historial() {
   const [error, setError] = useState(null);
   const [mostrarTodoSolicitudes, setMostrarTodoSolicitudes] = useState(false);
   const [mostrarTodoMovimientos, setMostrarTodoMovimientos] = useState(false);
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+ const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://labsync-1090.onrender.com';
 
   const formatearFecha = (fecha) => {
     if (!fecha) return '-';
@@ -53,24 +53,18 @@ export default function Historial() {
         setLoading(true);
         setError(null);
         
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('Token no encontrado');
-        }
-
-        const headers = { Authorization: `Bearer ${token}` };
         const params = new URLSearchParams();
         if (busqueda) params.append('busqueda', busqueda);
         const query = params.toString() ? `?${params.toString()}` : '';
 
         const solicitudesPromise = axios.get(
           `${baseUrl}/api/materials/solicitudes/historial${query}`,
-          { headers }
+           { withCredentials: true }
         );
 
         const movimientosPromise = axios.get(
           `${baseUrl}/api/materials/historial-movimientos${query}`,
-          { headers }
+          { withCredentials: true }
         );
 
         const [solRes, movRes] = await Promise.all([
