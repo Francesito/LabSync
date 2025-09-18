@@ -43,6 +43,25 @@ app.use(cors(corsOptions));
 // Manejo explícito de solicitudes preflight
 app.options('*', cors(corsOptions));
 
+// Middleware ligero para parsear cookies HttpOnly
+app.use((req, _res, next) => {
+  req.cookies = {};
+  const raw = req.headers?.cookie;
+  if (raw) {
+    raw.split(';').forEach(par => {
+      const [name, ...valueParts] = par.trim().split('=');
+      if (!name) return;
+      const value = valueParts.join('=');
+      try {
+        req.cookies[name] = decodeURIComponent(value || '');
+      } catch (_err) {
+        req.cookies[name] = value || '';
+      }
+    });
+  }
+  next();
+});
+
 // Seguridad básica: establecer cabeceras HTTP manualmente
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
