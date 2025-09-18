@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   obtenerInventarioLiquidos,
   obtenerInventarioSolidos,
@@ -59,26 +59,26 @@ const formatDate = (date) =>
       }).format(date)
     : '—';
 
-const buildProjection = (material, meses) => {
-  const consumos = meses.map((mes) => Number(material?.consumos?.[mes] ?? 0));
+const buildProjection = (material, periodos) => {
+  const consumos = periodos.map((periodo) => Number(material?.consumos?.[periodo] ?? 0));
   const totalConsumido = consumos.reduce((acc, value) => acc + value, 0);
-  const mesesReferencia = meses.length || 1;
-  const consumoPromedio = totalConsumido / mesesReferencia;
+  const semanasReferencia = periodos.length || 1;
+  const consumoSemanalPromedio = totalConsumido / semanasReferencia;
   const stockActual = Number(material?.existencia_final ?? 0);
-  const coberturaMeses = consumoPromedio > 0 ? stockActual / consumoPromedio : null;
+  const coberturaSemanas = consumoSemanalPromedio > 0 ? stockActual / consumoSemanalPromedio : null;
 
   let status = 'ok';
-  if (coberturaMeses !== null) {
-    if (coberturaMeses <= 1) {
+    if (coberturaSemanas !== null) {
+    if (coberturaSemanas <= 1) {
       status = 'urgente';
-    } else if (coberturaMeses <= 2.5) {
+     } else if (coberturaSemanas <= 4) {
       status = 'planificar';
     }
   }
 
   let proximaCompra = null;
-  if (coberturaMeses !== null) {
-    const diasEstimados = Math.max(0, Math.round(coberturaMeses * 30));
+  if (coberturaSemanas !== null) {
+    const diasEstimados = Math.max(0, Math.round(coberturaSemanas * 7));
     const fecha = new Date();
     fecha.setDate(fecha.getDate() + diasEstimados);
     proximaCompra = fecha;
@@ -88,24 +88,25 @@ const buildProjection = (material, meses) => {
     nombre: material?.nombre ?? '—',
     unidad: material?.unidad ?? '',
     stockActual,
-    consumoPromedio,
-    coberturaMeses,
+   consumoSemanalPromedio,
+    coberturaSemanas,
     proximaCompra,
     status,
     consumos,
+     totalConsumido,
   };
 };
 
-const buildChartData = (meses, proyecciones, limite = 5) => {
+const buildChartData = (periodos, proyecciones, limite = 5) => {
   const top = [...proyecciones]
-    .sort((a, b) => b.consumoPromedio - a.consumoPromedio)
+   .sort((a, b) => b.consumoSemanalPromedio - a.consumoSemanalPromedio)
     .slice(0, limite);
 
   return {
-    labels: meses,
+     labels: periodos,
     datasets: top.map((material, idx) => ({
       label: material.nombre.replace(/_/g, ' '),
-      data: material.consumos,
+      data: periodos.map((periodo) => Number(material?.consumos?.[periodo] ?? 0)),
       tension: 0.35,
       fill: false,
       borderWidth: 2,
@@ -131,11 +132,14 @@ const StatusBadge = ({ status }) => {
 
 export default function InventarioPage() {
   const { usuario } = useAuth();
-  const [inventarioLiquidos, setInventarioLiquidos] = useState({ meses: [], datos: [] });
-  const [inventarioSolidos, setInventarioSolidos] = useState({ meses: [], datos: [] });
+  const [inventarioLiquidos, setInventarioLiquidos] = useState({ periodos: [], datos: [] });
+  const [inventarioSolidos, setInventarioSolidos] = useState({ periodos: [], datos: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-   const lastFetchedUserIdRef = useRef(null);
+  const lastFetchedUserIdRef = useRef(null);
+  const [estadoFiltro, setEstadoFiltro] = useState('todos');
+  const [consumoFiltro, setConsumoFiltro] = useState('todos');
+  const [showAlerts, setShowAlerts] = useState(false);
 
   useEffect(() => {
     const userId = usuario?.id;
@@ -162,11 +166,19 @@ export default function InventarioPage() {
         ]);
         if (!isMounted) return;
         setInventarioLiquidos({
-          meses: Array.isArray(liq?.meses) ? liq.meses : [],
+            periodos: Array.isArray(liq?.semanas)
+            ? liq.semanas
+            : Array.isArray(liq?.meses)
+              ? liq.meses
+              : [],
           datos: Array.isArray(liq?.datos) ? liq.datos : [],
         });
         setInventarioSolidos({
-          meses: Array.isArray(sol?.meses) ? sol.meses : [],
+       periodos: Array.isArray(sol?.semanas)
+            ? sol.semanas
+            : Array.isArray(sol?.meses)
+              ? sol.meses
+              : [],
           datos: Array.isArray(sol?.datos) ? sol.datos : [],
         });
       } catch (err) {
@@ -174,8 +186,8 @@ export default function InventarioPage() {
           return;
         }
         setError('No fue posible cargar el inventario. Intenta nuevamente.');
-        setInventarioLiquidos({ meses: [], datos: [] });
-        setInventarioSolidos({ meses: [], datos: [] });
+         setInventarioLiquidos({ periodos: [], datos: [] });
+        setInventarioSolidos({ periodos: [], datos: [] });
         lastFetchedUserIdRef.current = null;
       } finally {
         if (isMounted) setIsLoading(false);
@@ -193,16 +205,16 @@ export default function InventarioPage() {
   }, [usuario?.id, usuario?.rol_id]);
 
   const proyeccionesLiquidos = useMemo(() => {
-    if (!inventarioLiquidos.meses.length) return [];
+      if (!inventarioLiquidos.periodos.length) return [];
     return inventarioLiquidos.datos.map((material) =>
-      buildProjection(material, inventarioLiquidos.meses),
+     buildProjection(material, inventarioLiquidos.periodos),
     );
   }, [inventarioLiquidos]);
 
   const proyeccionesSolidos = useMemo(() => {
-    if (!inventarioSolidos.meses.length) return [];
+  if (!inventarioSolidos.periodos.length) return [];
     return inventarioSolidos.datos.map((material) =>
-      buildProjection(material, inventarioSolidos.meses),
+     buildProjection(material, inventarioSolidos.periodos),
     );
   }, [inventarioSolidos]);
 
@@ -219,6 +231,60 @@ export default function InventarioPage() {
     };
   }, [proyeccionesLiquidos, proyeccionesSolidos]);
 
+    const alertMaterials = useMemo(() => {
+    const prioridad = { urgente: 0, planificar: 1, ok: 2 };
+    return [...proyeccionesLiquidos, ...proyeccionesSolidos]
+      .filter((item) => item.status === 'urgente' || item.status === 'planificar')
+      .sort((a, b) => {
+        if (prioridad[a.status] !== prioridad[b.status]) {
+          return prioridad[a.status] - prioridad[b.status];
+        }
+        const coberturaA = a.coberturaSemanas ?? Number.POSITIVE_INFINITY;
+        const coberturaB = b.coberturaSemanas ?? Number.POSITIVE_INFINITY;
+        return coberturaA - coberturaB;
+      })
+      .slice(0, 6);
+  }, [proyeccionesLiquidos, proyeccionesSolidos]);
+
+  useEffect(() => {
+    if (!alertMaterials.length) {
+      setShowAlerts(false);
+      return undefined;
+    }
+    setShowAlerts(true);
+    const timer = setTimeout(() => setShowAlerts(false), 10000);
+    return () => clearTimeout(timer);
+  }, [alertMaterials]);
+
+  const filterByConsumo = useCallback((consumo, filtro) => {
+    if (filtro === 'todos') return true;
+    if (filtro === 'sin') return consumo === 0;
+    if (filtro === 'bajo') return consumo > 0 && consumo < 50;
+    if (filtro === 'medio') return consumo >= 50 && consumo < 200;
+    if (filtro === 'alto') return consumo >= 200;
+    return true;
+  }, []);
+
+  const applyFilters = useCallback(
+    (items) =>
+      items.filter((item) => {
+        const matchesEstado = estadoFiltro === 'todos' || item.status === estadoFiltro;
+        const matchesConsumo = filterByConsumo(item.consumoSemanalPromedio, consumoFiltro);
+        return matchesEstado && matchesConsumo;
+      }),
+    [estadoFiltro, consumoFiltro, filterByConsumo],
+  );
+
+  const filteredProyeccionesLiquidos = useMemo(
+    () => applyFilters(proyeccionesLiquidos),
+    [applyFilters, proyeccionesLiquidos],
+  );
+
+  const filteredProyeccionesSolidos = useMemo(
+    () => applyFilters(proyeccionesSolidos),
+    [applyFilters, proyeccionesSolidos],
+  );
+  
     const chartOptions = useMemo(
     () => ({
       responsive: true,
@@ -231,8 +297,8 @@ export default function InventarioPage() {
         tooltip: {
           callbacks: {
             label: (context) => {
-              const unidad = context.dataset.unidad ? ` ${context.dataset.unidad}` : '';
-              return `${context.dataset.label}: ${context.parsed.y}${unidad}`;
+              const unidad = context.dataset.unidad ? ` ${context.dataset.unidad}/sem` : '';
+              return `${context.dataset.label}: ${formatNumber(context.parsed.y)}${unidad}`;
             },
           },
         },
@@ -247,18 +313,18 @@ export default function InventarioPage() {
   );
 
   const chartDataLiquidos = useMemo(() => {
-    if (!inventarioLiquidos.meses.length || !proyeccionesLiquidos.length) {
+      if (!inventarioLiquidos.periodos.length || !proyeccionesLiquidos.length) {
       return null;
     }
-    return buildChartData(inventarioLiquidos.meses, proyeccionesLiquidos);
-  }, [inventarioLiquidos.meses, proyeccionesLiquidos]);
+  return buildChartData(inventarioLiquidos.periodos, proyeccionesLiquidos);
+  }, [inventarioLiquidos.periodos, proyeccionesLiquidos]);
 
   const chartDataSolidos = useMemo(() => {
-    if (!inventarioSolidos.meses.length || !proyeccionesSolidos.length) {
+    if (!inventarioSolidos.periodos.length || !proyeccionesSolidos.length) {
       return null;
     }
-    return buildChartData(inventarioSolidos.meses, proyeccionesSolidos);
-  }, [inventarioSolidos.meses, proyeccionesSolidos]);
+   return buildChartData(inventarioSolidos.periodos, proyeccionesSolidos);
+  }, [inventarioSolidos.periodos, proyeccionesSolidos]);
   
   if (!usuario) {
     return (
@@ -309,6 +375,55 @@ export default function InventarioPage() {
           </div>
         )}
 
+         {alertMaterials.length > 0 && (
+          <div
+            className={`transition-all duration-700 overflow-hidden ${
+              showAlerts
+                ? 'opacity-100 max-h-96 mb-6 pointer-events-auto'
+                : 'opacity-0 max-h-0 mb-0 pointer-events-none'
+            }`}
+          >
+            <div className="rounded-2xl border-l-4 border-red-400 bg-red-50/90 p-4 shadow">
+              <h2 className="text-lg font-semibold text-red-700">
+                Reactivos con consumo acelerado
+              </h2>
+              <p className="text-sm text-red-600/80 mb-3">
+                Monitorea estos reactivos; la proyección semanal indica que requieren reposición
+                prioritaria.
+              </p>
+              <ul className="space-y-2 text-sm text-red-800">
+                {alertMaterials.map((item) => (
+                  <li
+                    key={`${item.nombre}-${item.unidad}-${item.status}`}
+                    className="flex flex-col gap-1 rounded-lg bg-white/80 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="font-semibold text-red-700">
+                        {item.nombre.replace(/_/g, ' ')}
+                        <span className="ml-2 text-xs font-medium uppercase tracking-wide text-red-500">
+                          {STATUS_CONFIG[item.status]?.label ?? ''}
+                        </span>
+                      </p>
+                      <p className="text-xs text-red-600">
+                        Consumo semanal promedio: {formatNumber(item.consumoSemanalPromedio)}{' '}
+                        {item.unidad}/sem · Cobertura estimada:{' '}
+                        {item.coberturaSemanas !== null
+                          ? `${formatNumber(item.coberturaSemanas)} semanas`
+                          : 'Sin datos'}
+                      </p>
+                    </div>
+                    {item.proximaCompra && (
+                      <span className="text-xs font-medium text-red-500">
+                        Próxima compra sugerida: {formatDate(item.proximaCompra)}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+        
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           <div className="bg-white rounded-2xl shadow p-4 border border-blue-50">
             <p className="text-sm text-gray-500">Reactivos líquidos monitoreados</p>
@@ -384,10 +499,51 @@ export default function InventarioPage() {
                       Proyección de compra - Reactivos líquidos
                     </h3>
                     <p className="text-sm text-gray-500">
-                      Calculado con base en el consumo promedio del último periodo académico.
+                   Calculado con base en el consumo semanal promedio registrado en las últimas 12 semanas.
                     </p>
                   </div>
-                  <StatusBadge status="planificar" />
+                 <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <label
+                        htmlFor="filtro-estado"
+                        className="text-xs font-semibold uppercase tracking-wide text-blue-900"
+                      >
+                        Estado
+                      </label>
+                      <select
+                        id="filtro-estado"
+                        value={estadoFiltro}
+                        onChange={(event) => setEstadoFiltro(event.target.value)}
+                        className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-blue-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      >
+                        <option value="todos">Todos</option>
+                        <option value="urgente">Urgente</option>
+                        <option value="planificar">Planificar</option>
+                        <option value="ok">En rango</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label
+                        htmlFor="filtro-consumo"
+                        className="text-xs font-semibold uppercase tracking-wide text-blue-900"
+                      >
+                        Consumo semanal
+                      </label>
+                      <select
+                        id="filtro-consumo"
+                        value={consumoFiltro}
+                        onChange={(event) => setConsumoFiltro(event.target.value)}
+                        className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-blue-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      >
+                        <option value="todos">Todos</option>
+                        <option value="sin">Sin consumo</option>
+                        <option value="bajo">Bajo (&lt; 50)</option>
+                        <option value="medio">Moderado (50 - 199)</option>
+                        <option value="alto">Alto (≥ 200)</option>
+                      </select>
+                    </div>
+                    <StatusBadge status="planificar" />
+                  </div>
                 </header>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-100">
@@ -400,10 +556,10 @@ export default function InventarioPage() {
                           Stock actual
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
-                          Consumo promedio mensual
+                       Consumo promedio semanal
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
-                          Cobertura estimada
+                           Cobertura estimada (semanas)
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
                           Próxima compra
@@ -414,35 +570,49 @@ export default function InventarioPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
-                      {proyeccionesLiquidos.map((item) => (
-                        <tr key={`liq-${item.nombre}`} className="hover:bg-blue-50/50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-semibold text-blue-900">
-                              {item.nombre.replace(/_/g, ' ')}
-                            </div>
-                            <div className="text-xs text-gray-500 uppercase">{item.unidad}</div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">
-                            {formatNumber(item.stockActual)}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">
-                            {item.consumoPromedio > 0
-                              ? `${formatNumber(item.consumoPromedio)} ${item.unidad}/mes`
-                              : 'Sin consumo'}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">
-                            {item.coberturaMeses !== null
-                              ? `${formatNumber(item.coberturaMeses)} meses`
-                              : '—'}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">
-                            {item.proximaCompra ? formatDate(item.proximaCompra) : '—'}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">
-                            <StatusBadge status={item.status} />
+                      {filteredProyeccionesLiquidos.length ? (
+                        filteredProyeccionesLiquidos.map((item) => (
+                          <tr
+                            key={`liq-${item.nombre}-${item.unidad}`}
+                            className="hover:bg-blue-50/50"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-semibold text-blue-900">
+                                {item.nombre.replace(/_/g, ' ')}
+                              </div>
+                              <div className="text-xs text-gray-500 uppercase">{item.unidad}</div>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              {formatNumber(item.stockActual)}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              {item.consumoSemanalPromedio > 0
+                                ? `${formatNumber(item.consumoSemanalPromedio)} ${item.unidad}/sem`
+                                : 'Sin consumo'}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              {item.coberturaSemanas !== null
+                                ? `${formatNumber(item.coberturaSemanas)} semanas`
+                                : '—'}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              {item.proximaCompra ? formatDate(item.proximaCompra) : '—'}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              <StatusBadge status={item.status} />
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            className="px-6 py-4 text-sm text-center text-gray-500"
+                            colSpan={6}
+                          >
+                            No se encontraron reactivos con los filtros seleccionados.
                           </td>
                         </tr>
-                      ))}
+                       )}
                     </tbody>
                   </table>
                 </div>
@@ -455,7 +625,7 @@ export default function InventarioPage() {
                       Proyección de compra - Reactivos sólidos
                     </h3>
                     <p className="text-sm text-gray-500">
-                      Calculado con base en el consumo promedio del último periodo académico.
+                     Calculado con base en el consumo semanal promedio registrado en las últimas 12 semanas.
                     </p>
                   </div>
                   <StatusBadge status="ok" />
@@ -471,10 +641,10 @@ export default function InventarioPage() {
                           Stock actual
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
-                          Consumo promedio mensual
+                         Consumo promedio semanal
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
-                          Cobertura estimada
+                          Cobertura estimada (semanas)
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
                           Próxima compra
@@ -485,35 +655,49 @@ export default function InventarioPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
-                      {proyeccionesSolidos.map((item) => (
-                        <tr key={`sol-${item.nombre}`} className="hover:bg-blue-50/50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-semibold text-blue-900">
-                              {item.nombre.replace(/_/g, ' ')}
-                            </div>
-                            <div className="text-xs text-gray-500 uppercase">{item.unidad}</div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">
-                            {formatNumber(item.stockActual)}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">
-                            {item.consumoPromedio > 0
-                              ? `${formatNumber(item.consumoPromedio)} ${item.unidad}/mes`
-                              : 'Sin consumo'}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">
-                            {item.coberturaMeses !== null
-                              ? `${formatNumber(item.coberturaMeses)} meses`
-                              : '—'}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">
-                            {item.proximaCompra ? formatDate(item.proximaCompra) : '—'}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">
-                            <StatusBadge status={item.status} />
+                      {filteredProyeccionesSolidos.length ? (
+                        filteredProyeccionesSolidos.map((item) => (
+                          <tr
+                            key={`sol-${item.nombre}-${item.unidad}`}
+                            className="hover:bg-blue-50/50"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-semibold text-blue-900">
+                                {item.nombre.replace(/_/g, ' ')}
+                              </div>
+                              <div className="text-xs text-gray-500 uppercase">{item.unidad}</div>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              {formatNumber(item.stockActual)}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              {item.consumoSemanalPromedio > 0
+                                ? `${formatNumber(item.consumoSemanalPromedio)} ${item.unidad}/sem`
+                                : 'Sin consumo'}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              {item.coberturaSemanas !== null
+                                ? `${formatNumber(item.coberturaSemanas)} semanas`
+                                : '—'}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              {item.proximaCompra ? formatDate(item.proximaCompra) : '—'}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-700">
+                              <StatusBadge status={item.status} />
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            className="px-6 py-4 text-sm text-center text-gray-500"
+                            colSpan={6}
+                          >
+                            No se encontraron reactivos con los filtros seleccionados.
                           </td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
