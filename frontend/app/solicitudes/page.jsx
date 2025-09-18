@@ -933,6 +933,7 @@ const descargarPDF = async (vale) => {
     // Tabla de información principal
     const nombre = vale.isDocenteRequest ? vale.profesor : vale.nombre_alumno;
     const grupo = vale.isDocenteRequest ? '' : (vale.grupo || '');
+      const numeroExpediente = vale.numero_expediente || vale.numeroExpediente || '';
     const fechaReco = formatFechaStr(vale.fecha_recoleccion);
     const fechaDevolucion = formatFechaStr(vale.fecha_devolucion);
 
@@ -1028,7 +1029,17 @@ const descargarPDF = async (vale) => {
       doc.setFont('helvetica', 'normal');
       doc.text(materiaVal, pageWidth / 2 + 25, infoY);
 
-      noteY = infoY;
+      let infoBottomY = infoY;
+      if (numeroExpediente) {
+        const expedienteY = infoY + 6;
+        doc.setFont('helvetica', 'bold');
+        doc.text('No. Expediente:', marginLeft, expedienteY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(numeroExpediente, marginLeft + 35, expedienteY);
+        infoBottomY = expedienteY;
+      }
+
+      noteY = infoBottomY;
     }
 
     // Nota
