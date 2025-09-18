@@ -20,7 +20,7 @@ export default function Chat() {
   const router = useRouter();
   const chatContainerRef = useRef(null);
 
-  const BASE = `${process.env.NEXT_PUBLIC_API_URL}/api`;
+ const BASE = `${(process.env.NEXT_PUBLIC_API_URL || 'https://labsync-1090.onrender.com')}/api`;
 
   // Verificar permisos de chat al cargar el componente
   useEffect(() => {
@@ -53,13 +53,6 @@ export default function Chat() {
   }, [usuario, permisos, router]);
 
   async function verificarPermisosChat() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError('Token de autenticación no encontrado');
-      router.push('/login');
-      return;
-    }
-
     try {
       setLoadingPermisos(true);
       setError('');
@@ -67,10 +60,7 @@ export default function Chat() {
       const { data } = await axios.get(
         `${BASE}/auth/permisos-chat`,
         {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+   withCredentials: true,
         }
       );
 
@@ -79,7 +69,6 @@ export default function Chat() {
       console.error('[Chat] verificarPermisosChat:', err);
       if (err.response?.status === 401) {
         setError('Sesión expirada. Inicia sesión nuevamente');
-        localStorage.removeItem('token');
         router.push('/login');
       } else if (err.response?.status === 403) {
         setError('No tienes permisos para acceder al chat');
@@ -97,13 +86,6 @@ export default function Chat() {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError('Token de autenticación no encontrado');
-      router.push('/login');
-      return;
-    }
-
     try {
       setLoading(true);
       setError('');
@@ -111,10 +93,7 @@ export default function Chat() {
       const { data } = await axios.get(
         `${BASE}/messages/users`,
         {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+ withCredentials: true,
         }
       );
 
@@ -125,10 +104,7 @@ export default function Chat() {
             const { data: mensajesContacto } = await axios.get(
               `${BASE}/messages/${contacto.id}`,
               {
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-                }
+             withCredentials: true,
               }
             );
 
@@ -163,7 +139,6 @@ export default function Chat() {
       console.error('[Chat] cargarContactos:', err);
       if (err.response?.status === 401) {
         setError('Sesión expirada. Inicia sesión nuevamente');
-        localStorage.removeItem('token');
         router.push('/login');
       } else if (err.response?.status === 403) {
         setError('No tienes permisos para ver los contactos');
@@ -187,13 +162,6 @@ export default function Chat() {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError('Token de autenticación no encontrado');
-      router.push('/login');
-      return;
-    }
-
     try {
       setLoadingMensajes(true);
       setError('');
@@ -201,10 +169,7 @@ export default function Chat() {
       const { data } = await axios.get(
         `${BASE}/messages/${selectedUser.id}`,
         {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+    withCredentials: true,
         }
       );
 
@@ -213,7 +178,6 @@ export default function Chat() {
       console.error('[Chat] cargarMensajes:', err);
       if (err.response?.status === 401) {
         setError('Sesión expirada. Inicia sesión nuevamente');
-        localStorage.removeItem('token');
         router.push('/login');
       } else if (err.response?.status === 403) {
         setError('No tienes permisos para ver mensajes con este usuario');
@@ -234,13 +198,6 @@ export default function Chat() {
   async function handleEnviarMensaje() {
     if (!permisos || !permisos.acceso_chat) {
       setError('No tienes permiso para enviar mensajes');
-      return;
-    }
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError('Token de autenticación no encontrado');
-      router.push('/login');
       return;
     }
 
@@ -265,10 +222,7 @@ export default function Chat() {
           receptor_id: selectedUser.id
         },
         {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+         withCredentials: true,
         }
       );
 
@@ -300,7 +254,6 @@ export default function Chat() {
       console.error('[Chat] handleEnviarMensaje:', err);
       if (err.response?.status === 401) {
         setError('Sesión expirada. Inicia sesión nuevamente');
-        localStorage.removeItem('token');
         router.push('/login');
       } else if (err.response?.status === 403) {
         setError('No tienes permisos para enviar mensajes a este usuario');
