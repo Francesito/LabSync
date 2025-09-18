@@ -32,37 +32,60 @@ const obtenerDocentes = async (req, res) => {
 };
 
 const registrarUsuario = async (req, res) => {
-  const { nombre, correo_institucional, contrasena, grupo_id } = req.body;
+ const { nombre, correo_institucional, contrasena, grupo_id, numero_expediente } = req.body;
+
+  const nombreLimpio = typeof nombre === 'string' ? nombre.trim() : '';
+  const correoLimpio = typeof correo_institucional === 'string'
+    ? correo_institucional.trim().toLowerCase()
+    : '';
+  const contrasenaLimpia = typeof contrasena === 'string' ? contrasena.trim() : '';
+  const grupoId = Number.parseInt(grupo_id, 10);
+  const expedienteLimpio = typeof numero_expediente === 'string'
+    ? numero_expediente.trim()
+    : '';
 
   // Input validation
-  if (!nombre || !correo_institucional || !contrasena || !grupo_id) {
+  if (!nombreLimpio || !correoLimpio || !contrasenaLimpia || Number.isNaN(grupoId) || !expedienteLimpio) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
   }
 
-  if (!correo_institucional.endsWith('@utsjr.edu.mx')) {
+  if (!correoLimpio.endsWith('@utsjr.edu.mx')) {
     return res.status(400).json({ error: 'Correo institucional inválido' });
   }
 
+    if (!/^\d{10}$/.test(expedienteLimpio)) {
+    return res.status(400).json({ error: 'El número de expediente debe tener 10 dígitos' });
+  }
+
+  if (contrasenaLimpia.length < 8 || !/\d/.test(contrasenaLimpia)) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres y un número' });
+  }
+  
   try {
     // Verificar que el usuario no existe
-    const [existingUser] = await pool.query('SELECT * FROM Usuario WHERE correo_institucional = ?', [correo_institucional]);
+    const [existingUser] = await pool.query('SELECT id FROM Usuario WHERE correo_institucional = ?', [correoLimpio]);
     if (existingUser.length > 0) {
       return res.status(400).json({ error: 'Correo ya registrado' });
     }
 
+        const [expedienteExists] = await pool.query('SELECT id FROM Usuario WHERE numero_expediente = ?', [expedienteLimpio]);
+    if (expedienteExists.length > 0) {
+      return res.status(400).json({ error: 'El número de expediente ya está registrado' });
+    }
+    
     // Verificar que el grupo existe
-    const [grupoExists] = await pool.query('SELECT id FROM Grupo WHERE id = ?', [grupo_id]);
+       const [grupoExists] = await pool.query('SELECT id FROM Grupo WHERE id = ?', [grupoId]);
     if (grupoExists.length === 0) {
       return res.status(400).json({ error: 'Grupo seleccionado no válido' });
     }
 
-    const hash = await bcrypt.hash(contrasena, 10);
-    const token = jwt.sign({ correo_institucional }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const hash = await bcrypt.hash(contrasenaLimpia, 10);
+    const token = jwt.sign({ correo_institucional: correoLimpio }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     // Set default role to alumno (rol_id: 1) y agregar grupo_id
     await pool.query(
-      'INSERT INTO Usuario (nombre, correo_institucional, contrasena, rol_id, grupo_id, activo) VALUES (?, ?, ?, ?, ?, FALSE)',
-      [nombre, correo_institucional, hash, 1, grupo_id]
+      'INSERT INTO Usuario (nombre, correo_institucional, contrasena, rol_id, grupo_id, numero_expediente, activo) VALUES (?, ?, ?, ?, ?, ?, FALSE)',
+      [nombreLimpio, correoLimpio, hash, 1, grupoId, expedienteLimpio]
     );
 
     const frontendUrl = process.env.FRONTEND_URL || 'https://labsync-frontend.onrender.com';
@@ -105,7 +128,7 @@ const verifyHtml = `
 `;
 
     await sendEmail(
-      correo_institucional,
+     correoLimpio,
       'Verifica tu cuenta',
      `${verifyUrl}`,
       verifyHtml
@@ -188,7 +211,8 @@ const iniciarSesion = async (req, res) => {
         correo: usuario.correo_institucional,
         rol_id: usuario.rol_id,
         grupo_id: usuario.grupo_id,
-        grupo_nombre: usuario.grupo_nombre
+       grupo_nombre: usuario.grupo_nombre,
+        numero_expediente: usuario.numero_expediente || null
       }
     });
   } catch (error) {
