@@ -53,6 +53,7 @@ const SELECT_SOLICITUDES_CON_NOMBRE = `
     s.id            AS solicitud_id,
     s.usuario_id,
     u.rol_id        AS usuario_rol,
+      u.numero_expediente AS numero_expediente,
     s.fecha_solicitud,
     s.fecha_recoleccion,
      s.fecha_devolucion,
@@ -1741,12 +1742,14 @@ LEFT JOIN MaterialLaboratorio mlab
          s.profesor,
           s.fecha_recoleccion AS fecha_recoleccion,
          s.fecha_devolucion AS fecha_devolucion,
-         g.nombre AS grupo_nombre
+       g.nombre AS grupo_nombre,
+         u.numero_expediente
        FROM Solicitud s
        LEFT JOIN Adeudo a ON a.solicitud_id = s.id
        LEFT JOIN Grupo g  ON s.grupo_id = g.id
+       LEFT JOIN Usuario u ON s.usuario_id = u.id
        WHERE s.id = ?
-  GROUP BY s.id, s.folio, s.nombre_alumno, s.profesor, g.nombre, s.fecha_recoleccion, s.fecha_devolucion`,
+  GROUP BY s.id, s.folio, s.nombre_alumno, s.profesor, g.nombre, s.fecha_recoleccion, s.fecha_devolucion, u.numero_expediente`,
       [id]
     );
     if (!solRows.length) {
@@ -1780,6 +1783,7 @@ LEFT JOIN MaterialLaboratorio mlab
       fecha_recoleccion: sol.fecha_recoleccion,
     fecha_devolucion: sol.fecha_devolucion,
       grupo: sol.grupo_nombre || 'No especificado',
+        numero_expediente: sol.numero_expediente || null,
       items: items.map(i => ({
         item_id: i.item_id,
         nombre_material: i.nombre_material,
