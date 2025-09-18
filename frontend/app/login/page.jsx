@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { useAuth } from '../../lib/auth';
 
 export default function Auth() {
   // Estados compartidos
@@ -30,6 +31,8 @@ export default function Auth() {
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
 
+  import { useAuth } from '../../lib/auth';
+  
   // Cargar grupos al montar el componente
   useEffect(() => {
     const cargarGrupos = async () => {
@@ -85,18 +88,12 @@ export default function Auth() {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        correo_institucional: correoLogin,
-        contrasena: contrasenaLogin,
-      });
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('nombre', data.nombre);
+      setError('');
       setRedirecting(true);
-      setTimeout(() => {
-        router.replace('/catalog');
-      }, 0);
+       await login(correoLogin, contrasenaLogin);
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al iniciar sesión');
+     setRedirecting(false);
+      setError(err.response?.data?.error || err.message || 'Error al iniciar sesión');
     }
   };
 
