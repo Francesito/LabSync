@@ -17,7 +17,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     const cargar = async () => {
       try {
         const { data } = await axios.get(`${baseUrl}/api/notificaciones`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+         withCredentials: true
         });
       setNotifCount(data.filter(n => !n.leida).length);
       } catch (err) {
