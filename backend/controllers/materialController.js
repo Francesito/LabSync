@@ -1,7 +1,6 @@
   //backend/controllers/materialController.js
 
 const pool = require('../config/db');
-const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const cloudinary = require('../config/cloudinary');
 const { getFolderByType } = require('../middleware/uploadMiddleware');
@@ -524,7 +523,7 @@ const getAllSolicitudes = async (req, res) => {
 /** Crear solicitud (alumno/docente) con folio, grupo y selección de docente */
 const crearSolicitudes = async (req, res) => {
   logRequest('crearSolicitudes');
-  const token = req.headers.authorization?.split(' ')[1];
+  const usuario = req.usuario;
   const {
     materiales,
     motivo,
@@ -538,7 +537,7 @@ const crearSolicitudes = async (req, res) => {
     riesgo
   } = req.body;
 
-  if (!token) return res.status(401).json({ error: 'Token requerido' });
+   if (!usuario?.id) return res.status(401).json({ error: 'Token requerido' });
   if (!Array.isArray(materiales) || materiales.length === 0) {
     return res.status(400).json({ error: 'Se requiere al menos un material' });
   }
@@ -553,7 +552,7 @@ const crearSolicitudes = async (req, res) => {
   }
   
   try {
-    const { id: usuario_id, rol_id } = jwt.verify(token, process.env.JWT_SECRET);
+     const { id: usuario_id, rol_id } = usuario;
     if (![1, 2].includes(rol_id)) {
       return res.status(403).json({ error: 'Solo alumnos o docentes pueden crear solicitudes' });
     }
@@ -783,11 +782,10 @@ const crearSolicitudConAdeudo = async (req, res) => {
 const getUserSolicitudes = async (req, res) => {
   logRequest('getUserSolicitudes');
    await cleanupExpiredSolicitudes();
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token requerido' });
+  const { id: usuario_id } = req.usuario || {};
+  if (!usuario_id) return res.status(401).json({ error: 'Token requerido' });
 
   try {
-    const { id: usuario_id } = jwt.verify(token, process.env.JWT_SECRET);
 
     // Reemplaza el marcador del WHERE
     const query = SELECT_SOLICITUDES_CON_NOMBRE.replace(
@@ -1150,12 +1148,11 @@ const deliverSolicitud = async (req, res) => {
 const cancelSolicitud = async (req, res) => {
   const { id } = req.params;
   logRequest(`cancelSolicitud - ID=${id}`);
-  const token = req.headers.authorization?.split(' ')[1];
+  const { id: usuario_id, rol_id } = req.usuario || {};
 
-  if (!token) return res.status(401).json({ error: 'Token requerido' });
+  if (!usuario_id) return res.status(401).json({ error: 'Token requerido' });
 
   try {
-    const { id: usuario_id, rol_id } = jwt.verify(token, process.env.JWT_SECRET);
 
     if (rol_id === 1) {
       // 1) Verificar que la solicitud exista, sea del alumno y esté pendiente
@@ -1199,16 +1196,15 @@ const adjustInventory = async (req, res) => {
   logRequest('adjustInventory');
   const { id } = req.params;
   let { cantidad, tipo } = req.body;
-  const token = req.headers.authorization?.split(' ')[1];
+  const { rol_id } = req.usuario || {};
 
-  if (!token) {
+   if (!rol_id) {
     return res.status(401).json({ error: 'Token requerido' });
   }
 
   try {
     // Verificar rol y permisos
-    const { rol_id } = jwt.verify(token, process.env.JWT_SECRET);
-    if (rol_id !== 3 && !req.user?.permisos?.modificar_stock) {
+       if (rol_id !== 3 && !req.usuario?.permisos?.modificar_stock) {
       return res
         .status(403)
         .json({ error: 'Solo almacenistas con permisos de stock pueden ajustar inventario' });
@@ -1470,12 +1466,11 @@ const getHistorialSolicitudes = async (req, res) => {
 const ajusteMasivoStock = async (req, res) => {
   logRequest('ajusteMasivoStock');
   const { ajustes } = req.body; // Array de { id, tipo, cantidad }
-  const token = req.headers.authorization?.split(' ')[1];
-
-  if (!token) return res.status(401).json({ error: 'Token requerido' });
+  const { rol_id, permisos } = req.usuario || {};
+  
+  if (!rol_id) return res.status(401).json({ error: 'Token requerido' });
 
   try {
-    const { rol_id, permisos } = jwt.verify(token, process.env.JWT_SECRET);
     if (rol_id !== 3 && rol_id !== 4 && !permisos?.modificar_stock) {
       return res.status(403).json({ error: 'Acceso denegado. Requiere permisos de stock' });
     }
@@ -1686,10 +1681,9 @@ const getSolicitudDetalle = async (req, res) => {
     // Fallback para /solicitudes/almacen
     if (!/^\d+$/.test(rawId)) {
       if (rawId === 'almacen') {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'Token requerido' });
+           const { rol_id } = req.usuario || {};
+        if (!rol_id) return res.status(401).json({ error: 'Token requerido' });
 
-        const { rol_id } = jwt.verify(token, process.env.JWT_SECRET);
         if (rol_id !== 3 && rol_id !== 4) {
           return res.status(403).json({ error: 'Solo almacenistas o admin' });
         }
@@ -2473,12 +2467,11 @@ const verifyImage = async (req, res) => {
 // (con alias id = s.id para consistencia con el frontend)
 const getSolicitudesParaDocenteAprobar = async (req, res) => {
   logRequest('getSolicitudesParaDocenteAprobar');
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token requerido' });
+  const { id: docente_id, rol_id } = req.usuario || {};
+  if (!docente_id) return res.status(401).json({ error: 'Token requerido' });
 
   try {
     await cleanupExpiredSolicitudes();
-    const { id: docente_id, rol_id } = jwt.verify(token, process.env.JWT_SECRET);
     if (rol_id !== 2 && rol_id !== 4) return res.status(403).json({ error: 'Solo docentes o admin' });
 
     const query = `
@@ -2524,12 +2517,11 @@ const getSolicitudesParaDocenteAprobar = async (req, res) => {
 // Docente: ver sus propias solicitudes creadas (con alias id = s.id)
 const getSolicitudesDocentePropias = async (req, res) => {
   logRequest('getSolicitudesDocentePropias');
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token requerido' });
-
+  const { id: docente_id, rol_id } = req.usuario || {};
+  if (!docente_id) return res.status(401).json({ error: 'Token requerido' });
+  
   try {
     await cleanupExpiredSolicitudes();
-    const { id: docente_id, rol_id } = jwt.verify(token, process.env.JWT_SECRET);
     if (rol_id !== 2 && rol_id !== 4) return res.status(403).json({ error: 'Solo docentes o admin' });
 
     const query = `
@@ -2574,12 +2566,11 @@ const getSolicitudesDocentePropias = async (req, res) => {
 // Almacén/Admin: ver todas las solicitudes (con alias id = s.id)
 const getSolicitudesParaAlmacen = async (req, res) => {
   logRequest('getSolicitudesParaAlmacen');
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token requerido' });
+  const { rol_id } = req.usuario || {};
+  if (!rol_id) return res.status(401).json({ error: 'Token requerido' });
 
   try {
     await cleanupExpiredSolicitudes();
-    const { rol_id } = jwt.verify(token, process.env.JWT_SECRET);
     if (rol_id !== 3 && rol_id !== 4) {
       return res.status(403).json({ error: 'Solo almacenistas o admin' });
     }
@@ -2627,11 +2618,10 @@ const getSolicitudesParaAlmacen = async (req, res) => {
  */
 const getAdeudosUsuario = async (req, res) => {
   logRequest('getAdeudosUsuario');
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token requerido' });
+   const { id: usuario_id } = req.usuario || {};
+  if (!usuario_id) return res.status(401).json({ error: 'Token requerido' });
 
   try {
-    const { id: usuario_id } = jwt.verify(token, process.env.JWT_SECRET);
 
     const [rows] = await pool.query(`
       SELECT
@@ -2677,11 +2667,10 @@ LEFT JOIN MaterialLaboratorio mlab
  */
 const getAdeudosConFechaEntrega = async (req, res) => {
   logRequest('getAdeudosConFechaEntrega');
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token requerido' });
+   const { id: usuario_id } = req.usuario || {};
+  if (!usuario_id) return res.status(401).json({ error: 'Token requerido' });
 
   try {
-    const { id: usuario_id } = jwt.verify(token, process.env.JWT_SECRET);
 
     const [rows] = await pool.query(`
       SELECT
