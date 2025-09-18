@@ -350,8 +350,10 @@ export default function InventarioPage() {
                   </h2>
                   <StatusBadge status="planificar" />
                 </div>
-                 {chartDataLiquidos ? (
-                  <Line data={chartDataLiquidos} options={chartOptions} height={260} />
+                {chartDataLiquidos ? (
+                  <div className="relative h-64">
+                    <Line data={chartDataLiquidos} options={chartOptions} />
+                  </div>
                 ) : (
                   <p className="text-sm text-gray-500">Sin datos disponibles.</p>
                 )}
@@ -364,8 +366,10 @@ export default function InventarioPage() {
                   </h2>
                   <StatusBadge status="ok" />
                 </div>
-                               {chartDataSolidos ? (
-                  <Line data={chartDataSolidos} options={chartOptions} height={260} />
+                           {chartDataSolidos ? (
+                  <div className="relative h-64">
+                    <Line data={chartDataSolidos} options={chartOptions} />
+                  </div>
                 ) : (
                   <p className="text-sm text-gray-500">Sin datos disponibles.</p>
                 )}
