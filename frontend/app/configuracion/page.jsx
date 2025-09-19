@@ -682,7 +682,7 @@ export default function Configuracion() {
                     value={nuevoUsuario.correo_institucional}
                     onChange={(e) => setNuevoUsuario({...nuevoUsuario, correo_institucional: e.target.value})}
                     className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                    placeholder="usuario@utsjr.edu.mx"
+                    placeholder="Correo Electronico"
                     required
                   />
                 </div>
