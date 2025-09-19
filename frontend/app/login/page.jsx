@@ -1083,15 +1083,17 @@ export default function Auth() {
             padding: 1.5rem;
           }
 
-          .container:before {
-            bottom: 78%;
-            left: 50%;
-          }
+         .container:before {
+  bottom: 72%;
+  left: 50%;
+}
 
-          .container.sign-up-mode:before {
-            bottom: 10%;
-            left: 50%;
-          }
+         .container.sign-up-mode:before {
+  bottom: 15%;
+  left: 50%;
+  width: 1725px;
+  height: 1725px;
+}
 
           .container.sign-up-mode .signin-signup {
             top: 50%;
