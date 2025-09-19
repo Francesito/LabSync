@@ -927,12 +927,10 @@ export default function Auth() {
             justify-content: center;
           }
 
-          .sign-in-form {
-            margin-top: 80px;
-          }
-
+          .sign-in-form,
           .sign-up-form {
-            margin-top: -80px;
+            margin-top: 0; /* Removed margin-top to prevent movement */
+            padding-bottom: 3rem; /* Added padding to ensure button visibility */
           }
 
           .container.sign-up-mode .signin-signup {
@@ -1001,7 +999,7 @@ export default function Auth() {
 
           .container.sign-up-mode:before {
             transform: translate(-50%, 100%);
-            bottom: 32%;
+            bottom: 20%; /* Adjusted to move gradient lower */
             right: initial;
           }
 
@@ -1063,12 +1061,10 @@ export default function Auth() {
             justify-content: center;
           }
 
-          .sign-in-form {
-            margin-top: 100px;
-          }
-
+          .sign-in-form,
           .sign-up-form {
-            margin-top: -100px;
+            margin-top: 0; /* Removed margin-top to prevent movement */
+            padding-bottom: 4rem; /* Increased padding to ensure button visibility */
           }
 
           .image {
@@ -1089,7 +1085,7 @@ export default function Auth() {
           }
 
           .container.sign-up-mode:before {
-            bottom: 28%;
+            bottom: 15%; /* Adjusted to move gradient lower */
             left: 50%;
           }
 
