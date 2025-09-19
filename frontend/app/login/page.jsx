@@ -943,6 +943,8 @@ export default function Auth() {
           .panels-container {
             grid-template-columns: 1fr;
             grid-template-rows: 1fr 2fr 1fr;
+            padding-top: 2rem;
+            padding-bottom: 1.5rem;
           }
 
           .panel {
@@ -993,7 +995,7 @@ export default function Auth() {
             height: 1500px;
             transform: translateX(-50%);
             left: 30%;
-            bottom: 68%;
+              bottom: 62%;
             right: initial;
             top: initial;
             transition: 2s ease-in-out;
@@ -1001,7 +1003,7 @@ export default function Auth() {
 
           .container.sign-up-mode:before {
             transform: translate(-50%, 100%);
-            bottom: 32%;
+             bottom: 24%;
             right: initial;
           }
 
@@ -1050,6 +1052,11 @@ export default function Auth() {
             height: 100vh;
           }
 
+          .panels-container {
+            padding-top: 3.5rem;
+            padding-bottom: 2rem;
+          }
+          
           form {
             padding: 0 1.5rem;
           }
@@ -1080,16 +1087,16 @@ export default function Auth() {
           }
 
           .panel {
-            padding: 1.5rem;
+            padding: 2rem 1.5rem 1.5rem;
           }
 
           .container:before {
-            bottom: 72%;
+           bottom: 56%;
             left: 50%;
           }
 
           .container.sign-up-mode:before {
-            bottom: 28%;
+             bottom: 20%;
             left: 50%;
           }
 
@@ -1115,6 +1122,25 @@ export default function Auth() {
             width: 140px;
             height: 45px;
             font-size: 0.8rem;
+          }
+        }
+
+           @media (max-width: 480px) {
+          .panels-container {
+            padding-top: 4.5rem;
+            padding-bottom: 2.5rem;
+          }
+
+          .panel .content {
+            transform: translateY(16px);
+          }
+
+          .container:before {
+            bottom: 52%;
+          }
+
+          .container.sign-up-mode:before {
+            bottom: 18%;
           }
         }
       `}</style>
