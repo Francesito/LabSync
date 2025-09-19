@@ -943,8 +943,6 @@ export default function Auth() {
           .panels-container {
             grid-template-columns: 1fr;
             grid-template-rows: 1fr 2fr 1fr;
-            padding-top: 2rem;
-            padding-bottom: 1.5rem;
           }
 
           .panel {
@@ -995,7 +993,7 @@ export default function Auth() {
             height: 1500px;
             transform: translateX(-50%);
             left: 30%;
-              bottom: 62%;
+            bottom: 68%;
             right: initial;
             top: initial;
             transition: 2s ease-in-out;
@@ -1003,7 +1001,7 @@ export default function Auth() {
 
           .container.sign-up-mode:before {
             transform: translate(-50%, 100%);
-             bottom: 24%;
+            bottom: 32%;
             right: initial;
           }
 
@@ -1015,20 +1013,6 @@ export default function Auth() {
           .container.sign-up-mode .right-panel .image,
           .container.sign-up-mode .right-panel .content {
             transform: translateY(0px);
-          }
-
-            .container.sign-up-mode .right-panel {
-            align-items: center;
-            padding-top: 3rem;
-            padding-bottom: 2.5rem;
-          }
-
-          .container.sign-up-mode .right-panel .content {
-            transform: translateY(45px);
-          }
-
-          .container.sign-up-mode .right-panel .btn.transparent {
-            margin-top: 1.25rem;
           }
 
           .right-panel .image,
@@ -1066,11 +1050,6 @@ export default function Auth() {
             height: 100vh;
           }
 
-          .panels-container {
-            padding-top: 3.5rem;
-            padding-bottom: 2rem;
-          }
-          
           form {
             padding: 0 1.5rem;
           }
@@ -1101,30 +1080,17 @@ export default function Auth() {
           }
 
           .panel {
-            padding: 2rem 1.5rem 1.5rem;
+            padding: 1.5rem;
           }
 
           .container:before {
-           bottom: 56%;
+            bottom: 72%;
             left: 50%;
           }
 
           .container.sign-up-mode:before {
-              bottom: 18%;
+            bottom: 28%;
             left: 50%;
-          }
-
-           .container.sign-up-mode .right-panel {
-            padding-top: 3.25rem;
-            padding-bottom: 2.75rem;
-          }
-
-          .container.sign-up-mode .right-panel .content {
-            transform: translateY(55px);
-          }
-
-          .container.sign-up-mode .right-panel .btn.transparent {
-            margin-top: 1.5rem;
           }
 
           .container.sign-up-mode .signin-signup {
@@ -1150,24 +1116,24 @@ export default function Auth() {
             height: 45px;
             font-size: 0.8rem;
           }
-        }
 
-           @media (max-width: 480px) {
-          .panels-container {
-            padding-top: 4.5rem;
-            padding-bottom: 2.5rem;
+          .container.sign-up-mode .right-panel .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
           }
 
-          .panel .content {
-            transform: translateY(16px);
+          .container.sign-up-mode .right-panel .content .btn.transparent {
+            order: -1;
+            margin-bottom: 10px;
+            margin-top: 0 !important;
           }
 
-          .container:before {
-            bottom: 52%;
-          }
-
-          .container.sign-up-mode:before {
-            bottom: 18%;
+          .container.sign-up-mode .right-panel .content h3,
+          .container.sign-up-mode .right-panel .content p {
+            margin: 0;
+            padding: 0.2rem 0;
           }
         }
       `}</style>
