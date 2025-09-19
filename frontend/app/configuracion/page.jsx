@@ -202,11 +202,6 @@ export default function Configuracion() {
       return;
     }
 
-    if (!nuevoUsuario.correo_institucional.endsWith('@utsjr.edu.mx')) {
-      mostrarMensaje('error', 'El correo debe ser institucional (@utsjr.edu.mx)');
-      return;
-    }
-
     setLoading(true);
     try {
       const contrasenaAleatoria = generarContrasenaAleatoria();
