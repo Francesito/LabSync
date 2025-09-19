@@ -9,6 +9,39 @@ const { crearRateLimiter } = require('../middleware/rateLimitMiddleware');
 
 const router = express.Router();
 
+// Utilidades para manejar errores de eliminación de usuarios
+const buildForeignKeyErrorMessage = error => {
+  const message = error?.message || '';
+
+  if (message.includes('MovimientosInventario')) {
+    return 'El usuario no puede ser eliminado ya que cuenta con movimientos de inventario registrados.';
+  }
+
+  if (message.includes('Adeudo') || message.includes('Adeudos')) {
+    return 'El usuario no puede ser eliminado ya que cuenta con adeudos pendientes.';
+  }
+
+  if (message.includes('Prestamo') || message.includes('Préstamo')) {
+    return 'El usuario no puede ser eliminado ya que cuenta con préstamos asociados.';
+  }
+
+  if (message.includes('Solicitud')) {
+    return 'El usuario no puede ser eliminado ya que está vinculado a solicitudes activas.';
+  }
+
+  return 'El usuario no puede ser eliminado debido a que tiene registros asociados en el sistema.';
+};
+
+const handleUserDeletionError = (error, res) => {
+  if (error?.code === 'ER_ROW_IS_REFERENCED_2') {
+    console.warn('Restricción de llave foránea al eliminar usuario:', error.message);
+    return res.status(400).json({ error: buildForeignKeyErrorMessage(error) });
+  }
+
+  console.error('Error al eliminar usuario:', error);
+  return res.status(500).json({ error: 'Ocurrió un error interno al intentar eliminar al usuario.' });
+};
+
 // Middleware para verificar que es administrador
 router.use(verificarToken);
 router.use(requireAdmin);
@@ -457,8 +490,7 @@ router.delete('/eliminar-usuario', async (req, res) => {
 
   } catch (error) {
     if (connection) await connection.rollback();
-    console.error('Error al eliminar usuario:', error);
-    res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
+   return handleUserDeletionError(error, res);
   } finally {
     if (connection) connection.release();
   }
@@ -507,8 +539,7 @@ router.delete('/eliminar-usuarios', async (req, res) => {
     res.json({ mensaje: 'Usuarios eliminados exitosamente' });
   } catch (error) {
     if (connection) await connection.rollback();
-    console.error('Error al eliminar usuarios:', error);
-    res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
+   return handleUserDeletionError(error, res);
   } finally {
     if (connection) connection.release();
   }
