@@ -24,15 +24,15 @@ export default function Auth() {
   const [grupoId, setGrupoId] = useState('');
   const [grupos, setGrupos] = useState([]);
   const [showPasswordRegister, setShowPasswordRegister] = useState(false);
-    const [numeroExpediente, setNumeroExpediente] = useState('');
+  const [numeroExpediente, setNumeroExpediente] = useState('');
   const [passwordStatus, setPasswordStatus] = useState('empty');
   const [loading, setLoading] = useState(false);
-    const gruposScrollRef = useRef(null);
+  const gruposScrollRef = useRef(null);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(false);
 
- const { login } = useAuth();
-  
+  const { login } = useAuth();
+
   // Cargar grupos al montar el componente
   useEffect(() => {
     const cargarGrupos = async () => {
@@ -48,7 +48,7 @@ export default function Auth() {
     cargarGrupos();
   }, []);
 
-   useEffect(() => {
+  useEffect(() => {
     const updateShadows = () => {
       const container = gruposScrollRef.current;
       if (!container) return;
@@ -83,22 +83,23 @@ export default function Auth() {
     });
     return () => cancelAnimationFrame(id);
   }, [isSignUp, grupos]);
-  
+
   // Handle Login
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
       setRedirecting(true);
-       await login(correoLogin, contrasenaLogin);
+      await login(correoLogin, contrasenaLogin);
+      // The redirect to /catalog is assumed to be handled within the login function
     } catch (err) {
-     setRedirecting(false);
+      setRedirecting(false);
       setError(err.response?.data?.error || err.message || 'Error al iniciar sesión');
     }
   };
 
   // Handle Register
-    const evaluatePasswordStatus = (password) => {
+  const evaluatePasswordStatus = (password) => {
     if (!password) return 'empty';
     const hasMinLength = password.length >= 8;
     const hasNumber = /\d/.test(password);
@@ -112,16 +113,16 @@ export default function Auth() {
   useEffect(() => {
     setPasswordStatus(evaluatePasswordStatus(contrasenaRegister));
   }, [contrasenaRegister]);
-  
+
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!grupoId) {
       setError('Por favor selecciona tu grupo');
       return;
     }
 
-        const expedienteLimpio = numeroExpediente.trim();
+    const expedienteLimpio = numeroExpediente.trim();
     if (!expedienteLimpio) {
       setError('Por favor ingresa tu número de expediente');
       return;
@@ -136,7 +137,7 @@ export default function Auth() {
       setError('La contraseña debe tener al menos 8 caracteres y un número');
       return;
     }
-    
+
     setLoading(true);
     setError('');
 
@@ -146,7 +147,7 @@ export default function Auth() {
         correo_institucional: correoRegister,
         contrasena: contrasenaRegister,
         grupo_id: parseInt(grupoId),
-         numero_expediente: expedienteLimpio,
+        numero_expediente: expedienteLimpio,
         rol: 'alumno',
       });
 
@@ -156,9 +157,9 @@ export default function Auth() {
       setGrupoId('');
       setContrasenaRegister('');
       setPasswordStatus('empty');
-       setShowPasswordRegister(false);
+      setShowPasswordRegister(false);
       setIsSignUp(false);
-      
+
       alert('Usuario registrado. Verifica tu correo.');
       router.push('/login');
     } catch (err) {
@@ -172,12 +173,16 @@ export default function Auth() {
     setGrupoId((prev) => (prev === id ? '' : id));
   };
 
- if (redirecting)
+  if (redirecting) {
     return (
-      <div className="min-vh-100 bg-white d-flex justify-content-center align-items-center">
-       <p className="text-primary">Espere un segundo...</p>
+      <div className="loading-container">
+        <div className="loading-content">
+          <div className="spinner"></div>
+          <p className="loading-text">Cargando, espere...</p>
+        </div>
       </div>
     );
+  }
 
   return (
     <>
@@ -187,7 +192,7 @@ export default function Auth() {
             {/* Formulario de Login */}
             <form onSubmit={handleLoginSubmit} className="sign-in-form">
               <h2 className="title">Iniciar Sesión</h2>
-              
+
               {error && !isSignUp && (
                 <div className="error-alert">
                   <i className="fas fa-exclamation-triangle"></i>
@@ -197,7 +202,7 @@ export default function Auth() {
 
               <div className="input-field">
                 <i className="fas fa-user"></i>
-                <input 
+                <input
                   type="email"
                   value={correoLogin}
                   onChange={(e) => setCorreoLogin(e.target.value)}
@@ -206,10 +211,10 @@ export default function Auth() {
                   autoComplete="username"
                 />
               </div>
-              
+
               <div className="input-field">
                 <i className="fas fa-lock"></i>
-                <input 
+                <input
                   type={mostrarContrasenaLogin ? 'text' : 'password'}
                   value={contrasenaLogin}
                   onChange={(e) => setContrasenaLogin(e.target.value)}
@@ -225,9 +230,9 @@ export default function Auth() {
                   {mostrarContrasenaLogin ? 'OCULTAR' : 'MOSTRAR'}
                 </button>
               </div>
-              
+
               <input type="submit" className="btn solid" value="Iniciar Sesión" />
-              
+
               <div className="forgot-password-container">
                 <Link href="/forgot-password" className="forgot-password-link">
                   ¿Olvidaste tu contraseña?
@@ -238,7 +243,7 @@ export default function Auth() {
             {/* Formulario de Registro */}
             <form onSubmit={handleRegisterSubmit} className="sign-up-form">
               <h2 className="title">Crear Cuenta</h2>
-              
+
               {error && isSignUp && (
                 <div className="error-alert">
                   <i className="fas fa-exclamation-triangle"></i>
@@ -248,7 +253,7 @@ export default function Auth() {
 
               <div className="input-field">
                 <i className="fas fa-user"></i>
-                <input 
+                <input
                   type="text"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
@@ -260,7 +265,7 @@ export default function Auth() {
 
               <div className="input-field">
                 <i className="fas fa-envelope"></i>
-                <input 
+                <input
                   type="email"
                   value={correoRegister}
                   onChange={(e) => setCorreoRegister(e.target.value)}
@@ -269,9 +274,9 @@ export default function Auth() {
                   disabled={loading}
                 />
               </div>
-              
+
               <div className="input-field">
-                 <i className="fas fa-id-card"></i>
+                <i className="fas fa-id-card"></i>
                 <input
                   type="text"
                   value={numeroExpediente}
@@ -288,7 +293,7 @@ export default function Auth() {
 
               <div className={`input-field password-field ${passwordStatus}`}>
                 <i className="fas fa-lock"></i>
-                <input 
+                <input
                   type={showPasswordRegister ? 'text' : 'password'}
                   value={contrasenaRegister}
                   onChange={(e) => setContrasenaRegister(e.target.value)}
@@ -309,8 +314,8 @@ export default function Auth() {
               {/* Selección de Grupos */}
               <div className="grupo-selection">
                 <label className="grupo-label">Selecciona tu Grupo:</label>
-                
-               <div
+
+                <div
                   className={`grupos-scroll-wrapper ${
                     showLeftShadow ? 'has-left-shadow' : ''
                   } ${showRightShadow ? 'has-right-shadow' : ''}`}
@@ -326,20 +331,20 @@ export default function Auth() {
                           onClick={() => handleGrupoSelect(idString)}
                           className={`grupo-btn ${isSelected ? 'selected' : ''}`}
                           disabled={loading}
-                           aria-pressed={isSelected}
+                          aria-pressed={isSelected}
                         >
                           {grupo.nombre}
                         </button>
-                       );
+                      );
                     })}
                   </div>
+                </div>
               </div>
-              </div>
-              
-              <input 
-                type="submit" 
-                className="btn" 
-                value={loading ? "Creando..." : "Registrarse"}
+
+              <input
+                type="submit"
+                className="btn"
+                value={loading ? 'Creando...' : 'Registrarse'}
                 disabled={loading}
               />
             </form>
@@ -353,8 +358,8 @@ export default function Auth() {
               <p>
                 Regístrate para solicitar préstamos de materiales y reactivos de química
               </p>
-              <button 
-                className="btn transparent" 
+              <button
+                className="btn transparent"
                 onClick={() => {
                   setIsSignUp(true);
                   setError('');
@@ -371,7 +376,7 @@ export default function Auth() {
               <p>
                 Inicia sesión para acceder a tu cuenta y gestionar tus préstamos
               </p>
-              <button 
+              <button
                 className="btn transparent"
                 onClick={() => {
                   setIsSignUp(false);
@@ -534,7 +539,7 @@ export default function Auth() {
           position: relative;
         }
 
-  .password-field {
+        .password-field {
           border: 2px solid transparent;
           transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
@@ -630,20 +635,6 @@ export default function Auth() {
           text-align: left;
         }
 
-        .grupos-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 8px;
-          margin-bottom: 8px;
-        }
-
-        .grupos-grid-second-row {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 8px;
-        }
-
-        /* Carrusel de grupos */
         .grupos-scroll-wrapper {
           position: relative;
           width: 100%;
@@ -700,44 +691,44 @@ export default function Auth() {
         }
 
         .grupo-btn {
-            padding: 10px 18px;
+          padding: 10px 18px;
           border: 2px solid #ddd;
           border-radius: 25px;
           background: #fff;
           color: #444;
-         font-size: 0.9rem;
+          font-size: 0.9rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
           text-align: center;
-       min-height: 44px;
+          min-height: 44px;
           display: flex;
           align-items: center;
           justify-content: center;
-           flex: 0 0 clamp(160px, 42%, 220px);
+          flex: 0 0 clamp(160px, 42%, 220px);
           scroll-snap-align: start;
           box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
           background-image: linear-gradient(135deg, rgba(89, 149, 253, 0.12), rgba(89, 149, 253, 0));
         }
 
- .grupo-btn.selected {
+        .grupo-btn.selected {
           border-color: #1d4ed8;
           background: linear-gradient(135deg, #1d4ed8, #2563eb);
           color: #fff;
           box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
           transform: translateY(-2px);
         }
-        
+
         .grupo-btn:hover:not(:disabled) {
           border-color: #5995fd;
           color: #5995fd;
         }
 
- .grupo-btn.selected:hover:not(:disabled) {
+        .grupo-btn.selected:hover:not(:disabled) {
           color: #fff;
           border-color: #1d4ed8;
         }
-        
+
         .grupo-btn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
@@ -876,6 +867,48 @@ export default function Auth() {
           pointer-events: all;
         }
 
+        /* Loading Screen Styles */
+        .loading-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100vh;
+          background-color: #fff;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+
+        .loading-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #5995fd;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+          font-family: "Poppins", sans-serif;
+          font-size: 1.2rem;
+          color: #2563eb;
+          font-weight: 500;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 870px) {
           .container {
             overflow: hidden;
@@ -894,12 +927,10 @@ export default function Auth() {
             justify-content: center;
           }
 
-          /* Formulario de login más abajo en mobile */
           .sign-in-form {
             margin-top: 80px;
           }
 
-          /* Formulario de registro más arriba en mobile */
           .sign-up-form {
             margin-top: -80px;
           }
@@ -995,7 +1026,7 @@ export default function Auth() {
             transform: translate(-50%, -50%);
           }
 
-        .grupos-scroll-wrapper {
+          .grupos-scroll-wrapper {
             max-width: 100%;
           }
 
@@ -1005,7 +1036,7 @@ export default function Auth() {
           }
 
           .grupo-btn {
-           font-size: 0.8rem;
+            font-size: 0.8rem;
             padding: 8px 12px;
             min-height: 40px;
             flex-basis: clamp(150px, 55%, 210px);
@@ -1032,7 +1063,6 @@ export default function Auth() {
             justify-content: center;
           }
 
-          /* Ajustar posición de formularios en pantallas muy pequeñas */
           .sign-in-form {
             margin-top: 100px;
           }
@@ -1044,11 +1074,11 @@ export default function Auth() {
           .image {
             display: none;
           }
-          
+
           .panel .content {
             padding: 0.5rem 1rem;
           }
-          
+
           .panel {
             padding: 1.5rem;
           }
@@ -1075,7 +1105,7 @@ export default function Auth() {
           }
 
           .grupo-btn {
-          font-size: 0.75rem;
+            font-size: 0.75rem;
             padding: 6px 10px;
             min-height: 36px;
             flex-basis: clamp(140px, 70%, 200px);
