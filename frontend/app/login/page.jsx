@@ -1017,6 +1017,20 @@ export default function Auth() {
             transform: translateY(0px);
           }
 
+            .container.sign-up-mode .right-panel {
+            align-items: center;
+            padding-top: 3rem;
+            padding-bottom: 2.5rem;
+          }
+
+          .container.sign-up-mode .right-panel .content {
+            transform: translateY(45px);
+          }
+
+          .container.sign-up-mode .right-panel .btn.transparent {
+            margin-top: 1.25rem;
+          }
+
           .right-panel .image,
           .right-panel .content {
             transform: translateY(300px);
@@ -1096,8 +1110,21 @@ export default function Auth() {
           }
 
           .container.sign-up-mode:before {
-             bottom: 20%;
+              bottom: 18%;
             left: 50%;
+          }
+
+           .container.sign-up-mode .right-panel {
+            padding-top: 3.25rem;
+            padding-bottom: 2.75rem;
+          }
+
+          .container.sign-up-mode .right-panel .content {
+            transform: translateY(55px);
+          }
+
+          .container.sign-up-mode .right-panel .btn.transparent {
+            margin-top: 1.5rem;
           }
 
           .container.sign-up-mode .signin-signup {
