@@ -106,22 +106,6 @@ const handleNavClick = () => {
       visible: usuario.rol_id === 3, // solo almacén
       color: 'purple',
     },
-       {
-      href: '/inventario',
-      label: 'Inventario',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 7l9-4 9 4m-18 0l9 4 9-4m-18 6l9 4 9-4"
-          />
-        </svg>
-      ),
-      visible: [3, 4].includes(usuario.rol_id),
-      color: 'indigo',
-    },
     {
       href: '/chat',
       label: 'Chat',
