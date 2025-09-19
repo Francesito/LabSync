@@ -88,9 +88,9 @@ router.post('/crear-usuario', crearUsuarioLimiter, async (req, res) => {
     return res.status(400).json({ error: 'El nombre contiene caracteres no permitidos' });
   }
 
-  const correoInstitucionalRegex = /^[a-z0-9._%+-]+@utsjr\.edu\.mx$/i;
-  if (!correoInstitucionalRegex.test(correoLimpio)) {
-    return res.status(400).json({ error: 'Correo institucional inválido' });
+  const correoValidoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!correoValidoRegex.test(correoLimpio)) {
+    return res.status(400).json({ error: 'Correo electrónico inválido' });
   }
 
   // Solo permitir roles de docente, almacen y administrador
