@@ -993,7 +993,7 @@ export default function Auth() {
             height: 1500px;
             transform: translateX(-50%);
             left: 30%;
-            bottom: 68%;
+            bottom: 75%;
             right: initial;
             top: initial;
             transition: 2s ease-in-out;
@@ -1001,7 +1001,7 @@ export default function Auth() {
 
           .container.sign-up-mode:before {
             transform: translate(-50%, 100%);
-            bottom: 32%;
+            bottom: 15%;
             right: initial;
           }
 
@@ -1084,12 +1084,12 @@ export default function Auth() {
           }
 
           .container:before {
-            bottom: 72%;
+            bottom: 78%;
             left: 50%;
           }
 
           .container.sign-up-mode:before {
-            bottom: 28%;
+            bottom: 10%;
             left: 50%;
           }
 
