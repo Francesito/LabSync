@@ -95,8 +95,8 @@ export default function ResetPassword() {
           <div className="floating-square square-3"></div>
         </div>
 
-        <div className="main-content">
-          <div className="form-container">
+        <div className="forms-container">
+          <div className="signin-signup">
             <form onSubmit={handleSubmit} className="reset-password-form">
               <h2 className="title">Restablecer Contraseña</h2>
               <p className="subtitle">Crea una nueva contraseña segura para tu cuenta</p>
@@ -169,20 +169,12 @@ export default function ResetPassword() {
                 </button>
               </div>
 
-              <button
+              <input
                 type="submit"
-                className="btn-submit"
+                className="btn solid"
+                value={loading ? 'Restableciendo...' : 'Restablecer Contraseña'}
                 disabled={loading || !passwordValidation.isValid}
-              >
-                {loading ? (
-                  <>
-                    <i className="fas fa-spinner fa-spin"></i>
-                    Restableciendo...
-                  </>
-                ) : (
-                  'Restablecer Contraseña'
-                )}
-              </button>
+              />
             </form>
           </div>
         </div>
@@ -190,35 +182,51 @@ export default function ResetPassword() {
 
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap");
-        @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
 
-        * {
-          margin: 0;
-          padding: 0;
+        html, body, #__next, [data-nextjs-scroll-focus-boundary] {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+        }
+
+        html {
           box-sizing: border-box;
         }
 
-        html, body {
-          width: 100%;
-          height: 100%;
-          font-family: "Poppins", sans-serif;
-          overflow-x: hidden;
+        *, *:before, *:after {
+          box-sizing: inherit;
+          margin: 0;
+          padding: 0;
         }
 
         body {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          margin: 0 !important;
+          padding: 0 !important;
           min-height: 100vh;
+          width: 100% !important;
+          max-width: 100% !important;
+          font-family: "Poppins", sans-serif;
+          overflow-x: hidden !important;
+        }
+
+        body,
+        input {
+          font-family: "Poppins", sans-serif;
         }
 
         .container {
           position: relative;
           width: 100%;
+          min-width: 100%;
+          max-width: 100%;
           min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          background-image: linear-gradient(-45deg, #4481eb 0%, #04befe 100%);
           overflow: hidden;
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
         }
 
         /* Decoraciones flotantes */
@@ -251,9 +259,9 @@ export default function ResetPassword() {
         .floating-circle {
           border-radius: 50%;
           position: absolute;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.15);
           backdrop-filter: blur(10px);
-          border: 2px solid rgba(255, 255, 255, 0.2);
+          border: 2px solid rgba(255, 255, 255, 0.25);
         }
 
         .circle-1 {
@@ -267,8 +275,8 @@ export default function ResetPassword() {
           height: 40px;
           top: 80px;
           left: 30px;
-          background: rgba(255, 193, 7, 0.2);
-          border-color: rgba(255, 193, 7, 0.3);
+          background: rgba(255, 193, 7, 0.3);
+          border-color: rgba(255, 193, 7, 0.4);
           animation: float2 8s ease-in-out infinite;
         }
 
@@ -277,8 +285,8 @@ export default function ResetPassword() {
           height: 25px;
           top: 30px;
           left: 90px;
-          background: rgba(40, 167, 69, 0.2);
-          border-color: rgba(40, 167, 69, 0.3);
+          background: rgba(40, 167, 69, 0.3);
+          border-color: rgba(40, 167, 69, 0.4);
           animation: float3 7s ease-in-out infinite;
         }
 
@@ -287,17 +295,17 @@ export default function ResetPassword() {
           height: 35px;
           top: -20px;
           left: 60px;
-          background: rgba(220, 53, 69, 0.2);
-          border-color: rgba(220, 53, 69, 0.3);
+          background: rgba(220, 53, 69, 0.3);
+          border-color: rgba(220, 53, 69, 0.4);
           animation: float1 9s ease-in-out infinite;
         }
 
         /* Cuadrados flotantes */
         .floating-square {
           position: absolute;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.15);
           backdrop-filter: blur(10px);
-          border: 2px solid rgba(255, 255, 255, 0.2);
+          border: 2px solid rgba(255, 255, 255, 0.25);
           transform: rotate(45deg);
         }
 
@@ -312,8 +320,8 @@ export default function ResetPassword() {
           height: 30px;
           top: 70px;
           right: 40px;
-          background: rgba(255, 193, 7, 0.2);
-          border-color: rgba(255, 193, 7, 0.3);
+          background: rgba(255, 193, 7, 0.3);
+          border-color: rgba(255, 193, 7, 0.4);
           animation: rotate2 12s linear infinite;
         }
 
@@ -322,8 +330,8 @@ export default function ResetPassword() {
           height: 40px;
           top: 20px;
           right: 10px;
-          background: rgba(23, 162, 184, 0.2);
-          border-color: rgba(23, 162, 184, 0.3);
+          background: rgba(23, 162, 184, 0.3);
+          border-color: rgba(23, 162, 184, 0.4);
           animation: rotate1 8s linear infinite;
         }
 
@@ -333,7 +341,7 @@ export default function ResetPassword() {
           height: 0;
           border-left: 25px solid transparent;
           border-right: 25px solid transparent;
-          border-bottom: 45px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 45px solid rgba(255, 255, 255, 0.15);
           position: absolute;
           top: 20px;
           right: 80px;
@@ -344,7 +352,7 @@ export default function ResetPassword() {
         .floating-hexagon {
           width: 50px;
           height: 30px;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.15);
           position: absolute;
           transform: rotate(90deg);
         }
@@ -360,12 +368,12 @@ export default function ResetPassword() {
 
         .floating-hexagon:before {
           bottom: 100%;
-          border-bottom: 15px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 15px solid rgba(255, 255, 255, 0.15);
         }
 
         .floating-hexagon:after {
           top: 100%;
-          border-top: 15px solid rgba(255, 255, 255, 0.1);
+          border-top: 15px solid rgba(255, 255, 255, 0.15);
         }
 
         .hex-1 {
@@ -375,30 +383,30 @@ export default function ResetPassword() {
         .hex-2 {
           top: 60px;
           left: 50px;
-          background: rgba(40, 167, 69, 0.2);
+          background: rgba(40, 167, 69, 0.3);
           animation: float1 10s ease-in-out infinite;
         }
 
         .hex-2:before {
-          border-bottom-color: rgba(40, 167, 69, 0.2);
+          border-bottom-color: rgba(40, 167, 69, 0.3);
         }
 
         .hex-2:after {
-          border-top-color: rgba(40, 167, 69, 0.2);
+          border-top-color: rgba(40, 167, 69, 0.3);
         }
 
         /* Diamantes */
         .floating-diamond {
           width: 40px;
           height: 40px;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.15);
           position: absolute;
           transform: rotate(45deg);
           border-radius: 5px;
         }
 
         .diamond-1 {
-          background: rgba(220, 53, 69, 0.2);
+          background: rgba(220, 53, 69, 0.3);
           animation: rotate2 9s linear infinite;
         }
 
@@ -407,7 +415,7 @@ export default function ResetPassword() {
           height: 30px;
           top: 50px;
           right: 30px;
-          background: rgba(255, 193, 7, 0.2);
+          background: rgba(255, 193, 7, 0.3);
           animation: rotate1 7s linear infinite;
         }
 
@@ -440,267 +448,252 @@ export default function ResetPassword() {
           100% { transform: rotate(-315deg); }
         }
 
-        /* Contenido principal */
-        .main-content {
-          position: relative;
-          z-index: 10;
+        .forms-container {
+          position: absolute;
           width: 100%;
-          max-width: 500px;
-          padding: 2rem;
+          height: 100%;
+          top: 0;
+          left: 0;
         }
 
-        .form-container {
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(20px);
-          border-radius: 20px;
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          overflow: hidden;
+        .signin-signup {
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          left: 50%;
+          width: 50%;
+          transition: 1s 0.7s ease-in-out;
+          display: grid;
+          grid-template-columns: 1fr;
+          z-index: 5;
         }
 
         .reset-password-form {
-          padding: 3rem 2.5rem;
           display: flex;
-          flex-direction: column;
           align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          padding: 0rem 5rem;
+          transition: all 0.2s 0.7s;
+          overflow: hidden;
+          grid-column: 1 / 2;
+          grid-row: 1 / 2;
         }
 
         .title {
-          font-size: 2.5rem;
-          color: #2d3748;
-          margin-bottom: 0.5rem;
-          font-weight: 700;
-          text-align: center;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          font-size: 2.2rem;
+          color: #444;
+          margin-bottom: 5px;
         }
 
         .subtitle {
-          color: #718096;
-          font-size: 1rem;
+          font-size: 0.9rem;
+          color: #666;
+          margin-bottom: 20px;
           text-align: center;
-          margin-bottom: 2rem;
           font-weight: 400;
         }
 
-        .error-alert, .success-alert {
+        .error-alert {
+          max-width: 380px;
           width: 100%;
-          padding: 1rem;
-          border-radius: 12px;
-          font-size: 0.9rem;
-          margin-bottom: 1.5rem;
+          background-color: #f8d7da;
+          color: #721c24;
+          padding: 12px 16px;
+          border-radius: 8px;
+          font-size: 14px;
+          margin: 10px 0;
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          font-weight: 500;
-        }
-
-        .error-alert {
-          background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
-          color: #c53030;
-          border: 1px solid #fc8181;
+          gap: 8px;
         }
 
         .success-alert {
-          background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
-          color: #2f855a;
-          border: 1px solid #68d391;
+          max-width: 380px;
+          width: 100%;
+          background-color: #d4edda;
+          color: #155724;
+          padding: 12px 16px;
+          border-radius: 8px;
+          font-size: 14px;
+          margin: 10px 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         .input-field {
+          max-width: 380px;
           width: 100%;
-          background: #f7fafc;
-          margin: 0.75rem 0;
-          height: 60px;
-          border-radius: 15px;
+          background-color: #f0f0f0;
+          margin: 10px 0;
+          height: 55px;
+          border-radius: 55px;
           display: grid;
-          grid-template-columns: 60px 1fr auto;
-          align-items: center;
-          padding: 0 1rem;
+          grid-template-columns: 15% 70% 15%;
+          padding: 0 0.4rem;
           position: relative;
-          border: 2px solid transparent;
-          transition: all 0.3s ease;
-        }
-
-        .input-field:focus-within {
-          border-color: #667eea;
-          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-          background: #ffffff;
         }
 
         .input-field i {
-          color: #a0aec0;
-          font-size: 1.2rem;
           text-align: center;
-          transition: color 0.3s ease;
-        }
-
-        .input-field:focus-within i {
-          color: #667eea;
+          line-height: 55px;
+          color: #acacac;
+          transition: 0.5s;
+          font-size: 1.1rem;
         }
 
         .input-field input {
           background: none;
           outline: none;
           border: none;
-          font-weight: 500;
-          font-size: 1rem;
-          color: #2d3748;
-          width: 100%;
-          padding: 0 0.5rem;
+          line-height: 1;
+          font-weight: 600;
+          font-size: 1.1rem;
+          color: #333;
         }
 
         .input-field input::placeholder {
-          color: #a0aec0;
-          font-weight: 400;
+          color: #aaa;
+          font-weight: 500;
         }
 
         .show-password-btn {
+          position: absolute;
+          right: 16px;
+          top: 50%;
+          transform: translateY(-50%);
           background: none;
           border: none;
-          color: #667eea;
+          color: #2563eb;
           font-weight: 700;
           font-size: 0.75rem;
           cursor: pointer;
-          padding: 0.5rem;
-          border-radius: 8px;
-          transition: all 0.3s ease;
-        }
-
-        .show-password-btn:hover {
-          background: rgba(102, 126, 234, 0.1);
-          color: #5a67d8;
+          z-index: 10;
         }
 
         .password-requirements {
+          max-width: 380px;
           width: 100%;
-          background: rgba(247, 250, 252, 0.8);
+          background: rgba(255, 255, 255, 0.95);
           border-radius: 12px;
-          padding: 1rem;
-          margin: 0.5rem 0 1rem 0;
-          border: 1px solid rgba(226, 232, 240, 0.8);
+          padding: 12px 16px;
+          margin: 5px 0 10px 0;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .requirement {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          margin: 0.5rem 0;
-          font-size: 0.9rem;
+          gap: 8px;
+          margin: 6px 0;
+          font-size: 0.85rem;
           transition: all 0.3s ease;
         }
 
         .requirement.valid {
-          color: #2f855a;
+          color: #22c55e;
         }
 
         .requirement.valid i {
-          color: #38a169;
-          background: rgba(56, 161, 105, 0.1);
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 0.75rem;
+          color: #22c55e;
         }
 
         .requirement.invalid {
-          color: #c53030;
+          color: #ef4444;
         }
 
         .requirement.invalid i {
-          color: #e53e3e;
-          background: rgba(229, 62, 62, 0.1);
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 0.75rem;
+          color: #ef4444;
         }
 
-        .btn-submit {
-          width: 100%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn {
+          width: 200px;
+          background-color: #5995fd;
           border: none;
           outline: none;
-          height: 55px;
-          border-radius: 15px;
-          color: #ffffff;
+          height: 49px;
+          border-radius: 49px;
+          color: #fff;
+          text-transform: uppercase;
           font-weight: 600;
-          font-size: 1.1rem;
-          margin-top: 1.5rem;
+          margin: 10px 0;
           cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
+          transition: 0.5s;
         }
 
-        .btn-submit:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+        .btn:hover:not(:disabled) {
+          background-color: #4d84e2;
         }
 
-        .btn-submit:active:not(:disabled) {
-          transform: translateY(0);
-        }
-
-        .btn-submit:disabled {
+        .btn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
-          transform: none;
-          box-shadow: 0 5px 10px rgba(102, 126, 234, 0.1);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-          .main-content {
-            max-width: 95%;
-            padding: 1rem;
+        @media (max-width: 870px) {
+          .container {
+            overflow: hidden;
+            min-height: 100vh;
+            height: 100vh;
+          }
+
+          .signin-signup {
+            width: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
           .reset-password-form {
-            padding: 2rem 1.5rem;
+            margin-top: 0px;
+          }
+
+          .decoration {
+            transform: scale(0.8);
+          }
+        }
+
+        @media (max-width: 570px) {
+          .container {
+            overflow: hidden;
+            min-height: 100vh;
+            height: 100vh;
+          }
+
+          .reset-password-form {
+            padding: 0 1.5rem;
+          }
+
+          .signin-signup {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
           .title {
-            font-size: 2rem;
+            font-size: 1.8rem;
           }
 
           .subtitle {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
           }
 
           .decoration {
             display: none;
           }
-        }
 
-        @media (max-width: 480px) {
-          .reset-password-form {
-            padding: 1.5rem 1rem;
-          }
-
-          .title {
-            font-size: 1.75rem;
-          }
-
-          .input-field {
-            height: 55px;
-            grid-template-columns: 50px 1fr auto;
-          }
-
-          .btn-submit {
-            height: 50px;
-            font-size: 1rem;
+          .btn {
+            width: 180px;
+            font-size: 0.9rem;
           }
         }
       `}</style>
